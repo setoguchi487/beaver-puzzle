@@ -251,6 +251,7 @@ export const STAGES = generate100Stages();
 export const INITIAL_AREAS: FrontierArea[] = [
   {
     id: 'stream_entry',
+    mapCoords: { x: 42, y: 88 },
     name: 'はじまりのせせらぎ',
     icon: '🌱',
     description: '浅いせせらぎ。まずはここを片付けてふたりの拠点にしよう！',
@@ -279,6 +280,7 @@ export const INITIAL_AREAS: FrontierArea[] = [
   },
   {
     id: 'small_dam',
+    mapCoords: { x: 46, y: 74 },
     name: '小枝ダムの浅瀬',
     icon: '🪵',
     description: '記念すべき最初のダムを建設するメインスポット！',
@@ -307,6 +309,7 @@ export const INITIAL_AREAS: FrontierArea[] = [
   },
   {
     id: 'beaver_lodge',
+    mapCoords: { x: 74, y: 77 },
     name: '木漏れ日のロッジ',
     icon: '🏡',
     description: 'ふたりのビーバーが暮らす温かいお家エリア。',
@@ -336,6 +339,7 @@ export const INITIAL_AREAS: FrontierArea[] = [
   },
   {
     id: 'fishing_pier',
+    mapCoords: { x: 62, y: 57 },
     name: '釣りテラス＆桟橋',
     icon: '🎣',
     description: '水辺で夕涼みをしたり魚釣りができる桟橋エリア。',
@@ -365,6 +369,7 @@ export const INITIAL_AREAS: FrontierArea[] = [
   },
   {
     id: 'watermill_zone',
+    mapCoords: { x: 64, y: 49 },
     name: '古い水車小屋',
     icon: '⚙️',
     description: '川の水流を利用して木の実を挽く風情ある水車小屋。',
@@ -394,6 +399,7 @@ export const INITIAL_AREAS: FrontierArea[] = [
   },
   {
     id: 'flower_garden',
+    mapCoords: { x: 20, y: 42 },
     name: 'ホタルの花園',
     icon: '🌸',
     description: '水辺を彩る美しい植物と小さな動物たちの癒やしエリア。',
@@ -423,6 +429,7 @@ export const INITIAL_AREAS: FrontierArea[] = [
   },
   {
     id: 'emerald_lake',
+    mapCoords: { x: 48, y: 20 },
     name: 'ビーバーの桃源郷',
     icon: '👑',
     description: '大要塞グランドダムと湖を望む、最高峰の聖地。',

@@ -78,6 +78,8 @@ export interface FrontierArea {
   tasks: AreaTask[];
   themeColor: string;
   bgGradient: string;
+  mapCoords: { x: number; y: number }; // マップ上の相対座標 (0-100%)
+  visualKey?: string;
 }
 
 export interface GameState {

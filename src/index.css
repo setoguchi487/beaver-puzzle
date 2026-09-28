@@ -21,3 +21,110 @@ body {
   user-select: none;
   background-color: #0f172a;
 }
+
+/* 霧の揺らめきアニメーション */
+@keyframes fogDrift {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: translate(-10px, -5px) scale(1.05);
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.85;
+  }
+}
+
+.animate-fog {
+  animation: fogDrift 10s ease-in-out infinite;
+}
+
+/* 水車のゆっくり回転 */
+@keyframes spinSlow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 12s linear infinite;
+}
+
+/* 水面カルガモの泳ぎ */
+@keyframes duckSwim {
+  0% {
+    transform: translate(0, 0) scaleX(1);
+  }
+  48% {
+    transform: translate(35px, -6px) scaleX(1);
+  }
+  50% {
+    transform: translate(35px, -6px) scaleX(-1);
+  }
+  98% {
+    transform: translate(0, 0) scaleX(-1);
+  }
+  100% {
+    transform: translate(0, 0) scaleX(1);
+  }
+}
+
+.animate-duck-swim {
+  animation: duckSwim 14s ease-in-out infinite;
+}
+
+/* 生き物のぴょこぴょこホップ */
+@keyframes creatureHop {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px) rotate(4deg);
+  }
+}
+
+.animate-creature-hop {
+  animation: creatureHop 2.4s ease-in-out infinite;
+}
+
+/* ポップイン出現演出 */
+@keyframes popIn {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-pop-in {
+  animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* 水面のきらめき */
+@keyframes waterShimmer {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.1);
+  }
+}
+
+.animate-water-shimmer {
+  animation: waterShimmer 3s ease-in-out infinite;
+}

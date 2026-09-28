@@ -277,6 +277,59 @@ class SoundEffectManager {
       t += note.d * 0.9;
     });
   }
+  // 11. 建築・開拓タスク完了音（トンカン！木工の心地よいハンマー音）
+  public playBuild() {
+    if (this.isMuted) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    // 2連打の軽快な木槌音
+    [0, 0.09].forEach((delay, idx) => {
+      if (!this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(idx === 0 ? 580 : 880, this.ctx.currentTime + delay);
+      osc.frequency.exponentialRampToValueAtTime(180, this.ctx.currentTime + delay + 0.08);
+
+      gain.gain.setValueAtTime(0.2, this.ctx.currentTime + delay);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + delay + 0.08);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(this.ctx.currentTime + delay);
+      osc.stop(this.ctx.currentTime + delay + 0.08);
+    });
+  }
+
+  // 12. 霧晴らし音（シュワ〜〜✨ 神秘的な光の広がり）
+  public playFogClear() {
+    if (this.isMuted) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    // きらめくアルペジオ (C-E-G-B-C)
+    const notes = [523.25, 659.25, 783.99, 987.77, 1046.50];
+    notes.forEach((freq, idx) => {
+      if (!this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.08);
+
+      gain.gain.setValueAtTime(0.12, this.ctx.currentTime + idx * 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.08 + 0.35);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(this.ctx.currentTime + idx * 0.08);
+      osc.stop(this.ctx.currentTime + idx * 0.08 + 0.35);
+    });
+  }
 }
 
 export const sounds = new SoundEffectManager();
