@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { FrontierArea, Creature } from '../../types';
 import { DevStageSelector } from '../common/DevStageSelector';
+import { CreatureBadgeModal } from '../common/CreatureBadgeModal';
 import { sounds } from '../../utils/soundEffects';
 import {
   Lock,
@@ -16,6 +17,7 @@ import {
   VolumeX,
   AlertTriangle,
   Sparkles,
+  BookOpen,
 } from 'lucide-react';
 
 interface FrontierMapProps {
@@ -23,6 +25,8 @@ interface FrontierMapProps {
   woodPoints: number;
   badgesCount: number;
   creaturesCount: number;
+  badges?: string[];
+  unlockedCreatures?: string[];
   onStartPuzzle: (stageId: number) => void;
   onCompleteTask: (areaId: string, taskId: string, cost: number) => void;
   onCompleteArea: (area: FrontierArea) => void;
@@ -39,6 +43,8 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
   woodPoints,
   badgesCount,
   creaturesCount,
+  badges = [],
+  unlockedCreatures = [],
   onStartPuzzle,
   onCompleteTask,
   onCompleteArea,
@@ -54,6 +60,7 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
   const [selectedCreature, setSelectedCreature] = useState<Creature | null>(null);
   const [creatureReaction, setCreatureReaction] = useState<string | null>(null);
   const [beaverDialogue, setBeaverDialogue] = useState<string | null>(null);
+  const [isBookModalOpen, setIsBookModalOpen] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState(sounds.getMuted());
 
   const mapScrollRef = useRef<HTMLDivElement>(null);
@@ -181,17 +188,32 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
               <span className="text-amber-300 font-mono text-sm">{woodPoints}</span>
             </div>
 
-            {/* バッジ数 */}
-            <div className="flex items-center space-x-1 bg-purple-950/40 border border-purple-500/30 px-2 py-1 rounded-xl">
+            {/* バッジ＆生き物図鑑ボタン */}
+            <button
+              onClick={() => setIsBookModalOpen(true)}
+              className="flex items-center space-x-1 bg-purple-950/50 hover:bg-purple-900/60 border border-purple-500/40 hover:border-purple-400 px-2 py-1 rounded-xl cursor-pointer active:scale-95 transition-all shadow-xs"
+              title="開拓バッジ一覧を見る"
+            >
               <span className="text-xs">🏅</span>
               <span className="text-purple-300 font-mono text-xs">{badgesCount}</span>
-            </div>
+            </button>
 
-            {/* 生き物数 */}
-            <div className="flex items-center space-x-1 bg-emerald-950/40 border border-emerald-500/30 px-2 py-1 rounded-xl">
-              <span className="text-xs">🦆</span>
+            <button
+              onClick={() => setIsBookModalOpen(true)}
+              className="flex items-center space-x-1 bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-500/40 hover:border-emerald-400 px-2 py-1 rounded-xl cursor-pointer active:scale-95 transition-all shadow-xs"
+              title="生き物図鑑を見る"
+            >
+              <span className="text-xs">🐾</span>
               <span className="text-emerald-300 font-mono text-xs">{creaturesCount}</span>
-            </div>
+            </button>
+
+            <button
+              onClick={() => setIsBookModalOpen(true)}
+              className="flex items-center space-x-1 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 hover:from-emerald-500/30 hover:to-teal-500/30 border border-emerald-400/50 text-emerald-300 px-2 py-1 rounded-xl text-[10px] font-black cursor-pointer active:scale-95 transition-all shadow-xs"
+            >
+              <BookOpen className="w-3 h-3" />
+              <span>図鑑</span>
+            </button>
           </div>
 
           {/* ビュー切り替え */}
@@ -349,7 +371,7 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                           ) : (
                             <>
                               <Hammer className="w-2.5 h-2.5 text-amber-400" />
-                              <span>{area.name} (修復中)</span>
+                              <span>{area.name} ({completedTasksCount}/5)</span>
                             </>
                           )}
                         </span>
@@ -698,6 +720,23 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
           <span>パズルで木材を集める！ 🪵</span>
         </button>
       </footer>
+      {/* 生き物図鑑＆開拓バッジモーダル */}
+      {isBookModalOpen && (
+        <CreatureBadgeModal
+          areas={areas}
+          badges={badges}
+          unlockedCreatures={unlockedCreatures}
+          woodPoints={woodPoints}
+          currentStageId={currentStageId}
+          onClose={() => setIsBookModalOpen(false)}
+          onNavigateToArea={(areaId) => {
+            setIsBookModalOpen(false);
+            if (onNavigateToAreaDetail) {
+              onNavigateToAreaDetail(areaId);
+            }
+          }}
+        />
+      )}
     </div>
   );
 };

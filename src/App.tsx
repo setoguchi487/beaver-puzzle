@@ -169,6 +169,8 @@ export const App: React.FC = () => {
           woodPoints={woodPoints}
           badgesCount={badges.length}
           creaturesCount={unlockedCreatures.length}
+          badges={badges}
+          unlockedCreatures={unlockedCreatures}
           currentStageId={currentStageId}
           onStartPuzzle={(stageId) => {
             setCurrentStageId(stageId);
