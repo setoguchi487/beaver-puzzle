@@ -80,6 +80,9 @@ export interface FrontierArea {
   bgGradient: string;
   mapCoords: { x: number; y: number }; // マップ上の相対座標 (0-100%)
   visualKey?: string;
+  ruinedName: string; // 荒廃時のエリア名
+  ruinedIcon: string; // 荒廃時のアイコン
+  ruinedDescription: string; // 荒廃時の説明
 }
 
 export interface GameState {

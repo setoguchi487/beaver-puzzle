@@ -251,6 +251,9 @@ export const STAGES = generate100Stages();
 export const INITIAL_AREAS: FrontierArea[] = [
   {
     id: 'stream_entry',
+    ruinedName: '濁ったガレキの浅瀬',
+    ruinedIcon: '🥀🗑️',
+    ruinedDescription: '流木と泥で川が詰まり、魚や鳥が寄り付かなくなっています。',
     mapCoords: { x: 42, y: 88 },
     name: 'はじまりのせせらぎ',
     icon: '🌱',
@@ -280,6 +283,9 @@ export const INITIAL_AREAS: FrontierArea[] = [
   },
   {
     id: 'small_dam',
+    ruinedName: '決壊した小枝ダム',
+    ruinedIcon: '💥🪵',
+    ruinedDescription: '増水で土手が崩れてしまい、激しい濁流が溢れ出しています。',
     mapCoords: { x: 46, y: 74 },
     name: '小枝ダムの浅瀬',
     icon: '🪵',
@@ -309,6 +315,9 @@ export const INITIAL_AREAS: FrontierArea[] = [
   },
   {
     id: 'beaver_lodge',
+    ruinedName: '雨ざらしの荒れ地',
+    ruinedIcon: '🥀🍂',
+    ruinedDescription: '枯れ草が茂り、住む場所のないビーバーが困っています。',
     mapCoords: { x: 74, y: 77 },
     name: '木漏れ日のロッジ',
     icon: '🏡',
@@ -339,6 +348,9 @@ export const INITIAL_AREAS: FrontierArea[] = [
   },
   {
     id: 'fishing_pier',
+    ruinedName: '折れた杭と崩れた水辺',
+    ruinedIcon: '🥀🪵',
+    ruinedDescription: '足場が流され、川辺に近寄ることができません。',
     mapCoords: { x: 62, y: 57 },
     name: '釣りテラス＆桟橋',
     icon: '🎣',
@@ -369,6 +381,9 @@ export const INITIAL_AREAS: FrontierArea[] = [
   },
   {
     id: 'watermill_zone',
+    ruinedName: '壊れて傾いた水車小屋',
+    ruinedIcon: '🏚️⚙️',
+    ruinedDescription: '巨大な歯車が錆び付いて外れ、小屋がツタに覆われています。',
     mapCoords: { x: 64, y: 49 },
     name: '古い水車小屋',
     icon: '⚙️',
@@ -399,6 +414,9 @@ export const INITIAL_AREAS: FrontierArea[] = [
   },
   {
     id: 'flower_garden',
+    ruinedName: 'トゲだらけの荒れ野',
+    ruinedIcon: '🥀🪨',
+    ruinedDescription: '花は枯れ果て、動物たちのエサになる木の実もありません。',
     mapCoords: { x: 20, y: 42 },
     name: 'ホタルの花園',
     icon: '🌸',
@@ -429,6 +447,9 @@ export const INITIAL_AREAS: FrontierArea[] = [
   },
   {
     id: 'emerald_lake',
+    ruinedName: '荒れ狂う険しい激流',
+    ruinedIcon: '⚡🏔️',
+    ruinedDescription: '岩が崩れ落ち、大自然の調和が乱れて近づけなくなっています。',
     mapCoords: { x: 48, y: 20 },
     name: 'ビーバーの桃源郷',
     icon: '👑',
