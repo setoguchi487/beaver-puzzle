@@ -317,7 +317,15 @@ export const INITIAL_AREAS: FrontierArea[] = [
       description: "ダムで穏やかになった清流をピチピチ跳ねる元気な魚。",
       comment: "「水が透き通って魚が戻ってきたね！」",
     },
-        tasks: [
+        detailImages: [
+      "/assets/dam_stage_0.jpg",
+      "/assets/dam_stage_1.jpg",
+      "/assets/dam_stage_2.jpg",
+      "/assets/dam_stage_3.jpg",
+      "/assets/dam_stage_4.jpg",
+      "/assets/dam_stage_5.jpg",
+    ],
+    tasks: [
       { id: "task_dam_1", title: "決壊した泥と土砂を除去", woodCost: 30, isCompleted: false, icon: "🧹", visualLabel: "川底が整う" },
       { id: "task_dam_2", title: "頑丈な基礎杭を川底に打ち込む", woodCost: 40, isCompleted: false, icon: "🪨", visualLabel: "土台が安定する" },
       { id: "task_dam_3", title: "小枝を集めて網状に編み込む", woodCost: 50, isCompleted: false, icon: "🌿", visualLabel: "ダムの骨組みができる" },
@@ -352,7 +360,15 @@ export const INITIAL_AREAS: FrontierArea[] = [
       description: "ロッジの周りの木の実をほっぺいっぱいに詰め込む食いしん坊。",
       comment: "「どんぐりをいっぱい抱えて遊びに来たよ！」",
     },
-        tasks: [
+        detailImages: [
+      "/assets/lodge_stage_0.jpg",
+      "/assets/lodge_stage_1.jpg",
+      "/assets/lodge_stage_2.jpg",
+      "/assets/lodge_stage_3.jpg",
+      "/assets/lodge_stage_4.jpg",
+      "/assets/lodge_stage_5.jpg",
+    ],
+    tasks: [
       { id: "task_lodge_1", title: "雑草と枯れ枝の刈り払い", woodCost: 40, isCompleted: false, icon: "🌾", visualLabel: "敷地が広がる" },
       { id: "task_lodge_2", title: "ロッジの頑丈な土台と柱を組む", woodCost: 50, isCompleted: false, icon: "🪵", visualLabel: "骨組みが建つ" },
       { id: "task_lodge_3", title: "草と小枝のふかふかベッド作り", woodCost: 60, isCompleted: false, icon: "🛏️", visualLabel: "温かい寝床ができる" },
@@ -387,7 +403,15 @@ export const INITIAL_AREAS: FrontierArea[] = [
       description: "桟橋の杭にとまり、水面を狙う鮮やかな青い鳥。",
       comment: "「青い宝石みたいに綺麗な鳥が遊びに来た！」",
     },
-        tasks: [
+        detailImages: [
+      "/assets/pier_stage_0.jpg",
+      "/assets/pier_stage_1.jpg",
+      "/assets/pier_stage_2.jpg",
+      "/assets/pier_stage_3.jpg",
+      "/assets/pier_stage_4.jpg",
+      "/assets/pier_stage_5.jpg",
+    ],
+    tasks: [
       { id: "task_pier_1", title: "流された折れ杭を抜き取る", woodCost: 50, isCompleted: false, icon: "🪓", visualLabel: "水際が安全になる" },
       { id: "task_pier_2", title: "松の丸太で新しい桟橋の杭を打つ", woodCost: 60, isCompleted: false, icon: "🪵", visualLabel: "水面に足場が伸びる" },
       { id: "task_pier_3", title: "滑りにくいスノコ板を敷き詰める", woodCost: 70, isCompleted: false, icon: "🪜", visualLabel: "快適な歩行テラス" },
@@ -422,7 +446,15 @@ export const INITIAL_AREAS: FrontierArea[] = [
       description: "水車の三角屋根に止まって、ふたりの努力を静かに見守る。",
       comment: "「夜になると目をパチクリさせて可愛い〜」",
     },
-        tasks: [
+        detailImages: [
+      "/assets/mill_stage_0.jpg",
+      "/assets/mill_stage_1.jpg",
+      "/assets/mill_stage_2.jpg",
+      "/assets/mill_stage_3.jpg",
+      "/assets/mill_stage_4.jpg",
+      "/assets/mill_stage_5.jpg",
+    ],
+    tasks: [
       { id: "task_mill_1", title: "水車に絡みついたツタを刈り取る", woodCost: 60, isCompleted: false, icon: "🌿", visualLabel: "車輪が露出する" },
       { id: "task_mill_2", title: "巨大な木製大歯車を修復する", woodCost: 75, isCompleted: false, icon: "⚙️", visualLabel: "歯車が噛み合う" },
       { id: "task_mill_3", title: "水流を導く木樋（とい）を架け直す", woodCost: 85, isCompleted: false, icon: "🌊", visualLabel: "水車がコトコト回転開始" },
@@ -457,7 +489,15 @@ export const INITIAL_AREAS: FrontierArea[] = [
       description: "花の香りと澄んだ水に誘われてやってきた好奇心旺盛なシカ。",
       comment: "「大きな角が立派！ふたりの川が本物の森になったね」",
     },
-        tasks: [
+        detailImages: [
+      "/assets/garden_stage_0.jpg",
+      "/assets/garden_stage_1.jpg",
+      "/assets/garden_stage_2.jpg",
+      "/assets/garden_stage_3.jpg",
+      "/assets/garden_stage_4.jpg",
+      "/assets/garden_stage_5.jpg",
+    ],
+    tasks: [
       { id: "task_garden_1", title: "尖った岩やトゲ植物を除去する", woodCost: 70, isCompleted: false, icon: "🪨", visualLabel: "柔らかな土が現れる" },
       { id: "task_garden_2", title: "腐葉土を漉き込んで花壇を耕す", woodCost: 80, isCompleted: false, icon: "🌱", visualLabel: "豊かな土壌ができる" },
       { id: "task_garden_3", title: "色とりどりの野花の種を蒔く", woodCost: 95, isCompleted: false, icon: "🌸", visualLabel: "一面の花畑が芽吹く" },
@@ -492,7 +532,15 @@ export const INITIAL_AREAS: FrontierArea[] = [
       description: "川でどんぐりや魚を丁寧に洗って食べる可愛い食いしん坊。",
       comment: "「両手でゴシゴシ洗う仕草がたまらなく可愛い！」",
     },
-        tasks: [
+        detailImages: [
+      "/assets/camp_stage_0.jpg",
+      "/assets/camp_stage_1.jpg",
+      "/assets/camp_stage_2.jpg",
+      "/assets/camp_stage_3.jpg",
+      "/assets/camp_stage_4.jpg",
+      "/assets/camp_stage_5.jpg",
+    ],
+    tasks: [
       { id: "task_camp_1", title: "ぬかるんだ泥水を排水する", woodCost: 80, isCompleted: false, icon: "🧹", visualLabel: "乾いた地面ができる" },
       { id: "task_camp_2", title: "腐った倒木を撤去し薪を割る", woodCost: 95, isCompleted: false, icon: "🪓", visualLabel: "キャンプ薪の山" },
       { id: "task_camp_3", title: "川石を丸く組んで安全な焚き火台を作る", woodCost: 110, isCompleted: false, icon: "🔥", visualLabel: "パチパチ燃える焚き火" },
@@ -527,7 +575,15 @@ export const INITIAL_AREAS: FrontierArea[] = [
       description: "木くずの温かいベッドに潜り込んで丸くなる恥ずかしがり屋。",
       comment: "「おがくずの中に隠れてコロンと寝てるよ〜」",
     },
-        tasks: [
+        detailImages: [
+      "/assets/workshop_stage_0.jpg",
+      "/assets/workshop_stage_1.jpg",
+      "/assets/workshop_stage_2.jpg",
+      "/assets/workshop_stage_3.jpg",
+      "/assets/workshop_stage_4.jpg",
+      "/assets/workshop_stage_5.jpg",
+    ],
+    tasks: [
       { id: "task_shop_1", title: "錆びた古い金物を片付ける", woodCost: 90, isCompleted: false, icon: "🧹", visualLabel: "安全な床スペース" },
       { id: "task_shop_2", title: "巨大な樫の木で頑丈な作業台を組む", woodCost: 110, isCompleted: false, icon: "🪵", visualLabel: "職人の木工作業台" },
       { id: "task_shop_3", title: "丸太切り用の大きなノコギリ台を設置", woodCost: 125, isCompleted: false, icon: "🪚", visualLabel: "正確な木材加工が可能" },
@@ -562,7 +618,15 @@ export const INITIAL_AREAS: FrontierArea[] = [
       description: "太鼓橋の手すりに座って、川のせせらぎを眺める温泉好きサル。",
       comment: "「橋の上から手招きして仲間を呼んでるよ！」",
     },
-        tasks: [
+        detailImages: [
+      "/assets/bridge_stage_0.jpg",
+      "/assets/bridge_stage_1.jpg",
+      "/assets/bridge_stage_2.jpg",
+      "/assets/bridge_stage_3.jpg",
+      "/assets/bridge_stage_4.jpg",
+      "/assets/bridge_stage_5.jpg",
+    ],
+    tasks: [
       { id: "task_bridge_1", title: "崩落した旧橋の破片を回収する", woodCost: 100, isCompleted: false, icon: "🪨", visualLabel: "渓谷が綺麗になる" },
       { id: "task_bridge_2", title: "両岸の岩盤に巨大な基礎杭を固定", woodCost: 120, isCompleted: false, icon: "🪵", visualLabel: "頑丈な橋の土台" },
       { id: "task_bridge_3", title: "アーチ状の美しい太鼓梁を渡す", woodCost: 140, isCompleted: false, icon: "🌉", visualLabel: "太鼓橋の骨組み完成" },
@@ -597,7 +661,15 @@ export const INITIAL_AREAS: FrontierArea[] = [
       description: "透き通るエメラルドの泉に舞い降りた、純白の美しい水鳥。",
       comment: "「羽を広げて優雅に水面を滑る姿が神秘的…！」",
     },
-        tasks: [
+        detailImages: [
+      "/assets/spring_stage_0.jpg",
+      "/assets/spring_stage_1.jpg",
+      "/assets/spring_stage_2.jpg",
+      "/assets/spring_stage_3.jpg",
+      "/assets/spring_stage_4.jpg",
+      "/assets/spring_stage_5.jpg",
+    ],
+    tasks: [
       { id: "task_spring_1", title: "沼を覆うヘドロと藻をすくい出す", woodCost: 110, isCompleted: false, icon: "🧹", visualLabel: "水底が見え始める" },
       { id: "task_spring_2", title: "天然の水晶石と白砂を敷き詰める", woodCost: 130, isCompleted: false, icon: "💎", visualLabel: "エメラルドグリーンに輝く" },
       { id: "task_spring_3", title: "竹と丸太で清らかな湧水路を組む", woodCost: 155, isCompleted: false, icon: "🎋", visualLabel: "サラサラと湧水が注ぐ" },
@@ -632,7 +704,15 @@ export const INITIAL_AREAS: FrontierArea[] = [
       description: "完熟ベリーの甘い匂いに引き寄せられてやってきたのんびり屋。",
       comment: "「ベリーをお口いっぱいに頬張って満足そう〜」",
     },
-        tasks: [
+        detailImages: [
+      "/assets/orchard_stage_0.jpg",
+      "/assets/orchard_stage_1.jpg",
+      "/assets/orchard_stage_2.jpg",
+      "/assets/orchard_stage_3.jpg",
+      "/assets/orchard_stage_4.jpg",
+      "/assets/orchard_stage_5.jpg",
+    ],
+    tasks: [
       { id: "task_berry_1", title: "害虫にやられた枯れ枝を剪定する", woodCost: 125, isCompleted: false, icon: "✂️", visualLabel: "日当たりが良くなる" },
       { id: "task_berry_2", title: "有機肥料を混ぜて果樹園を耕す", woodCost: 145, isCompleted: false, icon: "🌱", visualLabel: "豊かな黒土になる" },
       { id: "task_berry_3", title: "ブルーベリーと木いちごの苗を植樹", woodCost: 170, isCompleted: false, icon: "🍓", visualLabel: "赤い実がたわわに実る" },
@@ -667,7 +747,15 @@ export const INITIAL_AREAS: FrontierArea[] = [
       description: "滝壺の断崖に巣を作り、空高く旋回する誇り高い猛禽類。",
       comment: "「大きな翼で大滝の上空を舞う姿が勇ましい！」",
     },
-        tasks: [
+        detailImages: [
+      "/assets/waterfall_stage_0.jpg",
+      "/assets/waterfall_stage_1.jpg",
+      "/assets/waterfall_stage_2.jpg",
+      "/assets/waterfall_stage_3.jpg",
+      "/assets/waterfall_stage_4.jpg",
+      "/assets/waterfall_stage_5.jpg",
+    ],
+    tasks: [
       { id: "task_fall_1", title: "滝壺を塞いでいた巨岩を撤去する", woodCost: 140, isCompleted: false, icon: "💥", visualLabel: "轟音とともに水が落下" },
       { id: "task_fall_2", title: "激しい水しぶきを抑える消波ブロック組み", woodCost: 165, isCompleted: false, icon: "🪨", visualLabel: "安全な滝壺プール" },
       { id: "task_fall_3", title: "断崖に沿って登る木製ジグザグ階段", woodCost: 190, isCompleted: false, icon: "🪜", visualLabel: "滝上へのアクセス路" },
@@ -702,7 +790,15 @@ export const INITIAL_AREAS: FrontierArea[] = [
       description: "星明かりの中を木から木へと滑空する、大きな黒目の森の妖精。",
       comment: "「手足を広げてふわ〜っと飛ぶ姿が最高にキュート！」",
     },
-        tasks: [
+        detailImages: [
+      "/assets/stargaze_stage_0.jpg",
+      "/assets/stargaze_stage_1.jpg",
+      "/assets/stargaze_stage_2.jpg",
+      "/assets/stargaze_stage_3.jpg",
+      "/assets/stargaze_stage_4.jpg",
+      "/assets/stargaze_stage_5.jpg",
+    ],
+    tasks: [
       { id: "task_stars_1", title: "落雷で焦げた大木を整地する", woodCost: 155, isCompleted: false, icon: "🪓", visualLabel: "広い見晴らしスペース" },
       { id: "task_stars_2", title: "高さ6mの巨大な丸太櫓を立ち上げる", woodCost: 185, isCompleted: false, icon: "🪵", visualLabel: "空に近づく大やぐら" },
       { id: "task_stars_3", title: "360度パノラマの星見ウッドデッキ", woodCost: 215, isCompleted: false, icon: "✨", visualLabel: "夜空を一望できる床" },
@@ -737,7 +833,15 @@ export const INITIAL_AREAS: FrontierArea[] = [
       description: "神木の根元に静かに座り、澄んだ瞳でふたりを見つめる神秘的なキツネ。",
       comment: "「ふさふさの尻尾を揺らして、何かお話ししてくれそう」",
     },
-        tasks: [
+        detailImages: [
+      "/assets/sacred_stage_0.jpg",
+      "/assets/sacred_stage_1.jpg",
+      "/assets/sacred_stage_2.jpg",
+      "/assets/sacred_stage_3.jpg",
+      "/assets/sacred_stage_4.jpg",
+      "/assets/sacred_stage_5.jpg",
+    ],
+    tasks: [
       { id: "task_sacred_1", title: "神木の根元の雑草とゴミを清掃", woodCost: 170, isCompleted: false, icon: "🧹", visualLabel: "厳かな空間ができる" },
       { id: "task_sacred_2", title: "根元に清らかな湧き水を注ぎ込む", woodCost: 205, isCompleted: false, icon: "💧", visualLabel: "千年杉に若葉が萌える" },
       { id: "task_sacred_3", title: "藁を編み上げた巨大なしめ縄を巻く", woodCost: 240, isCompleted: false, icon: "⛩️", visualLabel: "神聖な御神木の威厳" },
@@ -772,7 +876,15 @@ export const INITIAL_AREAS: FrontierArea[] = [
       description: "大自然の主。川辺でサケ獲りに挑戦する心優しいお父さんグマ。",
       comment: "「大迫力だけどすっごく温厚！ふたりのダムの守り神だね」",
     },
-        tasks: [
+        detailImages: [
+      "/assets/paradise_stage_0.jpg",
+      "/assets/paradise_stage_1.jpg",
+      "/assets/paradise_stage_2.jpg",
+      "/assets/paradise_stage_3.jpg",
+      "/assets/paradise_stage_4.jpg",
+      "/assets/paradise_stage_5.jpg",
+    ],
+    tasks: [
       { id: "task_lake_1", title: "激流の岩壁を削り巨大な基礎を固める", woodCost: 190, isCompleted: false, icon: "🪨", visualLabel: "要塞ダムの巨大基礎" },
       { id: "task_lake_2", title: "何百本もの大丸太を組む要塞大堰堤", woodCost: 230, isCompleted: false, icon: "🪵", visualLabel: "大要塞グランドダム" },
       { id: "task_lake_3", title: "満水の湖を渡るふたりの木製跳ね橋", woodCost: 275, isCompleted: false, icon: "🌉", visualLabel: "桃源郷への最後の架け橋" },

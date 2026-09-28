@@ -268,6 +268,7 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
         <img
           src={baseImage}
           alt={area.name}
+          onError={(e) => { e.currentTarget.src = isAllCompleted ? "/assets/watermill.jpg" : "/assets/river_map.jpg"; }}
           className="absolute inset-0 w-full h-full object-cover"
         />
 
@@ -277,6 +278,7 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
             key={rippleImage}
             src={rippleImage}
             alt={area.name}
+            onError={(e) => { e.currentTarget.src = isAllCompleted ? "/assets/watermill.jpg" : "/assets/river_map.jpg"; }}
             className="absolute inset-0 w-full h-full object-cover animate-circle-ripple z-10"
           />
         )}
