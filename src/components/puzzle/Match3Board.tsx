@@ -54,6 +54,17 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
   const [gameResult, setGameResult] = useState<'playing' | 'cleared' | 'failed'>('playing');
   const [comboToast, setComboToast] = useState<string | null>(null);
   const [isShuffling, setIsShuffling] = useState(false);
+
+  // 特殊ピースエフェクト用ステート
+  interface ActiveLaser {
+    id: number;
+    r?: number;
+    c?: number;
+    direction: 'h' | 'v';
+  }
+  const [activeLasers, setActiveLasers] = useState<ActiveLaser[]>([]);
+  const [rainbowTargets, setRainbowTargets] = useState<{ r: number; c: number }[]>([]);
+  const [isShaking, setIsShaking] = useState(false);
   const [isMuted, setIsMuted] = useState(sounds.getMuted());
   const [introDismissed, setIntroDismissed] = useState<boolean>(!stage.newGimmickIntro);
 
@@ -499,6 +510,15 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     const rocketDetonations = matches.filter(({ r, c }) => b[r][c].special === 'rocket_h' || b[r][c].special === 'rocket_v');
     if (rocketDetonations.length > 0) {
       sounds.playRocket();
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 260);
+      const detLasers: ActiveLaser[] = rocketDetonations.map((d, i) => ({
+        id: Date.now() + i,
+        r: d.r,
+        direction: 'h' as const,
+      }));
+      setActiveLasers(detLasers);
+      setTimeout(() => setActiveLasers([]), 360);
       rocketDetonations.forEach(({ r }) => {
         for (let col = 0; col < BOARD_SIZE; col++) {
           const t = newBoard[r][col];
@@ -564,6 +584,18 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
   // ロケット起爆（横または十字にビームを発射して全消去）
   const executeRocketClear = async (b: Tile[][], hitR: number, hitC: number, isCross: boolean = false) => {
     sounds.playRocket();
+
+    // 画面シェイク
+    setIsShaking(true);
+    setTimeout(() => setIsShaking(false), 260);
+
+    // レーザー閃光ビーム
+    const lasers: ActiveLaser[] = [{ id: Date.now(), r: hitR, direction: 'h' }];
+    if (isCross) {
+      lasers.push({ id: Date.now() + 1, c: hitC, direction: 'v' });
+    }
+    setActiveLasers(lasers);
+    setTimeout(() => setActiveLasers([]), 360);
     const collectedCounts: { [key: string]: number } = {};
     const newBoard: Tile[][] = b.map((row) => row.map((tile) => ({ ...tile })));
 
@@ -617,6 +649,30 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
   // レインボー起爆（同色全消し、または全盤面消去）
   const executeRainbowClear = async (b: Tile[][], targetType: PieceType | 'ALL') => {
     sounds.playRainbow();
+
+    // 該当マスの虹色オーラ発光
+    const highlighted: { r: number; c: number }[] = [];
+    b.forEach((row, r) => {
+      row.forEach((t, c) => {
+        if (targetType === 'ALL' || t.type === targetType || t.special === 'rainbow') {
+          highlighted.push({ r, c });
+        }
+      });
+    });
+    setRainbowTargets(highlighted);
+    setTimeout(() => setRainbowTargets([]), 480);
+
+    // キラキラスパークルシャワー
+    try {
+      confetti({
+        particleCount: 40,
+        spread: 70,
+        origin: { y: 0.55 },
+        colors: ['#38bdf8', '#fbbf24', '#f43f5e', '#a855f7', '#34d399', '#ffffff'],
+        shapes: ['circle', 'star'],
+        scalar: 0.9,
+      });
+    } catch {}
     const collectedCounts: { [key: string]: number } = {};
     const newBoard: Tile[][] = b.map((row) =>
       row.map((tile) => {
@@ -809,13 +865,52 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
       )}
 
       {/* パズル盤面 (7x7) */}
-      <div className="relative p-2.5 bg-slate-900/90 rounded-3xl border-2 border-slate-800 shadow-2xl backdrop-blur-md touch-none">
+      <div className={`relative p-2.5 bg-slate-900/90 rounded-3xl border-2 border-slate-800 shadow-2xl backdrop-blur-md touch-none ${isShaking ? "animate-board-shake" : ""}`}>
+        {/* レーザー光線オーバーレイ */}
+        {activeLasers.map((laser) => {
+          if (laser.direction === "h" && laser.r !== undefined) {
+            const topPercent = ((laser.r + 0.5) / BOARD_SIZE) * 100;
+            return (
+              <div
+                key={`laser-${laser.id}`}
+                style={{ top: `${topPercent}%` }}
+                className="absolute left-1 right-1 -translate-y-1/2 h-5 bg-gradient-to-r from-amber-500 via-yellow-200 to-amber-500 rounded-full blur-[1px] shadow-[0_0_24px_rgba(251,191,36,0.95)] animate-laser-h z-30 pointer-events-none"
+              >
+                <div className="w-full h-full bg-white/90 rounded-full blur-[0.5px]" />
+              </div>
+            );
+          }
+          if (laser.direction === "v" && laser.c !== undefined) {
+            const leftPercent = ((laser.c + 0.5) / BOARD_SIZE) * 100;
+            return (
+              <div
+                key={`laser-${laser.id}`}
+                style={{ left: `${leftPercent}%` }}
+                className="absolute top-1 bottom-1 -translate-x-1/2 w-5 bg-gradient-to-b from-amber-500 via-yellow-200 to-amber-500 rounded-full blur-[1px] shadow-[0_0_24px_rgba(251,191,36,0.95)] animate-laser-v z-30 pointer-events-none"
+              >
+                <div className="w-full h-full bg-white/90 rounded-full blur-[0.5px]" />
+              </div>
+            );
+          }
+          return null;
+        })}
         <div className="grid grid-cols-7 gap-1.5">
           {board.map((row, r) =>
             row.map((tile, c) => {
               const isSelected = selectedPos?.r === r && selectedPos?.c === c;
               const config = PIECE_CONFIG[tile.type] || PIECE_CONFIG.wood;
               const gimmick = tile.gimmick;
+              const isRocket = tile.special === 'rocket_h' || tile.special === 'rocket_v';
+              const isRainbowGlow = rainbowTargets.some((rt) => rt.r === r && rt.c === c);
+
+              // ロケットの色分け装飾
+              const rocketTheme = {
+                wood: { ring: 'ring-amber-500/70 bg-amber-950/50', icon: '🪵', label: '丸太ロケット' },
+                water: { ring: 'ring-cyan-400/70 bg-cyan-950/50', icon: '💧', label: '水流ロケット' },
+                twig: { ring: 'ring-emerald-400/70 bg-emerald-950/50', icon: '🌿', label: '若葉ロケット' },
+                acorn: { ring: 'ring-orange-400/70 bg-orange-950/50', icon: '🌰', label: 'どんぐりロケット' },
+                stone: { ring: 'ring-slate-400/70 bg-slate-850/50', icon: '🪨', label: '岩石ロケット' },
+              }[tile.type] || { ring: 'ring-amber-500/70 bg-amber-950/50', icon: '🪵', label: 'ロケット' };
 
               return (
                 <div
@@ -827,6 +922,10 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
                   className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-2xl font-bold cursor-pointer transition-all duration-150 transform active:scale-95 relative overflow-hidden ${
                     isSelected
                       ? 'bg-amber-400/40 ring-4 ring-amber-400 scale-105 z-10'
+                      : isRainbowGlow
+                      ? 'animate-rainbow-glow ring-2 ring-purple-400 bg-purple-950/60 z-20'
+                      : isRocket
+                      ? `ring-2 ${rocketTheme.ring} shadow-lg shadow-amber-500/20`
                       : gimmick?.type === 'rock'
                       ? 'bg-slate-800 border-2 border-slate-600 shadow-inner'
                       : 'bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 shadow-inner'
@@ -836,9 +935,16 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
                   {gimmick?.type === 'rock' ? (
                     <span className="text-2xl drop-shadow-md">🪨</span>
                   ) : tile.special === 'rainbow' ? (
-                    <span className="animate-spin-slow">🌈</span>
-                  ) : tile.special === 'rocket_h' ? (
-                    <span>🚀</span>
+                    <div className="relative flex items-center justify-center">
+                      <span className="animate-spin-slow text-2xl filter drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">🌈</span>
+                    </div>
+                  ) : isRocket ? (
+                    <div className="relative flex items-center justify-center w-full h-full">
+                      <span className="text-2xl filter drop-shadow-md animate-pulse-slow">🚀</span>
+                      <span className="absolute bottom-0 right-0 text-[10px] bg-slate-950/90 border border-slate-700/80 rounded-full px-0.5 py-0 shadow-xs leading-none">
+                        {rocketTheme.icon}
+                      </span>
+                    </div>
                   ) : (
                     <span className="drop-shadow-sm select-none">{config.icon}</span>
                   )}

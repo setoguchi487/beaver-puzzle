@@ -416,3 +416,85 @@ body {
 .animate-golden-shine {
   animation: goldenShine 2.5s ease-in-out infinite;
 }
+
+/* ==========================================================================
+   パズル特殊ピース演出 (ロケットレーザー・虹発光・画面シェイク)
+   ========================================================================== */
+
+/* 盤面シェイク（ロケットや爆発のインパクト） */
+@keyframes boardShake {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(-3px, 2px); }
+  40% { transform: translate(3px, -2px); }
+  60% { transform: translate(-2px, -2px); }
+  80% { transform: translate(2px, 1px); }
+}
+
+.animate-board-shake {
+  animation: boardShake 0.25s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* ロケット横レーザー閃光 */
+@keyframes laserBeamH {
+  0% {
+    transform: scaleX(0.05) scaleY(2.2);
+    opacity: 0.3;
+  }
+  30% {
+    transform: scaleX(1) scaleY(1.5);
+    opacity: 1;
+    filter: brightness(1.6);
+  }
+  100% {
+    transform: scaleX(1.05) scaleY(0.1);
+    opacity: 0;
+  }
+}
+
+.animate-laser-h {
+  animation: laserBeamH 0.35s ease-out forwards;
+}
+
+/* ロケット縦レーザー閃光 */
+@keyframes laserBeamV {
+  0% {
+    transform: scaleY(0.05) scaleX(2.2);
+    opacity: 0.3;
+  }
+  30% {
+    transform: scaleY(1) scaleX(1.5);
+    opacity: 1;
+    filter: brightness(1.6);
+  }
+  100% {
+    transform: scaleY(1.05) scaleX(0.1);
+    opacity: 0;
+  }
+}
+
+.animate-laser-v {
+  animation: laserBeamV 0.35s ease-out forwards;
+}
+
+/* 虹色オーラ発光 */
+@keyframes rainbowGlow {
+  0% {
+    filter: drop-shadow(0 0 12px rgba(244, 63, 94, 0.9)) hue-rotate(0deg);
+    transform: scale(0.95);
+    opacity: 0.5;
+  }
+  50% {
+    filter: drop-shadow(0 0 25px rgba(56, 189, 248, 1)) hue-rotate(180deg);
+    transform: scale(1.18);
+    opacity: 1;
+  }
+  100% {
+    filter: drop-shadow(0 0 15px rgba(251, 191, 36, 0.9)) hue-rotate(360deg);
+    transform: scale(1);
+    opacity: 0.8;
+  }
+}
+
+.animate-rainbow-glow {
+  animation: rainbowGlow 0.45s ease-in-out forwards;
+}
