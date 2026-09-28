@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import type { FrontierArea, Creature } from '../../types';
 import { DevStageSelector } from '../common/DevStageSelector';
 import { sounds } from '../../utils/soundEffects';
-import confetti from 'canvas-confetti';
 import {
   Lock,
   CheckCircle2,
@@ -82,34 +81,8 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
     }
   }, [viewMode]);
 
-  const triggerConfetti = () => {
-    confetti({
-      particleCount: 50,
-      spread: 60,
-      origin: { y: 0.6 },
-    });
-  };
-
-  const handleTaskClick = (area: FrontierArea, taskId: string, cost: number) => {
-    if (woodPoints < cost) return;
-
-    sounds.playBuild();
-    onCompleteTask(area.id, taskId, cost);
-
-    // 選択中エリアの状態も即時同期
-    if (selectedArea && selectedArea.id === area.id) {
-      setSelectedArea({
-        ...selectedArea,
-        tasks: selectedArea.tasks.map((t) => (t.id === taskId ? { ...t, isCompleted: true } : t)),
-      });
-    }
-
-    const remainingTasks = area.tasks.filter((t) => t.id !== taskId && !t.isCompleted);
-    if (remainingTasks.length === 0) {
-      onCompleteArea(area);
-      triggerConfetti();
-    }
-  };
+  void onCompleteTask;
+  void onCompleteArea;
 
   const handleCreatureTap = (c: Creature) => {
     setSelectedCreature(c);
@@ -512,194 +485,172 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
         </div>
       )}
 
-      {/* 3. エリア詳細 & 開拓ボトムシート（エリアタップ時に開く） */}
-      {selectedArea && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/80 backdrop-blur-xs animate-fade-in">
-          <div className="w-full max-w-md bg-slate-900 border-t-2 border-amber-500/80 rounded-t-3xl p-5 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar animate-pop-in">
-            {/* ヘッダー */}
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="flex items-center space-x-2.5">
-                <span className="text-3xl p-2 bg-slate-800 rounded-2xl border border-slate-700">
-                  {selectedArea.status === 'locked_fog'
-                    ? '🔒'
-                    : selectedArea.status === 'completed'
-                    ? selectedArea.icon
-                    : (selectedArea.ruinedIcon ? selectedArea.ruinedIcon.slice(0, 2) : '🥀')}
-                </span>
-                <div>
-                  <div className="flex items-center space-x-1.5">
-                    <span className="text-sm font-black text-white">
-                      {selectedArea.status === 'completed'
+      {/* 3. エリア詳細ボトムシート（エリアタップ時に開く） */}
+      {selectedArea && (() => {
+        const completedTasksCount = selectedArea.tasks.filter((t) => t.isCompleted).length;
+        const totalTasksCount = selectedArea.tasks.length || 5;
+        const isLocked = selectedArea.status === 'locked_fog';
+        const isCompleted = selectedArea.status === 'completed';
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/80 backdrop-blur-xs animate-fade-in">
+            <div className="w-full max-w-md bg-slate-900 border-t-2 border-amber-500/80 rounded-t-3xl p-5 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar animate-pop-in">
+              {/* ヘッダー */}
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div className="flex items-center space-x-3">
+                  <span className="text-3xl p-2.5 bg-slate-800 rounded-2xl border border-slate-700">
+                    {isLocked
+                      ? '🔒'
+                      : isCompleted
+                      ? selectedArea.icon
+                      : (selectedArea.ruinedIcon ? selectedArea.ruinedIcon.slice(0, 2) : '🥀')}
+                  </span>
+                  <div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-xs font-black text-amber-400">
+                        エリア {selectedArea.id}
+                      </span>
+                      {isCompleted ? (
+                        <span className="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold flex items-center space-x-0.5">
+                          <Sparkles className="w-2.5 h-2.5" />
+                          <span>復活完了 🏅</span>
+                        </span>
+                      ) : !isLocked ? (
+                        <span className="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold flex items-center space-x-0.5">
+                          <AlertTriangle className="w-2.5 h-2.5" />
+                          <span>荒廃中（要修復）</span>
+                        </span>
+                      ) : (
+                        <span className="text-[9px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full font-bold">
+                          雲に覆われています
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="text-base font-black text-white mt-0.5">
+                      {isCompleted
                         ? selectedArea.name
                         : (selectedArea.ruinedName || selectedArea.name)}
-                    </span>
-                    {selectedArea.status === 'completed' ? (
-                      <span className="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.5 rounded-full font-bold flex items-center space-x-0.5">
-                        <Sparkles className="w-2.5 h-2.5" />
-                        <span>復活完了 🏅</span>
-                      </span>
-                    ) : selectedArea.status === 'cleared_fog' ? (
-                      <span className="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded-full font-bold flex items-center space-x-0.5">
-                        <AlertTriangle className="w-2.5 h-2.5" />
-                        <span>荒廃中（要復旧）</span>
-                      </span>
-                    ) : (
-                      <span className="text-[9px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded-full font-bold">
-                        ふんわりとした雲の奥
-                      </span>
-                    )}
+                    </h3>
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-0.5">
-                    {selectedArea.status === 'completed'
-                      ? selectedArea.description
-                      : (selectedArea.ruinedDescription || selectedArea.description)}
-                  </p>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setSelectedArea(null)}
-                className="p-1.5 text-slate-400 hover:text-white rounded-full bg-slate-800"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* 1. ロック中の説明 */}
-            {selectedArea.status === 'locked_fog' && (
-              <div className="p-4 bg-slate-950/60 border border-slate-800 rounded-2xl text-center space-y-2">
-                <div className="relative w-16 h-12 mx-auto flex items-center justify-center">
-                  <img src="/assets/fog_cloud.png" alt="霧" className="w-full h-full object-contain filter drop-shadow-md animate-fog-cloud-1" />
-                  <Lock className="w-5 h-5 text-amber-300 absolute z-10" />
-                </div>
-                <h4 className="text-xs font-black text-slate-300">
-                  このエリアはふんわりとした白い雲で覆われています
-                </h4>
-                <p className="text-[11px] text-slate-400 leading-relaxed">
-                  手前のエリアを復旧して**バッジを{selectedArea.requiredBadges}個**集めると、このモクモクした雲がサーッと晴れて荒廃した川辺が出現します！
-                </p>
-                <div className="text-xs font-mono font-bold text-amber-400 bg-amber-950/30 py-1.5 rounded-xl border border-amber-500/20">
-                  現在の獲得バッジ: {badgesCount} / {selectedArea.requiredBadges}
-                </div>
-              </div>
-            )}
-
-            {/* 2. 開拓中・コンプリート済みのタスク一覧 */}
-            {selectedArea.status !== 'locked_fog' && (
-              <div className="space-y-2.5">
-                <div className="flex items-center justify-between text-xs font-black text-slate-300">
-                  <span>修復・再生タスク</span>
-                  <span className="text-[11px] text-amber-400">所持木材: 🪵{woodPoints}</span>
                 </div>
 
-                <div className="space-y-2">
-                  {selectedArea.tasks.map((task) => {
-                    const canAfford = woodPoints >= task.woodCost;
-
-                    return (
-                      <div
-                        key={task.id}
-                        className={`p-3 rounded-2xl border flex items-center justify-between transition-all ${
-                          task.isCompleted
-                            ? 'bg-emerald-950/30 border-emerald-500/30 opacity-70'
-                            : 'bg-slate-800/80 border-slate-700'
-                        }`}
-                      >
-                        <div className="flex items-center space-x-2.5">
-                          <span className="text-2xl">{task.icon}</span>
-                          <div>
-                            <div className="text-xs font-black text-white">{task.title}</div>
-                            <div className="text-[10px] text-slate-400">
-                              効果: {task.visualLabel}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div>
-                          {task.isCompleted ? (
-                            <span className="flex items-center text-[11px] font-black text-emerald-400 bg-emerald-500/20 px-2.5 py-1 rounded-xl">
-                              <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-                              完了
-                            </span>
-                          ) : (
-                            <button
-                              onClick={() => handleTaskClick(selectedArea, task.id, task.woodCost)}
-                              disabled={!canAfford}
-                              className={`px-3 py-1.5 rounded-xl text-xs font-black flex items-center space-x-1 shadow-sm transition-all ${
-                                canAfford
-                                  ? 'bg-amber-500 hover:bg-amber-600 text-amber-950 active:scale-95 cursor-pointer'
-                                  : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                              }`}
-                            >
-                              <Hammer className="w-3 h-3" />
-                              <span>復旧 (🪵{task.woodCost})</span>
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* 戻ってくる生き物プレビュー */}
-                <div
-                  onClick={() => handleCreatureTap(selectedArea.creature)}
-                  className="p-3 bg-emerald-950/40 border border-emerald-500/30 rounded-2xl flex items-center justify-between cursor-pointer hover:bg-emerald-950/60 transition-colors mt-3"
+                <button
+                  onClick={() => setSelectedArea(null)}
+                  className="p-1.5 text-slate-400 hover:text-white rounded-full bg-slate-800 cursor-pointer"
                 >
-                  <div className="flex items-center space-x-2.5">
-                    <span className="text-3xl animate-bounce-subtle inline-block">
-                      {selectedArea.creature.icon}
-                    </span>
-                    <div>
-                      <div className="text-xs font-black text-emerald-200 flex items-center">
-                        <span>{selectedArea.creature.name}</span>
-                        {selectedArea.status === 'completed' && (
-                          <span className="ml-1 text-[9px] text-emerald-400 bg-emerald-500/20 px-1.5 py-0.2 rounded-md">
-                            暮らしているよ
-                          </span>
-                        )}
-                        {selectedArea.status !== 'completed' && (
-                          <span className="ml-1 text-[9px] text-amber-400 bg-amber-500/20 px-1.5 py-0.2 rounded-md">
-                            復旧すると戻ってくる
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-[10px] text-slate-400">
-                        {selectedArea.creature.description}
-                      </div>
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* 1. ロック中の説明 */}
+              {isLocked ? (
+                <div className="p-4 bg-slate-950/60 border border-slate-800 rounded-2xl text-center space-y-3">
+                  <div className="relative w-20 h-14 mx-auto flex items-center justify-center">
+                    <img
+                      src="/assets/fog_cloud.png"
+                      alt="雲"
+                      className="w-full h-full object-contain filter drop-shadow-md animate-fog-cloud-1"
+                    />
+                    <Lock className="w-6 h-6 text-amber-300 absolute z-10" />
+                  </div>
+                  <h4 className="text-sm font-black text-slate-200">
+                    エリア {selectedArea.id} はまだ雲で覆われています
+                  </h4>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    手前のエリアをきれいに復旧して**バッジを{selectedArea.requiredBadges}個**集めると、雲が晴れてこのエリアの開拓が始まります！
+                  </p>
+                  <div className="text-xs font-mono font-bold text-amber-400 bg-amber-950/40 py-2 rounded-xl border border-amber-500/20">
+                    現在の獲得バッジ: {badgesCount} / {selectedArea.requiredBadges} 個
+                  </div>
+                </div>
+              ) : (
+                /* 2. 開放済み（荒廃または復旧中・完了）の場合：ステージ説明＋進むボタン */
+                <div className="space-y-4">
+                  {/* ステージの説明カード */}
+                  <div className="p-4 bg-slate-800/80 border border-slate-700/80 rounded-2xl space-y-2.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-bold text-slate-300 flex items-center space-x-1">
+                        <span>📖 ステージの様子</span>
+                      </span>
+                      <span className="text-[11px] font-black text-amber-400">
+                        きれいな場所: {completedTasksCount} / {totalTasksCount} 箇所
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      {isCompleted
+                        ? selectedArea.description
+                        : (selectedArea.ruinedDescription || selectedArea.description)}
+                    </p>
+
+                    {/* 修復プログレスバー */}
+                    <div className="w-full bg-slate-900/60 h-2 rounded-full overflow-hidden mt-1">
+                      <div
+                        className="bg-gradient-to-r from-amber-500 to-emerald-400 h-full transition-all duration-500"
+                        style={{ width: `${(completedTasksCount / totalTasksCount) * 100}%` }}
+                      />
                     </div>
                   </div>
 
-                  <div className="text-rose-400 p-1">
-                    <Heart className="w-4 h-4 fill-current animate-pulse" />
+                  {/* 戻ってくる生き物の紹介 */}
+                  <div
+                    onClick={() => handleCreatureTap(selectedArea.creature)}
+                    className="p-3 bg-emerald-950/40 border border-emerald-500/30 rounded-2xl flex items-center justify-between cursor-pointer hover:bg-emerald-950/60 transition-colors"
+                  >
+                    <div className="flex items-center space-x-2.5">
+                      <span className="text-3xl animate-bounce-subtle inline-block">
+                        {selectedArea.creature.icon}
+                      </span>
+                      <div>
+                        <div className="text-xs font-black text-emerald-200 flex items-center">
+                          <span>{selectedArea.creature.name}</span>
+                          {isCompleted ? (
+                            <span className="ml-1 text-[9px] text-emerald-400 bg-emerald-500/20 px-1.5 py-0.2 rounded-md">
+                              元気に暮らしているよ
+                            </span>
+                          ) : (
+                            <span className="ml-1 text-[9px] text-amber-400 bg-amber-500/20 px-1.5 py-0.2 rounded-md">
+                              5箇所きれいにするとやってくる
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[10px] text-slate-400">
+                          {selectedArea.creature.description}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="text-rose-400 p-1">
+                      <Heart className="w-4 h-4 fill-current animate-pulse" />
+                    </div>
                   </div>
+
+                  {/* エリアに進むボタン */}
+                  {onNavigateToAreaDetail && (
+                    <button
+                      onClick={() => {
+                        onNavigateToAreaDetail(selectedArea.id);
+                        setSelectedArea(null);
+                      }}
+                      className="w-full py-3.5 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:brightness-110 text-amber-950 font-black text-base rounded-2xl shadow-xl flex items-center justify-center space-x-2 active:scale-98 transition-all cursor-pointer"
+                    >
+                      <Hammer className="w-4 h-4" />
+                      <span>エリア{selectedArea.id}に進む</span>
+                    </button>
+                  )}
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* エリア詳細開拓画面への遷移ボタン */}
-            {selectedArea.status !== 'locked_fog' && onNavigateToAreaDetail && (
               <button
-                onClick={() => {
-                  onNavigateToAreaDetail(selectedArea.id);
-                  setSelectedArea(null);
-                }}
-                className="w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-amber-950 font-black text-sm rounded-2xl shadow-lg flex items-center justify-center space-x-2 active:scale-98 transition-all cursor-pointer"
+                onClick={() => setSelectedArea(null)}
+                className="w-full py-2.5 bg-slate-800 hover:bg-slate-750 text-slate-300 font-bold text-xs rounded-xl cursor-pointer transition-colors"
               >
-                <Hammer className="w-4 h-4" />
-                <span>このエリアの開拓に進む！🔨（5箇所修復マップへ）</span>
+                閉じる
               </button>
-            )}
-
-            <button
-              onClick={() => setSelectedArea(null)}
-              className="w-full py-2 bg-slate-800 hover:bg-slate-750 text-slate-300 font-bold text-xs rounded-xl cursor-pointer"
-            >
-              閉じる
-            </button>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* 4. 生き物詳細モーダル */}
       {selectedCreature && (
