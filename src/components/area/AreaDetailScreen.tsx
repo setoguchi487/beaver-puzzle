@@ -173,16 +173,10 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
           key={currentImage}
           src={currentImage}
           alt={area.name}
-          className="w-full h-full object-cover transition-opacity duration-700 animate-fade-in"
+          className="w-full h-full object-cover"
         />
 
-        {/* 荒廃時のオーバーレイ演出（未完了時のみ） */}
-        {!isAllCompleted && (
-          <div
-            style={{ opacity: Math.max(0, 1 - completedCount * 0.22) }}
-            className="absolute inset-0 bg-amber-950/20 backdrop-sepia-25 pointer-events-none transition-opacity duration-700"
-          />
-        )}
+
 
         {/* 水面のきらめき (復旧が進むと輝く) */}
         {completedCount >= 2 && (
