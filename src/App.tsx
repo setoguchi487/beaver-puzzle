@@ -96,25 +96,15 @@ export const App: React.FC = () => {
     );
   };
 
-  // パズルクリア時の処理
-  const handleStageClear = (rewardWood: number, unfogAreaIds: string[]) => {
-    // 1. 木材獲得
+  // パズルクリア時の処理（木材ポイント獲得のみ。エリア解放はエリアコンプリート・バッジ獲得時）
+  const handleStageClear = (rewardWood: number, _unfogAreaIds: string[]) => {
+    // 1. 木材ポイント獲得
     setWoodPoints((prev) => prev + rewardWood);
 
-    // 2. 指定エリアの霧を晴らす
-    setAreas((prev) =>
-      prev.map((area) => {
-        if (unfogAreaIds.includes(area.id) && area.status === 'locked_fog') {
-          return { ...area, status: 'cleared_fog' };
-        }
-        return area;
-      })
-    );
-
-    // 3. 次のステージへ
+    // 2. 次のパズルステージへ進行
     setCurrentStageId((prev) => Math.min(STAGES.length, prev + 1));
 
-    // 4. 元の画面へ戻る（エリア詳細から来ていたならエリア詳細へ、マップならマップへ）
+    // 3. 元の画面へ戻る（エリア詳細から来ていたならエリア詳細へ、マップならマップへ）
     setScreenMode(previousScreenMode);
   };
 
