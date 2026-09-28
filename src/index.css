@@ -365,3 +365,54 @@ body {
 .animate-success-badge {
   animation: successBadgePop 1.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* 完全クリア・大祝祭アニメーション */
+@keyframes completePopIn {
+  0% {
+    transform: scale(0.2) rotate(-8deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.18) rotate(3deg);
+    opacity: 1;
+  }
+  75% {
+    transform: scale(0.95) rotate(-1deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.animate-complete-pop {
+  animation: completePopIn 0.65s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* 後光サンバーストの回転 */
+@keyframes sunburstSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-sunburst {
+  animation: sunburstSpin 24s linear infinite;
+}
+
+/* 虹色・黄金のシマー枠線パルス */
+@keyframes goldenShine {
+  0%, 100% {
+    box-shadow: 0 0 25px 4px rgba(245, 158, 11, 0.4), inset 0 0 15px rgba(251, 191, 36, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 45px 10px rgba(52, 211, 153, 0.6), inset 0 0 25px rgba(52, 211, 153, 0.4);
+  }
+}
+
+.animate-golden-shine {
+  animation: goldenShine 2.5s ease-in-out infinite;
+}

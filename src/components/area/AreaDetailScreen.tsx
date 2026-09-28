@@ -13,6 +13,8 @@ import {
   VolumeX,
   Sparkles,
   Lock,
+  Crown,
+  Award,
 } from 'lucide-react';
 
 interface AreaDetailScreenProps {
@@ -61,6 +63,45 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
   const [rippleImage, setRippleImage] = useState<string | null>(null);
   const [isRippling, setIsRippling] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [showCompleteModal, setShowCompleteModal] = useState<boolean>(false);
+
+  // 5タスク完了時の超豪華マルチキャノン紙吹雪・花火
+  const triggerGrandCelebration = () => {
+    // 1発目: 中央大爆発
+    confetti({
+      particleCount: 80,
+      spread: 90,
+      origin: { y: 0.45, x: 0.5 },
+      colors: ['#fbbf24', '#f59e0b', '#34d399', '#38bdf8', '#ec4899', '#ffffff'],
+      shapes: ['star', 'circle'],
+      scalar: 1.2,
+      ticks: 120,
+    });
+    // 2発目 (200ms後): 左から打ち上げ
+    setTimeout(() => {
+      confetti({
+        particleCount: 55,
+        angle: 60,
+        spread: 70,
+        origin: { x: 0.1, y: 0.65 },
+        colors: ['#fbbf24', '#34d399', '#ffffff'],
+        shapes: ['star', 'circle'],
+        scalar: 1.0,
+      });
+    }, 200);
+    // 3発目 (400ms後): 右から打ち上げ
+    setTimeout(() => {
+      confetti({
+        particleCount: 55,
+        angle: 120,
+        spread: 70,
+        origin: { x: 0.9, y: 0.65 },
+        colors: ['#38bdf8', '#f43f5e', '#ffffff'],
+        shapes: ['star', 'circle'],
+        scalar: 1.0,
+      });
+    }, 400);
+  };
 
   const prevImageRef = useRef(currentImage);
 
@@ -89,13 +130,7 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
 
 
 
-  const triggerConfetti = () => {
-    confetti({
-      particleCount: 60,
-      spread: 70,
-      origin: { y: 0.5 },
-    });
-  };
+
 
   // 順番に処理するため、現在対象となるタスク（最初の未完了タスク）のインデックス
   const currentTaskIndex = area.tasks.findIndex((t) => !t.isCompleted);
@@ -134,11 +169,14 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
     // 新たに完了した後の数を計算
     const nextCompleted = completedCount + 1;
     if (nextCompleted === area.tasks.length) {
+      // 5つ目のタスク完了時：サークル波紋で新画像が広がりきった直後に大祝祭Complete演出！
       setTimeout(() => {
+        sounds.playRainbow();
         sounds.playStageClear();
-        triggerConfetti();
+        triggerGrandCelebration();
+        setShowCompleteModal(true);
         onCompleteArea(area);
-      }, 1000);
+      }, 700);
     }
   };
 
@@ -477,6 +515,83 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
           </div>
         </div>
       )}
+      {/* 6. Complete!! 大祝祭演出モーダル */}
+      {showCompleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+          {/* 回転する黄金の後光（サンバースト光線） */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+            <div className="w-[600px] h-[600px] rounded-full opacity-20 bg-[radial-gradient(circle,rgba(251,191,36,0.8)_0%,rgba(52,211,153,0.4)_40%,transparent_70%)] animate-sunburst" />
+          </div>
+
+          <div className="relative w-full max-w-sm bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-amber-400 rounded-3xl p-6 shadow-2xl text-center space-y-4 animate-complete-pop animate-golden-shine">
+            {/* 上部王冠＆バッジアイコン */}
+            <div className="flex justify-center -mt-11">
+              <div className="relative p-3.5 bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-300 rounded-2xl shadow-xl border-2 border-white ring-4 ring-amber-400/40 animate-bounce-subtle">
+                <Crown className="w-8 h-8 text-amber-950 fill-current" />
+                <Sparkles className="w-4 h-4 text-white absolute -top-1 -right-1 animate-spin-slow" />
+              </div>
+            </div>
+
+            {/* Complete!! タイトル */}
+            <div className="space-y-1">
+              <h2 className="text-4xl font-black bg-gradient-to-r from-amber-200 via-yellow-300 to-amber-500 bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(245,158,11,0.85)] tracking-wider">
+                Complete!!
+              </h2>
+              <p className="text-xs font-bold text-amber-300">
+                エリア {area.id}：{area.name} 完全復活！
+              </p>
+            </div>
+
+            {/* やってきた生き物の紹介 */}
+            <div className="p-3.5 bg-emerald-950/60 border border-emerald-500/40 rounded-2xl space-y-2">
+              <div className="flex items-center justify-center space-x-2">
+                <span className="text-4xl filter drop-shadow-md animate-bounce-subtle inline-block">
+                  {area.creature.icon}
+                </span>
+                <div className="text-left">
+                  <div className="text-xs font-black text-emerald-200 flex items-center space-x-1">
+                    <span>{area.creature.name}</span>
+                    <span className="text-[9px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.2 rounded-md font-bold">
+                      暮らしているよ
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-slate-300 mt-0.5">
+                    「{area.creature.comment}」
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* バッジ獲得インジケーター */}
+            <div className="flex items-center justify-center space-x-2 py-2 px-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs font-bold text-amber-300">
+              <Award className="w-4 h-4 text-amber-400" />
+              <span>開拓バッジ 🏅 を獲得しました！</span>
+            </div>
+
+            {/* アクションボタン */}
+            <div className="space-y-2 pt-1">
+              <button
+                onClick={() => {
+                  setShowCompleteModal(false);
+                  onBackToMap();
+                }}
+                className="w-full py-3.5 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:brightness-110 text-amber-950 font-black text-sm rounded-2xl shadow-xl flex items-center justify-center space-x-2 active:scale-98 transition-all cursor-pointer"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>全体マップへ進む 🏞️</span>
+              </button>
+
+              <button
+                onClick={() => setShowCompleteModal(false)}
+                className="w-full py-2 bg-slate-800/80 hover:bg-slate-750 text-slate-300 font-bold text-xs rounded-xl cursor-pointer transition-colors"
+              >
+                この景色をゆっくり眺める 👀
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+
