@@ -21,6 +21,7 @@ interface Match3BoardProps {
   onSelectStage?: (stageId: number) => void;
   onAddWood?: (amount: number) => void;
   onUnlockAllAreas?: () => void;
+  onResetAll?: () => void;
 }
 
 const BOARD_SIZE = 7;
@@ -34,6 +35,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
   onSelectStage,
   onAddWood,
   onUnlockAllAreas,
+  onResetAll,
 }) => {
   const [board, setBoard] = useState<Tile[][]>([]);
   const [selectedPos, setSelectedPos] = useState<{ r: number; c: number } | null>(null);
@@ -585,6 +587,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
               onSelectStage={onSelectStage}
               onAddWood={onAddWood}
               onUnlockAllAreas={onUnlockAllAreas}
+              onResetAll={onResetAll}
             />
           )}
           <button

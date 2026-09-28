@@ -60,6 +60,20 @@ export const App: React.FC = () => {
   }, [woodPoints, areas, badges, unlockedCreatures]);
 
   // 開発者用チート・ステージ選択
+  const handleResetAll = () => {
+    localStorage.removeItem(STORAGE_KEY + "_wood");
+    localStorage.removeItem(STORAGE_KEY + "_areas");
+    localStorage.removeItem(STORAGE_KEY + "_badges");
+    localStorage.removeItem(STORAGE_KEY + "_creatures");
+
+    setWoodPoints(60);
+    setAreas(INITIAL_AREAS);
+    setBadges([]);
+    setUnlockedCreatures([]);
+    setCurrentStageId(1);
+    setScreenMode("map");
+  };
+
   const handleSelectStage = (stageId: number) => {
     setCurrentStageId(stageId);
     setScreenMode('puzzle');
@@ -166,6 +180,7 @@ export const App: React.FC = () => {
           onSelectStage={handleSelectStage}
           onAddWood={handleAddWood}
           onUnlockAllAreas={handleUnlockAllAreas}
+          onResetAll={handleResetAll}
         />
       ) : (
         <Match3Board
@@ -176,6 +191,7 @@ export const App: React.FC = () => {
           onSelectStage={handleSelectStage}
           onAddWood={handleAddWood}
           onUnlockAllAreas={handleUnlockAllAreas}
+          onResetAll={handleResetAll}
         />
       )}
 

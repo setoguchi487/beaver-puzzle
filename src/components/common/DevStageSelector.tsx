@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { STAGES } from '../../data/masterData';
-import { Wrench, X, Play, Plus, Sparkles } from 'lucide-react';
+import { Wrench, X, Play, Plus, Sparkles, RotateCcw } from 'lucide-react';
 
 interface DevStageSelectorProps {
   currentStageId: number;
   onSelectStage: (stageId: number) => void;
   onAddWood: (amount: number) => void;
   onUnlockAllAreas: () => void;
+  onResetAll?: () => void;
 }
 
 export const DevStageSelector: React.FC<DevStageSelectorProps> = ({
@@ -14,6 +15,7 @@ export const DevStageSelector: React.FC<DevStageSelectorProps> = ({
   onSelectStage,
   onAddWood,
   onUnlockAllAreas,
+  onResetAll,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -134,6 +136,22 @@ export const DevStageSelector: React.FC<DevStageSelectorProps> = ({
                   <span>全霧を即座に晴らす</span>
                 </button>
               </div>
+
+              {/* 初期リセットボタン */}
+              {onResetAll && (
+                <button
+                  onClick={() => {
+                    if (window.confirm("ゲームデータを完全に初期状態（最初から）に戻しますか？\n※未踏エリアが楕円の霧で覆われ、最初の浅瀬のみ出現した状態になります。")) {
+                      onResetAll();
+                      setIsOpen(false);
+                    }
+                  }}
+                  className="w-full py-2.5 px-3 bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/50 text-rose-300 text-xs font-black rounded-xl flex items-center justify-center space-x-1.5 active:scale-95 transition-all cursor-pointer"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>初期状態にリセット（最初に戻す）🔄</span>
+                </button>
+              )}
             </div>
           </div>
         </div>

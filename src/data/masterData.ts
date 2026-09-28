@@ -290,8 +290,8 @@ export const INITIAL_AREAS: FrontierArea[] = [
     name: '小枝ダムの浅瀬',
     icon: '🪵',
     description: '記念すべき最初のダムを建設するメインスポット！',
-    status: 'cleared_fog',
-    requiredBadges: 0,
+    status: 'locked_fog',
+    requiredBadges: 1,
     badge: {
       id: 'badge_dam_1',
       name: '最初のダム職人',
@@ -323,7 +323,7 @@ export const INITIAL_AREAS: FrontierArea[] = [
     icon: '🏡',
     description: 'ふたりのビーバーが暮らす温かいお家エリア。',
     status: 'locked_fog',
-    requiredBadges: 1,
+    requiredBadges: 2,
     unlockStageId: 10,
     badge: {
       id: 'badge_lodge',
@@ -356,7 +356,7 @@ export const INITIAL_AREAS: FrontierArea[] = [
     icon: '🎣',
     description: '水辺で夕涼みをしたり魚釣りができる桟橋エリア。',
     status: 'locked_fog',
-    requiredBadges: 2,
+    requiredBadges: 3,
     unlockStageId: 20,
     badge: {
       id: 'badge_pier',
@@ -389,7 +389,7 @@ export const INITIAL_AREAS: FrontierArea[] = [
     icon: '⚙️',
     description: '川の水流を利用して木の実を挽く風情ある水車小屋。',
     status: 'locked_fog',
-    requiredBadges: 3,
+    requiredBadges: 4,
     unlockStageId: 30,
     badge: {
       id: 'badge_watermill',
@@ -422,7 +422,7 @@ export const INITIAL_AREAS: FrontierArea[] = [
     icon: '🌸',
     description: '水辺を彩る美しい植物と小さな動物たちの癒やしエリア。',
     status: 'locked_fog',
-    requiredBadges: 4,
+    requiredBadges: 5,
     unlockStageId: 40,
     badge: {
       id: 'badge_garden',
@@ -455,7 +455,7 @@ export const INITIAL_AREAS: FrontierArea[] = [
     icon: '👑',
     description: '大要塞グランドダムと湖を望む、最高峰の聖地。',
     status: 'locked_fog',
-    requiredBadges: 5,
+    requiredBadges: 6,
     unlockStageId: 50,
     badge: {
       id: 'badge_paradise',
