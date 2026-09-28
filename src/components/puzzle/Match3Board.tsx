@@ -229,8 +229,27 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     const tile = board[r][c];
     if (tile.gimmick?.type === 'vine' || tile.gimmick?.type === 'rock') return;
 
-    // すでに選択されているマスを再度タップ、かつそれが特殊ピースならその場で単体起爆！
-    if (selectedPos && selectedPos.r === r && selectedPos.c === c) {
+    // A. 何も選択されていない状態でロケットや虹を直接タップ ➔ その場で即座に発動！
+    if (!selectedPos) {
+      if (tile.special === 'rocket_h' || tile.special === 'rocket_v') {
+        setIsAnimating(true);
+        await executeRocketClear(board, r, c, false);
+        finishMove();
+        return;
+      }
+      if (tile.special === 'rainbow') {
+        setIsAnimating(true);
+        await executeRainbowClear(board, tile.type);
+        finishMove();
+        return;
+      }
+      sounds.playSwipe();
+      setSelectedPos({ r, c });
+      return;
+    }
+
+    // B. すでに選択されているマスを再度タップ（または特殊ピースのタップ起爆）
+    if (selectedPos.r === r && selectedPos.c === c) {
       if (tile.special === 'rocket_h' || tile.special === 'rocket_v') {
         setSelectedPos(null);
         setIsAnimating(true);
@@ -249,10 +268,8 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
       return;
     }
 
-    if (!selectedPos) {
-      sounds.playSwipe();
-      setSelectedPos({ r, c });
-    } else {
+    // C. 別のマスが選択されている状態でタップ（スワップまたは選択切り替え）
+    if (selectedPos) {
       const dr = Math.abs(selectedPos.r - r);
       const dc = Math.abs(selectedPos.c - c);
 
@@ -585,17 +602,17 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
   const executeRocketClear = async (b: Tile[][], hitR: number, hitC: number, isCross: boolean = false) => {
     sounds.playRocket();
 
-    // 画面シェイク
+    // 画面シェイク（ゆっくり重厚に 450ms）
     setIsShaking(true);
-    setTimeout(() => setIsShaking(false), 260);
+    setTimeout(() => setIsShaking(false), 450);
 
-    // レーザー閃光ビーム
+    // レーザー閃光ビーム（ゆっくり 750ms 輝く）
     const lasers: ActiveLaser[] = [{ id: Date.now(), r: hitR, direction: 'h' }];
     if (isCross) {
       lasers.push({ id: Date.now() + 1, c: hitC, direction: 'v' });
     }
     setActiveLasers(lasers);
-    setTimeout(() => setActiveLasers([]), 360);
+    setTimeout(() => setActiveLasers([]), 750);
     const collectedCounts: { [key: string]: number } = {};
     const newBoard: Tile[][] = b.map((row) => row.map((tile) => ({ ...tile })));
 
@@ -635,11 +652,14 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
     addCollectedTargets(collectedCounts);
 
+    // ビームが突き抜けてピースが砕ける余韻をしっかり見せる（600ms）
+    await new Promise((res) => setTimeout(res, 600));
+
     // 重力落下
     applyGravity(newBoard);
     setBoard(newBoard);
 
-    await new Promise((res) => setTimeout(res, 280));
+    await new Promise((res) => setTimeout(res, 350));
     const nextMatches = findMatches(newBoard);
     if (nextMatches.length > 0) {
       await processMatches(newBoard, nextMatches, 2);
@@ -650,7 +670,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
   const executeRainbowClear = async (b: Tile[][], targetType: PieceType | 'ALL') => {
     sounds.playRainbow();
 
-    // 該当マスの虹色オーラ発光
+    // 該当マスの虹色オーラ発光（850ms）
     const highlighted: { r: number; c: number }[] = [];
     b.forEach((row, r) => {
       row.forEach((t, c) => {
@@ -660,17 +680,17 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
       });
     });
     setRainbowTargets(highlighted);
-    setTimeout(() => setRainbowTargets([]), 480);
+    setTimeout(() => setRainbowTargets([]), 850);
 
     // キラキラスパークルシャワー
     try {
       confetti({
-        particleCount: 40,
-        spread: 70,
+        particleCount: 45,
+        spread: 75,
         origin: { y: 0.55 },
         colors: ['#38bdf8', '#fbbf24', '#f43f5e', '#a855f7', '#34d399', '#ffffff'],
         shapes: ['circle', 'star'],
-        scalar: 0.9,
+        scalar: 1.0,
       });
     } catch {}
     const collectedCounts: { [key: string]: number } = {};
@@ -689,11 +709,14 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
     addCollectedTargets(collectedCounts);
 
+    // ビームが突き抜けてピースが砕ける余韻をしっかり見せる（600ms）
+    await new Promise((res) => setTimeout(res, 600));
+
     // 重力落下
     applyGravity(newBoard);
     setBoard(newBoard);
 
-    await new Promise((res) => setTimeout(res, 280));
+    await new Promise((res) => setTimeout(res, 350));
     const nextMatches = findMatches(newBoard);
     if (nextMatches.length > 0) {
       await processMatches(newBoard, nextMatches, 2);

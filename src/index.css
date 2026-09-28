@@ -421,80 +421,96 @@ body {
    パズル特殊ピース演出 (ロケットレーザー・虹発光・画面シェイク)
    ========================================================================== */
 
-/* 盤面シェイク（ロケットや爆発のインパクト） */
+/* 盤面シェイク（ロケットや爆発のインパクト） - ゆっくり重厚に */
 @keyframes boardShake {
   0%, 100% { transform: translate(0, 0); }
-  20% { transform: translate(-3px, 2px); }
-  40% { transform: translate(3px, -2px); }
-  60% { transform: translate(-2px, -2px); }
-  80% { transform: translate(2px, 1px); }
+  15% { transform: translate(-4px, 3px) rotate(-0.5deg); }
+  30% { transform: translate(4px, -3px) rotate(0.5deg); }
+  45% { transform: translate(-3px, -2px); }
+  60% { transform: translate(3px, 2px); }
+  75% { transform: translate(-1px, 1px); }
 }
 
 .animate-board-shake {
-  animation: boardShake 0.25s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  animation: boardShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
 
-/* ロケット横レーザー閃光 */
+/* ロケット横レーザー閃光 - ゆったり0.7秒間輝く */
 @keyframes laserBeamH {
   0% {
-    transform: scaleX(0.05) scaleY(2.2);
-    opacity: 0.3;
+    transform: scaleX(0.02) scaleY(3);
+    opacity: 0.2;
   }
-  30% {
-    transform: scaleX(1) scaleY(1.5);
+  20% {
+    transform: scaleX(1) scaleY(1.8);
     opacity: 1;
-    filter: brightness(1.6);
+    filter: brightness(2) drop-shadow(0 0 15px rgba(251, 191, 36, 1));
+  }
+  65% {
+    transform: scaleX(1) scaleY(1.2);
+    opacity: 0.95;
+    filter: brightness(1.5) drop-shadow(0 0 10px rgba(245, 158, 11, 0.8));
   }
   100% {
-    transform: scaleX(1.05) scaleY(0.1);
+    transform: scaleX(1.02) scaleY(0.05);
     opacity: 0;
   }
 }
 
 .animate-laser-h {
-  animation: laserBeamH 0.35s ease-out forwards;
+  animation: laserBeamH 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* ロケット縦レーザー閃光 */
+/* ロケット縦レーザー閃光 - ゆったり0.7秒間輝く */
 @keyframes laserBeamV {
   0% {
-    transform: scaleY(0.05) scaleX(2.2);
-    opacity: 0.3;
+    transform: scaleY(0.02) scaleX(3);
+    opacity: 0.2;
   }
-  30% {
-    transform: scaleY(1) scaleX(1.5);
+  20% {
+    transform: scaleY(1) scaleX(1.8);
     opacity: 1;
-    filter: brightness(1.6);
+    filter: brightness(2) drop-shadow(0 0 15px rgba(251, 191, 36, 1));
+  }
+  65% {
+    transform: scaleY(1) scaleX(1.2);
+    opacity: 0.95;
+    filter: brightness(1.5) drop-shadow(0 0 10px rgba(245, 158, 11, 0.8));
   }
   100% {
-    transform: scaleY(1.05) scaleX(0.1);
+    transform: scaleY(1.02) scaleX(0.05);
     opacity: 0;
   }
 }
 
 .animate-laser-v {
-  animation: laserBeamV 0.35s ease-out forwards;
+  animation: laserBeamV 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* 虹色オーラ発光 */
+/* 虹色オーラ発光 - ゆったり0.8秒間プリズム回転 */
 @keyframes rainbowGlow {
   0% {
     filter: drop-shadow(0 0 12px rgba(244, 63, 94, 0.9)) hue-rotate(0deg);
-    transform: scale(0.95);
-    opacity: 0.5;
+    transform: scale(0.9);
+    opacity: 0.6;
   }
-  50% {
-    filter: drop-shadow(0 0 25px rgba(56, 189, 248, 1)) hue-rotate(180deg);
-    transform: scale(1.18);
+  30% {
+    filter: drop-shadow(0 0 25px rgba(56, 189, 248, 1)) hue-rotate(120deg);
+    transform: scale(1.22);
     opacity: 1;
   }
+  70% {
+    filter: drop-shadow(0 0 25px rgba(251, 191, 36, 1)) hue-rotate(240deg);
+    transform: scale(1.15);
+    opacity: 0.95;
+  }
   100% {
-    filter: drop-shadow(0 0 15px rgba(251, 191, 36, 0.9)) hue-rotate(360deg);
-    transform: scale(1);
-    opacity: 0.8;
+    filter: drop-shadow(0 0 15px rgba(168, 85, 247, 0.8)) hue-rotate(360deg);
+    transform: scale(0.85);
+    opacity: 0;
   }
 }
 
 .animate-rainbow-glow {
-  animation: rainbowGlow 0.45s ease-in-out forwards;
+  animation: rainbowGlow 0.85s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
