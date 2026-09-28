@@ -3,12 +3,15 @@ import type { FrontierArea } from './types';
 import { STAGES, INITIAL_AREAS } from './data/masterData';
 import { FrontierMap } from './components/map/FrontierMap';
 import { Match3Board } from './components/puzzle/Match3Board';
+import { AreaDetailScreen } from './components/area/AreaDetailScreen';
 import { AreaCompleteModal } from './components/common/AreaCompleteModal';
 
 const STORAGE_KEY = 'beaver_puzzle_state_v1';
 
 export const App: React.FC = () => {
-  const [screenMode, setScreenMode] = useState<'map' | 'puzzle'>('map');
+  const [screenMode, setScreenMode] = useState<'map' | 'area_detail' | 'puzzle'>('map');
+  const [selectedAreaIdForDetail, setSelectedAreaIdForDetail] = useState<string | null>(null);
+  const [previousScreenMode, setPreviousScreenMode] = useState<'map' | 'area_detail'>('map');
   const [currentStageId, setCurrentStageId] = useState<number>(1);
   const [completedAreaModalData, setCompletedAreaModalData] = useState<FrontierArea | null>(null);
 
@@ -23,7 +26,6 @@ export const App: React.FC = () => {
     if (!saved) return INITIAL_AREAS;
     try {
       const parsed: FrontierArea[] = JSON.parse(saved);
-      // masterDataの最新定義とマージして欠損フィールドを安全に補完
       return INITIAL_AREAS.map((def) => {
         const found = parsed.find((p) => p.id === def.id);
         if (!found) return def;
@@ -71,11 +73,13 @@ export const App: React.FC = () => {
     setBadges([]);
     setUnlockedCreatures([]);
     setCurrentStageId(1);
+    setSelectedAreaIdForDetail(null);
     setScreenMode("map");
   };
 
   const handleSelectStage = (stageId: number) => {
     setCurrentStageId(stageId);
+    setPreviousScreenMode(screenMode === 'puzzle' ? 'map' : screenMode);
     setScreenMode('puzzle');
   };
 
@@ -97,7 +101,7 @@ export const App: React.FC = () => {
     // 1. 木材獲得
     setWoodPoints((prev) => prev + rewardWood);
 
-    // 2. 指定エリアの霧を晴らす（locked_fog -> cleared_fog）
+    // 2. 指定エリアの霧を晴らす
     setAreas((prev) =>
       prev.map((area) => {
         if (unfogAreaIds.includes(area.id) && area.status === 'locked_fog') {
@@ -107,11 +111,11 @@ export const App: React.FC = () => {
       })
     );
 
-    // 3. 次のステージへ進む
+    // 3. 次のステージへ
     setCurrentStageId((prev) => Math.min(STAGES.length, prev + 1));
 
-    // 4. マップへ戻る
-    setScreenMode('map');
+    // 4. 元の画面へ戻る（エリア詳細から来ていたならエリア詳細へ、マップならマップへ）
+    setScreenMode(previousScreenMode);
   };
 
   // タスク完了処理
@@ -142,13 +146,12 @@ export const App: React.FC = () => {
       prev.includes(newCreatureId) ? prev : [...prev, newCreatureId]
     );
 
-    // エリアステータスを completed にし、さらにバッジ条件を満たしたエリアの霧を晴らす！
+    // エリアステータスを completed にし、バッジ条件を満たした次エリアの霧を晴らす！
     setAreas((prev) =>
       prev.map((a) => {
         if (a.id === completedArea.id) {
           return { ...a, status: 'completed' };
         }
-        // バッジ数で霧が晴れるエリアの判定
         if (a.status === 'locked_fog' && nextBadgeCount >= a.requiredBadges) {
           return { ...a, status: 'cleared_fog' };
         }
@@ -159,12 +162,18 @@ export const App: React.FC = () => {
     setCompletedAreaModalData(completedArea);
   };
 
+  const handleNavigateToAreaDetail = (areaId: string) => {
+    setSelectedAreaIdForDetail(areaId);
+    setScreenMode('area_detail');
+  };
+
   const currentStage = STAGES.find((s) => s.id === currentStageId) || STAGES[0];
+  const activeDetailArea = areas.find((a) => a.id === selectedAreaIdForDetail) || areas[0];
 
   return (
     <div className="min-h-screen bg-slate-950 font-sans antialiased">
       {/* 画面切り替え */}
-      {screenMode === 'map' ? (
+      {screenMode === 'map' && (
         <FrontierMap
           areas={areas}
           woodPoints={woodPoints}
@@ -173,6 +182,7 @@ export const App: React.FC = () => {
           currentStageId={currentStageId}
           onStartPuzzle={(stageId) => {
             setCurrentStageId(stageId);
+            setPreviousScreenMode('map');
             setScreenMode('puzzle');
           }}
           onCompleteTask={handleCompleteTask}
@@ -181,12 +191,34 @@ export const App: React.FC = () => {
           onAddWood={handleAddWood}
           onUnlockAllAreas={handleUnlockAllAreas}
           onResetAll={handleResetAll}
+          onNavigateToAreaDetail={handleNavigateToAreaDetail}
         />
-      ) : (
+      )}
+
+      {screenMode === 'area_detail' && (
+        <AreaDetailScreen
+          area={activeDetailArea}
+          woodPoints={woodPoints}
+          onCompleteTask={handleCompleteTask}
+          onCompleteArea={handleCompleteArea}
+          onBackToMap={() => setScreenMode('map')}
+          onStartPuzzle={() => {
+            setPreviousScreenMode('area_detail');
+            setScreenMode('puzzle');
+          }}
+          currentStageId={currentStageId}
+          onSelectStage={handleSelectStage}
+          onAddWood={handleAddWood}
+          onUnlockAllAreas={handleUnlockAllAreas}
+          onResetAll={handleResetAll}
+        />
+      )}
+
+      {screenMode === 'puzzle' && (
         <Match3Board
           stage={currentStage}
           onStageClear={handleStageClear}
-          onExit={() => setScreenMode('map')}
+          onExit={() => setScreenMode(previousScreenMode)}
           currentStageId={currentStageId}
           onSelectStage={handleSelectStage}
           onAddWood={handleAddWood}

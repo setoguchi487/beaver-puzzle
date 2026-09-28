@@ -83,6 +83,7 @@ export interface FrontierArea {
   ruinedName: string; // 荒廃時のエリア名
   ruinedIcon: string; // 荒廃時のアイコン
   ruinedDescription: string; // 荒廃時の説明
+  detailImages?: string[]; // 0段階(荒廃)〜5段階(完全復活)の画像リスト
 }
 
 export interface GameState {

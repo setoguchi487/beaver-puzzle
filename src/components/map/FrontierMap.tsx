@@ -32,6 +32,7 @@ interface FrontierMapProps {
   onAddWood: (amount: number) => void;
   onUnlockAllAreas: () => void;
   onResetAll?: () => void;
+  onNavigateToAreaDetail?: (areaId: string) => void;
 }
 
 export const FrontierMap: React.FC<FrontierMapProps> = ({
@@ -47,6 +48,7 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
   onAddWood,
   onUnlockAllAreas,
   onResetAll,
+  onNavigateToAreaDetail,
 }) => {
   const [viewMode, setViewMode] = useState<'panorama' | 'list'>('panorama');
   const [selectedArea, setSelectedArea] = useState<FrontierArea | null>(null);
@@ -675,9 +677,23 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
               </div>
             )}
 
+            {/* エリア詳細開拓画面への遷移ボタン */}
+            {selectedArea.status !== 'locked_fog' && onNavigateToAreaDetail && (
+              <button
+                onClick={() => {
+                  onNavigateToAreaDetail(selectedArea.id);
+                  setSelectedArea(null);
+                }}
+                className="w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-amber-950 font-black text-sm rounded-2xl shadow-lg flex items-center justify-center space-x-2 active:scale-98 transition-all cursor-pointer"
+              >
+                <Hammer className="w-4 h-4" />
+                <span>このエリアの開拓に進む！🔨（5箇所修復マップへ）</span>
+              </button>
+            )}
+
             <button
               onClick={() => setSelectedArea(null)}
-              className="w-full py-2.5 bg-slate-800 hover:bg-slate-750 text-white font-bold text-xs rounded-xl cursor-pointer"
+              className="w-full py-2 bg-slate-800 hover:bg-slate-750 text-slate-300 font-bold text-xs rounded-xl cursor-pointer"
             >
               閉じる
             </button>
