@@ -20,7 +20,25 @@ export const App: React.FC = () => {
 
   const [areas, setAreas] = useState<FrontierArea[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEY + '_areas');
-    return saved ? JSON.parse(saved) : INITIAL_AREAS;
+    if (!saved) return INITIAL_AREAS;
+    try {
+      const parsed: FrontierArea[] = JSON.parse(saved);
+      // masterDataの最新定義とマージして欠損フィールドを安全に補完
+      return INITIAL_AREAS.map((def) => {
+        const found = parsed.find((p) => p.id === def.id);
+        if (!found) return def;
+        return {
+          ...def,
+          status: found.status,
+          tasks: def.tasks.map((taskDef) => {
+            const savedTask = found.tasks?.find((st) => st.id === taskDef.id);
+            return savedTask ? { ...taskDef, isCompleted: savedTask.isCompleted } : taskDef;
+          }),
+        };
+      });
+    } catch {
+      return INITIAL_AREAS;
+    }
   });
 
   const [badges, setBadges] = useState<string[]>(() => {

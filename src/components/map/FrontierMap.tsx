@@ -324,7 +324,7 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                           {/* 泥・荒れ地の茶色いスポット */}
                           <div className="w-16 h-8 bg-amber-950/70 rounded-[50%] blur-xs border border-amber-900/50" />
                           <span className="text-xs opacity-90 -mt-3 filter drop-shadow-md">
-                            {area.ruinedIcon}
+                            {(area.ruinedIcon || "🥀")}
                           </span>
                         </div>
                       )}
@@ -354,7 +354,7 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
 
                         <div className="relative w-12 h-12 bg-gradient-to-tr from-amber-600 via-amber-500 to-yellow-400 border-2 border-white rounded-full flex items-center justify-center shadow-xl group-hover:scale-110 active:scale-95 transition-transform animate-ruined-alert">
                           <span className="text-xl animate-bounce-subtle">
-                            {completedTasksCount === 0 ? area.ruinedIcon.slice(0, 2) : area.icon}
+                            {completedTasksCount === 0 ? ((area.ruinedIcon || "🥀") ? (area.ruinedIcon || "🥀").slice(0, 2) : "🥀") : area.icon}
                           </span>
                           <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-rose-500 rounded-full border-2 border-white animate-pulse" />
                         </div>
@@ -364,7 +364,7 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                           {completedTasksCount === 0 ? (
                             <>
                               <AlertTriangle className="w-2.5 h-2.5 text-amber-400" />
-                              <span>{area.ruinedName}</span>
+                              <span>{(area.ruinedName || (area.name + " (荒廃)"))}</span>
                             </>
                           ) : (
                             <>
@@ -614,12 +614,12 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <span className="text-2xl p-2 bg-slate-900/80 rounded-xl border border-slate-700">
-                      {isLocked ? '🔒' : isCompleted ? area.icon : area.ruinedIcon.slice(0, 2)}
+                      {isLocked ? '🔒' : isCompleted ? area.icon : ((area.ruinedIcon || "🥀") ? (area.ruinedIcon || "🥀").slice(0, 2) : "🥀")}
                     </span>
                     <div>
                       <div className="flex items-center space-x-1.5">
                         <span className="text-xs font-black text-white">
-                          {isCompleted ? area.name : area.ruinedName}
+                          {isCompleted ? area.name : (area.ruinedName || (area.name + " (荒廃)"))}
                         </span>
                         {isCompleted && (
                           <span className="text-[9px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.2 rounded-md font-bold">
@@ -638,7 +638,7 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                           ? `バッジあと${Math.max(1, area.requiredBadges - badgesCount)}個で霧が晴れる`
                           : isCompleted
                           ? area.description
-                          : area.ruinedDescription}
+                          : (area.ruinedDescription || area.description)}
                       </p>
                     </div>
                   </div>
