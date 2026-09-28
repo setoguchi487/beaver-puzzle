@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { FrontierArea, Creature } from '../../types';
 import { DevStageSelector } from '../common/DevStageSelector';
 import { sounds } from '../../utils/soundEffects';
@@ -56,6 +56,37 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
     ? '/assets/watermill.jpg'
     : '/assets/river_map.jpg';
 
+  // 案A: 自然復活サークル波紋演出用のステート
+  const [baseImage, setBaseImage] = useState(currentImage);
+  const [rippleImage, setRippleImage] = useState<string | null>(null);
+  const [isRippling, setIsRippling] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const prevImageRef = useRef(currentImage);
+
+  // currentImageが更新されたら波紋アニメーションを開始
+  useEffect(() => {
+    if (prevImageRef.current !== currentImage) {
+      const oldImg = prevImageRef.current;
+      const newImg = currentImage;
+      prevImageRef.current = currentImage;
+
+      setBaseImage(oldImg);
+      setRippleImage(newImg);
+      setIsRippling(true);
+
+      const timer = setTimeout(() => {
+        setBaseImage(newImg);
+        setRippleImage(null);
+        setIsRippling(false);
+      }, 1100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [currentImage]);
+
+
+
 
 
   const triggerConfetti = () => {
@@ -74,15 +105,40 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
     if (idx !== currentTaskIndex) return;
     if (woodPoints < cost) return;
 
+    const task = area.tasks[idx];
+
+    // 1. 木工ビルド音 ＋ 光の浄化アルペジオ
     sounds.playBuild();
+    setTimeout(() => {
+      sounds.playFogClear();
+    }, 120);
+
+    // 2. 達成メッセージバッジの表示
+    setSuccessMessage(`${task.title} 完了！✨`);
+    setTimeout(() => setSuccessMessage(null), 1400);
+
+    // 3. キラキラ星の祝福パーティクル（画像の中央付近）
+    confetti({
+      particleCount: 25,
+      spread: 60,
+      origin: { y: 0.32, x: 0.5 },
+      colors: ['#34d399', '#fbbf24', '#38bdf8', '#f43f5e', '#ffffff'],
+      shapes: ['star', 'circle'],
+      scalar: 0.9,
+      ticks: 75,
+    });
+
+    // 4. 親のタスク完了を呼び出す（currentImageが切り替わり波紋アニメが発動）
     onCompleteTask(area.id, taskId, cost);
 
     // 新たに完了した後の数を計算
     const nextCompleted = completedCount + 1;
     if (nextCompleted === area.tasks.length) {
-      sounds.playStageClear();
-      triggerConfetti();
-      onCompleteArea(area);
+      setTimeout(() => {
+        sounds.playStageClear();
+        triggerConfetti();
+        onCompleteArea(area);
+      }, 1000);
     }
   };
 
@@ -166,21 +222,48 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
         </div>
       </div>
 
-      {/* 3. エリア詳細ビジュアルマップ（下のタスク完了で段階的に図が美しく移り変わる！） */}
-      <div className="relative w-full aspect-[4/3] bg-slate-900 overflow-hidden shadow-inner border-b border-slate-800">
-        {/* 段階画像（クロスフェード切り替え） */}
+      {/* 3. エリア詳細ビジュアルマップ（案A: 自然復活サークル波紋演出！） */}
+      <div className={`relative w-full aspect-[4/3] bg-slate-900 overflow-hidden shadow-inner border-b border-slate-800 ${
+        isRippling ? 'animate-container-pulse' : ''
+      }`}>
+        {/* 下層: ベース画像（遷移前） */}
         <img
-          key={currentImage}
-          src={currentImage}
+          src={baseImage}
           alt={area.name}
-          className="w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover"
         />
 
+        {/* 上層: 新しい画像（中央から円形波紋でブワッと広がる！） */}
+        {rippleImage && isRippling && (
+          <img
+            key={rippleImage}
+            src={rippleImage}
+            alt={area.name}
+            className="absolute inset-0 w-full h-full object-cover animate-circle-ripple z-10"
+          />
+        )}
 
+        {/* 光の波紋リング（中央から外側へ広がるゴールド＆エメラルドの輪） */}
+        {isRippling && (
+          <>
+            <div className="absolute top-1/2 left-1/2 w-40 h-40 rounded-full border-4 border-amber-300/90 shadow-[0_0_35px_rgba(251,191,36,0.9)] animate-ripple-ring-1 pointer-events-none z-15" />
+            <div className="absolute top-1/2 left-1/2 w-40 h-40 rounded-full border-4 border-emerald-400/80 shadow-[0_0_45px_rgba(52,211,153,0.9)] animate-ripple-ring-2 pointer-events-none z-15" />
+          </>
+        )}
+
+        {/* 達成メッセージバッジ（中央にポンッと浮かんでフェード） */}
+        {successMessage && (
+          <div className="absolute top-1/2 left-1/2 z-30 pointer-events-none animate-success-badge whitespace-nowrap">
+            <div className="px-3.5 py-1.5 bg-slate-950/90 backdrop-blur-md border border-amber-400/80 rounded-2xl shadow-2xl flex items-center space-x-1.5 text-white font-black text-xs">
+              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+              <span className="text-amber-200">{successMessage}</span>
+            </div>
+          </div>
+        )}
 
         {/* 水面のきらめき (復旧が進むと輝く) */}
         {completedCount >= 2 && (
-          <div className="absolute top-[45%] left-[45%] w-16 h-16 bg-cyan-200/30 rounded-full blur-md animate-water-shimmer pointer-events-none" />
+          <div className="absolute top-[45%] left-[45%] w-16 h-16 bg-cyan-200/30 rounded-full blur-md animate-water-shimmer pointer-events-none z-5" />
         )}
 
         {/* 段階ステータスバッジ（右上に上品に小さく表示） */}
