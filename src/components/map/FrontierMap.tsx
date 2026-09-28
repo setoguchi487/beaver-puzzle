@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { FrontierArea, Creature } from '../../types';
+import { DevStageSelector } from '../common/DevStageSelector';
 import confetti from 'canvas-confetti';
 import {
   Lock,
@@ -19,6 +20,9 @@ interface FrontierMapProps {
   onCompleteTask: (areaId: string, taskId: string, cost: number) => void;
   onCompleteArea: (area: FrontierArea) => void;
   currentStageId: number;
+  onSelectStage: (stageId: number) => void;
+  onAddWood: (amount: number) => void;
+  onUnlockAllAreas: () => void;
 }
 
 export const FrontierMap: React.FC<FrontierMapProps> = ({
@@ -30,6 +34,9 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
   onCompleteTask,
   onCompleteArea,
   currentStageId,
+  onSelectStage,
+  onAddWood,
+  onUnlockAllAreas,
 }) => {
   const [selectedCreature, setSelectedCreature] = useState<Creature | null>(null);
   const [creatureReaction, setCreatureReaction] = useState<string | null>(null);
@@ -39,10 +46,8 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
 
     onCompleteTask(area.id, taskId, cost);
 
-    // 全タスク完了かチェック
     const remainingTasks = area.tasks.filter((t) => t.id !== taskId && !t.isCompleted);
     if (remainingTasks.length === 0) {
-      // エリアコンプリート！
       onCompleteArea(area);
       triggerConfetti();
     }
@@ -87,28 +92,36 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
             </div>
           </div>
 
-          {/* 所持木材 ＆ バッジ */}
+          {/* 所持木材・バッジ・開発者セレクター */}
           <div className="flex items-center space-x-1.5">
-            <div className="flex items-center space-x-1 bg-amber-500/20 border border-amber-500/40 px-2.5 py-1 rounded-xl">
-              <span className="text-sm">🪵</span>
+            <div className="flex items-center space-x-1 bg-amber-500/20 border border-amber-500/40 px-2 py-1 rounded-xl">
+              <span className="text-xs">🪵</span>
               <span className="text-xs font-black text-amber-400">
                 {woodPoints.toLocaleString()}
               </span>
             </div>
 
             <div className="flex items-center space-x-1 bg-purple-500/20 border border-purple-500/40 px-2 py-1 rounded-xl">
-              <span className="text-sm">🏅</span>
+              <span className="text-xs">🏅</span>
               <span className="text-xs font-black text-purple-300">
                 {badgesCount}
               </span>
             </div>
+
+            {/* 開発者用ステージ切り替えボタン */}
+            <DevStageSelector
+              currentStageId={currentStageId}
+              onSelectStage={onSelectStage}
+              onAddWood={onAddWood}
+              onUnlockAllAreas={onUnlockAllAreas}
+            />
           </div>
         </div>
       </header>
 
       {/* メインコンテンツ */}
       <main className="p-4 space-y-4">
-        {/* パズル挑戦バナー（最上部で目立つ） */}
+        {/* パズル挑戦バナー */}
         <div className="p-4 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 rounded-3xl shadow-lg text-amber-950 flex items-center justify-between">
           <div>
             <span className="text-[10px] font-black uppercase tracking-wider bg-black/10 px-2 py-0.5 rounded-full inline-block">
@@ -124,7 +137,7 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
 
           <button
             onClick={() => onStartPuzzle(currentStageId)}
-            className="p-3 bg-white text-orange-600 rounded-2xl shadow-md hover:scale-105 active:scale-95 transition-transform flex items-center justify-center font-black"
+            className="p-3 bg-white text-orange-600 rounded-2xl shadow-md hover:scale-105 active:scale-95 transition-transform flex items-center justify-center font-black cursor-pointer"
           >
             <Play className="w-6 h-6 fill-current" />
           </button>
@@ -158,7 +171,7 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                     : 'bg-slate-900/40 border-slate-800'
                 }`}
               >
-                {/* 1. 霧でロックされているエリア（演出） */}
+                {/* 1. 霧でロックされているエリア */}
                 {isLockedFog && (
                   <div className="flex flex-col items-center justify-center py-6 text-center space-y-2">
                     <div className="relative">

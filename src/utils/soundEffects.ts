@@ -27,7 +27,7 @@ class SoundEffectManager {
     return this.isMuted;
   }
 
-  // 1. スワイプ音（カサッ）
+  // スワイプ音
   public playSwipe() {
     if (this.isMuted) return;
     this.initCtx();
@@ -50,13 +50,12 @@ class SoundEffectManager {
     osc.stop(this.ctx.currentTime + 0.06);
   }
 
-  // 2. 木材マッチ音（カコーン！ウッドブロックの心地よい木琴音）
+  // 木材マッチ音（カコーン！）
   public playWoodMatch(combo: number = 1) {
     if (this.isMuted) return;
     this.initCtx();
     if (!this.ctx) return;
 
-    // コンボごとに音階上昇 (ド・ミ・ソ・ド・ミ...)
     const baseFreqs = [440, 493.88, 554.37, 587.33, 659.25, 739.99, 880];
     const freq = baseFreqs[Math.min(baseFreqs.length - 1, (combo - 1) % baseFreqs.length)];
 
@@ -77,7 +76,7 @@ class SoundEffectManager {
     osc.stop(this.ctx.currentTime + 0.12);
   }
 
-  // 3. 水滴マッチ音（ポチョン！）
+  // 水滴マッチ音（ポチョン！）
   public playWaterMatch() {
     if (this.isMuted) return;
     this.initCtx();
@@ -100,7 +99,102 @@ class SoundEffectManager {
     osc.stop(this.ctx.currentTime + 0.1);
   }
 
-  // 4. ロケット丸太発動音（シュバーン！）
+  // 氷ヒビ音（ピキッ！）
+  public playIceCrack() {
+    if (this.isMuted) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(1800, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(900, this.ctx.currentTime + 0.08);
+
+    gain.gain.setValueAtTime(0.16, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.09);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.09);
+  }
+
+  // 氷粉砕音（パリーン！❄️）
+  public playIceBreak() {
+    if (this.isMuted) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const freqs = [1200, 1600, 2100, 2800];
+    freqs.forEach((f, i) => {
+      if (!this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(f, this.ctx.currentTime + i * 0.02);
+
+      gain.gain.setValueAtTime(0.15, this.ctx.currentTime + i * 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + i * 0.02 + 0.12);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(this.ctx.currentTime + i * 0.02);
+      osc.stop(this.ctx.currentTime + i * 0.02 + 0.12);
+    });
+  }
+
+  // 岩粉砕音（ガシャン！🪨）
+  public playRockBreak() {
+    if (this.isMuted) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(120, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.18);
+
+    gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.2);
+  }
+
+  // ツタ切断音（ブチッ！🌿）
+  public playVineCut() {
+    if (this.isMuted) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(450, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(200, this.ctx.currentTime + 0.1);
+
+    gain.gain.setValueAtTime(0.18, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.12);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.12);
+  }
+
+  // ロケット丸太音
   public playRocket() {
     if (this.isMuted) return;
     this.initCtx();
@@ -123,7 +217,7 @@ class SoundEffectManager {
     osc.stop(this.ctx.currentTime + 0.22);
   }
 
-  // 5. レインボーどんぐり発動音（キラキラキラ〜✨）
+  // レインボー音
   public playRainbow() {
     if (this.isMuted) return;
     this.initCtx();
@@ -149,17 +243,17 @@ class SoundEffectManager {
     });
   }
 
-  // 6. ステージクリアファンファーレ🎉
+  // クリアファンファーレ
   public playStageClear() {
     if (this.isMuted) return;
     this.initCtx();
     if (!this.ctx) return;
 
     const melody = [
-      { f: 523.25, d: 0.12 }, // C
-      { f: 659.25, d: 0.12 }, // E
-      { f: 783.99, d: 0.12 }, // G
-      { f: 1046.50, d: 0.35 }, // C高
+      { f: 523.25, d: 0.12 },
+      { f: 659.25, d: 0.12 },
+      { f: 783.99, d: 0.12 },
+      { f: 1046.50, d: 0.35 },
     ];
 
     let t = this.ctx.currentTime;

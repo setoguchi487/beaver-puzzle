@@ -2,15 +2,23 @@ export type PieceType = 'wood' | 'twig' | 'water' | 'acorn' | 'stone';
 
 export type SpecialType = 'none' | 'rocket_h' | 'rocket_v' | 'bomb' | 'rainbow';
 
+export type GimmickType = 'none' | 'ice' | 'rock' | 'vine';
+
+export interface TileGimmick {
+  type: GimmickType;
+  hp: number; // 残り耐久力 (例: 氷は2または1、岩は2または1)
+}
+
 export interface PuzzleTile {
   id: string;
   type: PieceType;
   special: SpecialType;
+  gimmick?: TileGimmick;
   isMatched?: boolean;
 }
 
 export interface StageTarget {
-  type: PieceType;
+  type: PieceType | 'ice' | 'rock' | 'vine';
   required: number;
   current: number;
 }
@@ -23,6 +31,13 @@ export interface PuzzleStage {
   woodReward: number;
   unfogAreaIds: string[]; // このステージをクリアすると霧が晴れるエリア
   description: string;
+  newGimmickIntro?: {
+    type: GimmickType;
+    title: string;
+    description: string;
+    icon: string;
+  };
+  initialGimmicks?: { r: number; c: number; type: GimmickType; hp: number }[];
 }
 
 export interface AreaTask {
@@ -72,5 +87,5 @@ export interface GameState {
   completedAreaIds: string[];
   badges: string[];
   unlockedCreatures: string[];
-  taskCompletions: Record<string, boolean>; // taskId -> boolean
+  taskCompletions: Record<string, boolean>;
 }

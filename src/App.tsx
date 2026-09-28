@@ -41,6 +41,25 @@ export const App: React.FC = () => {
     localStorage.setItem(STORAGE_KEY + '_creatures', JSON.stringify(unlockedCreatures));
   }, [woodPoints, areas, badges, unlockedCreatures]);
 
+  // 開発者用チート・ステージ選択
+  const handleSelectStage = (stageId: number) => {
+    setCurrentStageId(stageId);
+    setScreenMode('puzzle');
+  };
+
+  const handleAddWood = (amount: number) => {
+    setWoodPoints((prev) => prev + amount);
+  };
+
+  const handleUnlockAllAreas = () => {
+    setAreas((prev) =>
+      prev.map((a) => ({
+        ...a,
+        status: a.status === 'completed' ? 'completed' : 'cleared_fog',
+      }))
+    );
+  };
+
   // パズルクリア時の処理
   const handleStageClear = (rewardWood: number, unfogAreaIds: string[]) => {
     // 1. 木材獲得
@@ -126,12 +145,19 @@ export const App: React.FC = () => {
           }}
           onCompleteTask={handleCompleteTask}
           onCompleteArea={handleCompleteArea}
+          onSelectStage={handleSelectStage}
+          onAddWood={handleAddWood}
+          onUnlockAllAreas={handleUnlockAllAreas}
         />
       ) : (
         <Match3Board
           stage={currentStage}
           onStageClear={handleStageClear}
           onExit={() => setScreenMode('map')}
+          currentStageId={currentStageId}
+          onSelectStage={handleSelectStage}
+          onAddWood={handleAddWood}
+          onUnlockAllAreas={handleUnlockAllAreas}
         />
       )}
 
