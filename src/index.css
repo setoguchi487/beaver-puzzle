@@ -242,3 +242,17 @@ body {
 .animate-ruined-alert {
   animation: ruinedAlert 2.5s ease-in-out infinite;
 }
+
+/* 川沿いを優雅に漂う朝霧アニメーション */
+@keyframes riverFogDrift {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-8px, -2px) scale(1.04);
+  }
+}
+
+.animate-river-fog {
+  animation: riverFogDrift 9s ease-in-out infinite;
+}
