@@ -262,7 +262,7 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
           className="relative w-full overflow-y-auto no-scrollbar scroll-smooth"
           style={{ maxHeight: 'calc(100vh - 140px)' }}
         >
-          <div className="relative w-full aspect-[9/16] min-h-[1400px] bg-slate-900 select-none">
+          <div className="relative w-full aspect-[9/16] min-h-[760px] bg-slate-900 select-none">
             {/* メイン自然俯瞰背景 */}
             <img
               src="/assets/river_map.jpg"
@@ -295,29 +295,18 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                       onClick={() => setSelectedArea(area)}
                       className="absolute -translate-x-1/2 -translate-y-1/2 z-25 cursor-pointer flex flex-col items-center group"
                     >
-                      {/* 超巨大・完全不透明な多層楕円雲塊 (幅約280px, 高さ約200px) */}
-                      <div className="relative w-72 h-52 flex items-center justify-center pointer-events-none select-none">
-                        {/* 雲の影（背後の立体感） */}
-                        <div className="absolute w-64 h-44 bg-slate-400/60 rounded-[50%] blur-md translate-y-3" />
-
-                        {/* 層1: メイン大楕円（純白ソリッド 100%不透明） */}
-                        <div className="absolute w-64 h-44 bg-white rounded-[50%] shadow-2xl border-4 border-slate-100 animate-fog-cloud-1" />
-
-                        {/* 層2: 左に大きく張り出すモコモコ楕円（純白ソリッド 100%） */}
-                        <div className="absolute -left-6 top-1 w-52 h-36 bg-slate-50 rounded-[55%] shadow-xl animate-fog-cloud-2" />
-
-                        {/* 層3: 右に大きく張り出すモコモコ楕円（純白ソリッド 100%） */}
-                        <div className="absolute -right-6 bottom-0 w-56 h-38 bg-white rounded-[52%] shadow-xl animate-fog-cloud-3" />
-
-                        {/* 層4: 上部のモコモコ頭（純白ソリッド 100%） */}
-                        <div className="absolute -top-4 w-48 h-32 bg-slate-100 rounded-[50%] shadow-md animate-fog-cloud-1" />
-
-                        {/* 層5: 下部のモコモコ（純白ソリッド 100%） */}
-                        <div className="absolute -bottom-3 w-50 h-34 bg-white rounded-[54%] shadow-lg animate-fog-cloud-2" />
+                      {/* AI生成した絵本調のふんわり巨大雲塊イラスト (完全目隠し・世界観連動) */}
+                      <div className="relative w-64 h-48 flex items-center justify-center pointer-events-none select-none">
+                        {/* 雲のイラスト (中央は100%ソリッド不透明で完全に目隠し) */}
+                        <img
+                          src="/assets/fog_cloud.png"
+                          alt="朝霧の雲"
+                          className="w-full h-full object-contain filter drop-shadow-2xl animate-fog-cloud-1"
+                        />
 
                         {/* 雲の中央に浮かぶロック標識 */}
-                        <div className="relative z-10 flex flex-col items-center pointer-events-auto group-hover:scale-105 active:scale-95 transition-transform">
-                          <div className="w-9 h-9 rounded-full bg-slate-900/95 border-2 border-slate-400 flex items-center justify-center shadow-2xl">
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-auto group-hover:scale-105 active:scale-95 transition-transform">
+                          <div className="w-9 h-9 rounded-full bg-slate-900/95 border-2 border-amber-400 flex items-center justify-center shadow-2xl">
                             <Lock className="w-4 h-4 text-amber-300" />
                           </div>
                           <span className="mt-1 px-2.5 py-0.5 bg-slate-950/90 backdrop-blur-xs border border-slate-700 text-[8px] font-black text-slate-200 rounded-full shadow-2xl whitespace-nowrap">
@@ -577,9 +566,9 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
             {/* 1. ロック中の説明 */}
             {selectedArea.status === 'locked_fog' && (
               <div className="p-4 bg-slate-950/60 border border-slate-800 rounded-2xl text-center space-y-2">
-                <div className="relative w-12 h-12 mx-auto flex items-center justify-center">
-                  <div className="absolute inset-0 bg-white/20 rounded-full blur-md animate-fog-cloud-1" />
-                  <Lock className="w-6 h-6 text-slate-300 relative z-10" />
+                <div className="relative w-16 h-12 mx-auto flex items-center justify-center">
+                  <img src="/assets/fog_cloud.png" alt="霧" className="w-full h-full object-contain filter drop-shadow-md animate-fog-cloud-1" />
+                  <Lock className="w-5 h-5 text-amber-300 absolute z-10" />
                 </div>
                 <h4 className="text-xs font-black text-slate-300">
                   このエリアは分厚い雲海で覆われています
