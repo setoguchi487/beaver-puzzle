@@ -111,17 +111,21 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
 
   const handleCreatureTap = (c: Creature) => {
     setSelectedCreature(c);
-    const reactions = ['ピィッ！♪', 'クエックエッ✨', 'るんるん❤️', 'カリカリ…🌰', 'パタパタ〜🌿', 'グルル〜♪', 'ホーホー🦉✨'];
+    const reactions = [
+      'ピィッ！♪', 'クエックエッ✨', 'るんるん❤️', 'カリカリ…🌰',
+      'パタパタ〜🌿', 'グルル〜♪', 'ホーホー🦉✨', 'キィキィ〜！🐒',
+      'クワッ！🦢', 'ガサゴソ🦝', 'コンコン🦊✨', 'ガオーッ！🐻'
+    ];
     setCreatureReaction(reactions[Math.floor(Math.random() * reactions.length)]);
     setTimeout(() => setCreatureReaction(null), 2200);
   };
 
   const handleBeaverTap = () => {
     const dialogues = [
-      '丸太を集めて、荒れ果てた川を蘇らせよう！🦫✨',
-      '霧が晴れた場所にはガレキがあるよ。木材で修復しよう！🥀➔🌿',
-      'エリアを1つ復活させるとバッジが手に入り、奥の霧が晴れるよ！🏅',
-      '水車小屋を建て直したら、パンを焼いてピクニックしよう！🥐',
+      '丸太を集めて、分厚い雲の奥を開拓しよう！🦫✨',
+      'エリアを1つ復活させるとバッジが手に入り、次の巨大な雲が晴れるよ！🏅',
+      '荒廃した川辺を修復すると、森の仲間たちがどんどん戻ってくるよ！🦆🐟',
+      '全15エリアの最上流には、伝説の「ビーバーの桃源郷」が待っているよ！👑',
       'ふたりの川、どんどん命が吹き込まれてきたね！🪵💖',
     ];
     setBeaverDialogue(dialogues[Math.floor(Math.random() * dialogues.length)]);
@@ -252,13 +256,13 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
 
       {/* 2. メインコンテンツエリア */}
       {viewMode === 'panorama' ? (
-        /* パノラマ箱庭自然マップビュー */
+        /* パノラマ箱庭自然マップビュー (15エリア探索用の縦長スケール: min-h-1400px) */
         <div
           ref={mapScrollRef}
           className="relative w-full overflow-y-auto no-scrollbar scroll-smooth"
           style={{ maxHeight: 'calc(100vh - 140px)' }}
         >
-          <div className="relative w-full aspect-[9/16] min-h-[760px] bg-slate-900 select-none">
+          <div className="relative w-full aspect-[9/16] min-h-[1400px] bg-slate-900 select-none">
             {/* メイン自然俯瞰背景 */}
             <img
               src="/assets/river_map.jpg"
@@ -267,11 +271,11 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
             />
 
             {/* 水面のきらめきエフェクト */}
-            <div className="absolute top-[52%] left-[45%] w-12 h-12 bg-white/20 rounded-full blur-md animate-water-shimmer pointer-events-none" />
-            <div className="absolute top-[82%] left-[55%] w-16 h-16 bg-cyan-200/20 rounded-full blur-lg animate-water-shimmer pointer-events-none" />
+            <div className="absolute top-[52%] left-[45%] w-14 h-14 bg-white/20 rounded-full blur-md animate-water-shimmer pointer-events-none" />
+            <div className="absolute top-[82%] left-[55%] w-20 h-20 bg-cyan-200/20 rounded-full blur-lg animate-water-shimmer pointer-events-none" />
 
             {/* ========================================================
-                各エリアごとの「楕円の霧」「荒廃ビジュアル」「復旧・復活パーツ」
+                全15エリアの「完全不透明・超巨大楕円雲海」「荒廃」「復活パーツ」
                 ======================================================== */}
             {areas.map((area) => {
               const isLocked = area.status === 'locked_fog';
@@ -283,7 +287,7 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
               return (
                 <React.Fragment key={`area_render_${area.id}`}>
                   {/* ----------------------------------------------------
-                      A. 未踏エリア: 有機的な楕円の雲（モクモクした霧塊）
+                      A. 未踏エリア: 【完全不透明（100%遮断）＆超巨大楕円雲塊】
                       ---------------------------------------------------- */}
                   {isLocked && (
                     <div
@@ -291,21 +295,32 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                       onClick={() => setSelectedArea(area)}
                       className="absolute -translate-x-1/2 -translate-y-1/2 z-25 cursor-pointer flex flex-col items-center group"
                     >
-                      {/* 重なり合う3層の楕円形の白い雲塊 */}
-                      <div className="relative w-40 h-28 flex items-center justify-center pointer-events-none">
-                        {/* 雲層1: 大きな横長楕円 */}
-                        <div className="absolute w-36 h-22 bg-gradient-to-br from-slate-100/90 via-slate-200/85 to-slate-300/80 rounded-[50%] blur-sm shadow-xl border border-white/60 animate-fog-cloud-1" />
-                        {/* 雲層2: やや斜めの楕円 */}
-                        <div className="absolute w-32 h-24 bg-gradient-to-tr from-white/90 via-slate-100/80 to-slate-200/70 rounded-[55%] blur-sm shadow-md animate-fog-cloud-2" />
-                        {/* 雲層3: ふんわり中心のハイライト雲 */}
-                        <div className="absolute w-24 h-18 bg-white/95 rounded-[50%] blur-xs animate-fog-cloud-3" />
+                      {/* 超巨大・完全不透明な多層楕円雲塊 (幅約280px, 高さ約200px) */}
+                      <div className="relative w-72 h-52 flex items-center justify-center pointer-events-none select-none">
+                        {/* 雲の影（背後の立体感） */}
+                        <div className="absolute w-64 h-44 bg-slate-400/60 rounded-[50%] blur-md translate-y-3" />
 
-                        {/* 霧の中心に浮かぶロック標識 */}
+                        {/* 層1: メイン大楕円（純白ソリッド 100%不透明） */}
+                        <div className="absolute w-64 h-44 bg-white rounded-[50%] shadow-2xl border-4 border-slate-100 animate-fog-cloud-1" />
+
+                        {/* 層2: 左に大きく張り出すモコモコ楕円（純白ソリッド 100%） */}
+                        <div className="absolute -left-6 top-1 w-52 h-36 bg-slate-50 rounded-[55%] shadow-xl animate-fog-cloud-2" />
+
+                        {/* 層3: 右に大きく張り出すモコモコ楕円（純白ソリッド 100%） */}
+                        <div className="absolute -right-6 bottom-0 w-56 h-38 bg-white rounded-[52%] shadow-xl animate-fog-cloud-3" />
+
+                        {/* 層4: 上部のモコモコ頭（純白ソリッド 100%） */}
+                        <div className="absolute -top-4 w-48 h-32 bg-slate-100 rounded-[50%] shadow-md animate-fog-cloud-1" />
+
+                        {/* 層5: 下部のモコモコ（純白ソリッド 100%） */}
+                        <div className="absolute -bottom-3 w-50 h-34 bg-white rounded-[54%] shadow-lg animate-fog-cloud-2" />
+
+                        {/* 雲の中央に浮かぶロック標識 */}
                         <div className="relative z-10 flex flex-col items-center pointer-events-auto group-hover:scale-105 active:scale-95 transition-transform">
-                          <div className="w-8 h-8 rounded-full bg-slate-900/80 border border-slate-400 flex items-center justify-center shadow-md">
-                            <Lock className="w-4 h-4 text-slate-300" />
+                          <div className="w-9 h-9 rounded-full bg-slate-900/95 border-2 border-slate-400 flex items-center justify-center shadow-2xl">
+                            <Lock className="w-4 h-4 text-amber-300" />
                           </div>
-                          <span className="mt-1 px-2 py-0.5 bg-slate-950/80 backdrop-blur-xs border border-slate-700 text-[8px] font-black text-slate-200 rounded-full shadow-md whitespace-nowrap">
+                          <span className="mt-1 px-2.5 py-0.5 bg-slate-950/90 backdrop-blur-xs border border-slate-700 text-[8px] font-black text-slate-200 rounded-full shadow-2xl whitespace-nowrap">
                             🏅 あと{Math.max(1, area.requiredBadges - badgesCount)}個で晴れる
                           </span>
                         </div>
@@ -318,21 +333,20 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                       ---------------------------------------------------- */}
                   {isCleared && (
                     <>
-                      {/* 荒廃状態のマップ上ビジュアル（倒木・濁り水・崩れた土手） */}
+                      {/* 荒廃時のマップ上ビジュアル（泥水、倒木、崩れたガレキ） */}
                       {completedTasksCount === 0 && (
                         <div
                           style={{ top: `${coords.y + 3}%`, left: `${coords.x}%` }}
                           className="absolute -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none flex flex-col items-center animate-fade-in"
                         >
-                          {/* 泥・荒れ地の茶色いスポット */}
                           <div className="w-16 h-8 bg-amber-950/70 rounded-[50%] blur-xs border border-amber-900/50" />
                           <span className="text-xs opacity-90 -mt-3 filter drop-shadow-md">
-                            {(area.ruinedIcon || "🥀")}
+                            {area.ruinedIcon?.slice(0, 2) || '🥀'}
                           </span>
                         </div>
                       )}
 
-                      {/* タスク1完了時: 荒廃が片付き、半復旧したパーツ */}
+                      {/* タスク1完了時: 半復旧パーツ */}
                       {completedTasksCount === 1 && (
                         <div
                           style={{ top: `${coords.y + 2}%`, left: `${coords.x}%` }}
@@ -345,29 +359,28 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                         </div>
                       )}
 
-                      {/* 開拓インタラクションピン（荒廃アラート表示） */}
+                      {/* 開拓ピン（荒廃アラート表示） */}
                       <div
                         ref={activePinRef}
                         style={{ top: `${coords.y}%`, left: `${coords.x}%` }}
                         onClick={() => setSelectedArea(area)}
                         className="absolute -translate-x-1/2 -translate-y-1/2 z-20 cursor-pointer flex flex-col items-center group"
                       >
-                        {/* 荒廃を知らせる琥珀色パルス */}
                         <div className="absolute -inset-2 bg-amber-500/30 rounded-full blur-md animate-ping pointer-events-none" />
 
                         <div className="relative w-12 h-12 bg-gradient-to-tr from-amber-600 via-amber-500 to-yellow-400 border-2 border-white rounded-full flex items-center justify-center shadow-xl group-hover:scale-110 active:scale-95 transition-transform animate-ruined-alert">
                           <span className="text-xl animate-bounce-subtle">
-                            {completedTasksCount === 0 ? ((area.ruinedIcon || "🥀") ? (area.ruinedIcon || "🥀").slice(0, 2) : "🥀") : area.icon}
+                            {completedTasksCount === 0 ? (area.ruinedIcon ? area.ruinedIcon.slice(0, 2) : '🥀') : area.icon}
                           </span>
                           <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-rose-500 rounded-full border-2 border-white animate-pulse" />
                         </div>
 
-                        {/* エリア名ラベル（荒廃時は荒廃名表示） */}
+                        {/* エリア名ラベル */}
                         <span className="mt-1 px-2.5 py-0.5 bg-amber-950/95 border border-amber-400 text-[10px] font-black text-amber-200 rounded-full shadow-lg flex items-center space-x-1 whitespace-nowrap">
                           {completedTasksCount === 0 ? (
                             <>
                               <AlertTriangle className="w-2.5 h-2.5 text-amber-400" />
-                              <span>{(area.ruinedName || (area.name + " (荒廃)"))}</span>
+                              <span>{area.ruinedName || area.name}</span>
                             </>
                           ) : (
                             <>
@@ -385,76 +398,16 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                       ---------------------------------------------------- */}
                   {isCompleted && (
                     <>
-                      {/* 各エリアの完全復活建築物・自然オブジェクト */}
-                      {area.id === 'stream_entry' && (
-                        <div
-                          style={{ top: `${coords.y + 3}%`, left: `${coords.x}%` }}
-                          className="absolute -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none animate-pop-in flex flex-col items-center"
-                        >
-                          <span className="text-xs">🪨🪵✨ 飛び石と清流</span>
-                        </div>
-                      )}
-
-                      {area.id === 'small_dam' && (
-                        <div
-                          style={{ top: `${coords.y + 4}%`, left: `${coords.x}%` }}
-                          className="absolute -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none animate-pop-in px-2 py-0.5 bg-teal-950/80 border border-teal-400/50 rounded-xl text-[9px] text-teal-200 font-black shadow-md flex items-center space-x-1"
-                        >
-                          <span>🪵🌊 小枝ダム</span>
-                        </div>
-                      )}
-
-                      {area.id === 'beaver_lodge' && (
-                        <div
-                          style={{ top: `${coords.y - 4}%`, left: `${coords.x + 3}%` }}
-                          className="absolute -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none animate-pop-in flex flex-col items-center"
-                        >
-                          <span className="text-xl animate-bounce-subtle">🏡💭</span>
-                          <span className="text-[8px] bg-amber-950/90 text-amber-200 font-black px-1.5 rounded-full border border-amber-400">
-                            温かいロッジ
-                          </span>
-                        </div>
-                      )}
-
-                      {area.id === 'fishing_pier' && (
-                        <div
-                          style={{ top: `${coords.y + 3}%`, left: `${coords.x - 3}%` }}
-                          className="absolute -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none animate-pop-in text-sm"
-                        >
-                          🪵🎣 釣りテラス
-                        </div>
-                      )}
-
-                      {area.id === 'watermill_zone' && (
-                        <div
-                          style={{ top: `${coords.y + 3}%`, left: `${coords.x}%` }}
-                          className="absolute -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none animate-pop-in flex items-center space-x-1 px-2 py-0.5 bg-blue-950/80 border border-blue-400/50 rounded-xl text-[9px] text-blue-200 font-black shadow-md"
-                        >
-                          <span className="text-base inline-block animate-spin-slow">⚙️</span>
-                          <span>水車パン工房</span>
-                        </div>
-                      )}
-
-                      {area.id === 'flower_garden' && (
-                        <div
-                          style={{ top: `${coords.y + 2}%`, left: `${coords.x}%` }}
-                          className="absolute -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none animate-pop-in text-xs flex items-center space-x-1"
-                        >
-                          <span className="animate-pulse">🌸🌺✨ ホタルの花園</span>
-                        </div>
-                      )}
-
-                      {area.id === 'emerald_lake' && (
-                        <div
-                          style={{ top: `${coords.y - 4}%`, left: `${coords.x}%` }}
-                          className="absolute -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none animate-pop-in flex flex-col items-center"
-                        >
-                          <span className="text-2xl animate-bounce-subtle">👑🏰✨</span>
-                          <span className="text-[8px] bg-purple-950/90 text-purple-200 font-black px-1.5 rounded-full border border-purple-400">
-                            桃源郷グランドダム
-                          </span>
-                        </div>
-                      )}
+                      {/* 復活後の固有オブジェクト演出 */}
+                      <div
+                        style={{ top: `${coords.y + 3}%`, left: `${coords.x}%` }}
+                        className="absolute -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none animate-pop-in flex flex-col items-center"
+                      >
+                        <span className="text-xs px-2 py-0.5 bg-slate-950/80 rounded-full border border-emerald-400/50 text-emerald-200 font-black shadow-md flex items-center space-x-1 whitespace-nowrap">
+                          <span>{area.icon}</span>
+                          <span>{area.name}</span>
+                        </span>
+                      </div>
 
                       {/* コンプリートピン（エメラルドの輝き） */}
                       <div
@@ -481,117 +434,31 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
             })}
 
             {/* ========================================================
-                開拓コンプリートで戻ってきた生き物たちのアニメーション
+                開拓完了した生き物たちのダイナミック活動演出
                 ======================================================== */}
             {areas.map((area) => {
               if (area.status !== 'completed') return null;
               const creature = area.creature;
               const coords = area.mapCoords || { x: 50, y: 50 };
 
-              if (creature.id === 'mallard_duck') {
-                return (
-                  <div
-                    key={creature.id}
-                    onClick={() => handleCreatureTap(creature)}
-                    style={{ top: `${coords.y + 6}%`, left: `${coords.x - 12}%` }}
-                    className="absolute z-15 cursor-pointer animate-duck-swim"
-                    title={creature.name}
-                  >
-                    <span className="text-2xl filter drop-shadow-md inline-block">🦆</span>
-                  </div>
-                );
-              }
-
-              if (creature.id === 'sweetfish') {
-                return (
-                  <div
-                    key={creature.id}
-                    onClick={() => handleCreatureTap(creature)}
-                    style={{ top: `${coords.y + 2}%`, left: `${coords.x + 12}%` }}
-                    className="absolute z-15 cursor-pointer animate-fish-jump"
-                    title={creature.name}
-                  >
-                    <span className="text-lg filter drop-shadow-md inline-block">🐟</span>
-                  </div>
-                );
-              }
-
-              if (creature.id === 'chipmunk') {
-                return (
-                  <div
-                    key={creature.id}
-                    onClick={() => handleCreatureTap(creature)}
-                    style={{ top: `${coords.y + 4}%`, left: `${coords.x + 14}%` }}
-                    className="absolute z-15 cursor-pointer animate-creature-hop"
-                    title={creature.name}
-                  >
-                    <span className="text-xl filter drop-shadow-md inline-block">🐿️</span>
-                  </div>
-                );
-              }
-
-              if (creature.id === 'kingfisher') {
-                return (
-                  <div
-                    key={creature.id}
-                    onClick={() => handleCreatureTap(creature)}
-                    style={{ top: `${coords.y - 4}%`, left: `${coords.x - 10}%` }}
-                    className="absolute z-15 cursor-pointer animate-bird-hover"
-                    title={creature.name}
-                  >
-                    <span className="text-xl filter drop-shadow-md inline-block">🐦</span>
-                  </div>
-                );
-              }
-
-              if (creature.id === 'owl') {
-                return (
-                  <div
-                    key={creature.id}
-                    onClick={() => handleCreatureTap(creature)}
-                    style={{ top: `${coords.y - 5}%`, left: `${coords.x + 12}%` }}
-                    className="absolute z-15 cursor-pointer animate-bounce-subtle"
-                    title={creature.name}
-                  >
-                    <span className="text-xl filter drop-shadow-md inline-block">🦉</span>
-                  </div>
-                );
-              }
-
-              if (creature.id === 'deer') {
-                return (
-                  <div
-                    key={creature.id}
-                    onClick={() => handleCreatureTap(creature)}
-                    style={{ top: `${coords.y + 2}%`, left: `${coords.x - 12}%` }}
-                    className="absolute z-15 cursor-pointer animate-bounce-subtle"
-                    title={creature.name}
-                  >
-                    <span className="text-2xl filter drop-shadow-md inline-block">🦌</span>
-                  </div>
-                );
-              }
-
-              if (creature.id === 'bear_family') {
-                return (
-                  <div
-                    key={creature.id}
-                    onClick={() => handleCreatureTap(creature)}
-                    style={{ top: `${coords.y + 2}%`, left: `${coords.x + 12}%` }}
-                    className="absolute z-15 cursor-pointer animate-bounce-subtle"
-                    title={creature.name}
-                  >
-                    <span className="text-3xl filter drop-shadow-md inline-block">🐻</span>
-                  </div>
-                );
-              }
-
-              return null;
+              return (
+                <div
+                  key={creature.id}
+                  onClick={() => handleCreatureTap(creature)}
+                  style={{ top: `${coords.y + 4}%`, left: `${coords.x + 8}%` }}
+                  className="absolute z-15 cursor-pointer animate-creature-hop"
+                  title={creature.name}
+                >
+                  <span className="text-2xl filter drop-shadow-md inline-block">
+                    {creature.icon}
+                  </span>
+                </div>
+              );
             })}
           </div>
         </div>
       ) : (
-        /* リスト詳細ビュー（一覧形式） */
+        /* リスト詳細ビュー（一覧形式: 全15エリア） */
         <div className="p-4 space-y-3 overflow-y-auto no-scrollbar" style={{ maxHeight: 'calc(100vh - 140px)' }}>
           <div className="text-xs font-bold text-slate-400 flex items-center justify-between pb-1">
             <span>開拓エリア一覧（全{areas.length}箇所）</span>
@@ -617,12 +484,12 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <span className="text-2xl p-2 bg-slate-900/80 rounded-xl border border-slate-700">
-                      {isLocked ? '🔒' : isCompleted ? area.icon : ((area.ruinedIcon || "🥀") ? (area.ruinedIcon || "🥀").slice(0, 2) : "🥀")}
+                      {isLocked ? '🔒' : isCompleted ? area.icon : (area.ruinedIcon ? area.ruinedIcon.slice(0, 2) : '🥀')}
                     </span>
                     <div>
                       <div className="flex items-center space-x-1.5">
                         <span className="text-xs font-black text-white">
-                          {isCompleted ? area.name : (area.ruinedName || (area.name + " (荒廃)"))}
+                          {isCompleted ? area.name : (area.ruinedName || area.name)}
                         </span>
                         {isCompleted && (
                           <span className="text-[9px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.2 rounded-md font-bold">
@@ -666,12 +533,14 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                     ? '🔒'
                     : selectedArea.status === 'completed'
                     ? selectedArea.icon
-                    : selectedArea.ruinedIcon.slice(0, 2)}
+                    : (selectedArea.ruinedIcon ? selectedArea.ruinedIcon.slice(0, 2) : '🥀')}
                 </span>
                 <div>
                   <div className="flex items-center space-x-1.5">
                     <span className="text-sm font-black text-white">
-                      {selectedArea.status === 'completed' ? selectedArea.name : selectedArea.ruinedName}
+                      {selectedArea.status === 'completed'
+                        ? selectedArea.name
+                        : (selectedArea.ruinedName || selectedArea.name)}
                     </span>
                     {selectedArea.status === 'completed' ? (
                       <span className="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.5 rounded-full font-bold flex items-center space-x-0.5">
@@ -685,14 +554,14 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                       </span>
                     ) : (
                       <span className="text-[9px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded-full font-bold">
-                        濃い霧の奥
+                        分厚い雲の奥
                       </span>
                     )}
                   </div>
                   <p className="text-[11px] text-slate-400 mt-0.5">
                     {selectedArea.status === 'completed'
                       ? selectedArea.description
-                      : selectedArea.ruinedDescription}
+                      : (selectedArea.ruinedDescription || selectedArea.description)}
                   </p>
                 </div>
               </div>
@@ -713,10 +582,10 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                   <Lock className="w-6 h-6 text-slate-300 relative z-10" />
                 </div>
                 <h4 className="text-xs font-black text-slate-300">
-                  このエリアは濃い朝霧で覆われています
+                  このエリアは分厚い雲海で覆われています
                 </h4>
                 <p className="text-[11px] text-slate-400 leading-relaxed">
-                  手前のエリアを復旧して**バッジを{selectedArea.requiredBadges}個**集めると、この楕円の霧がサーッと晴れて荒廃した川辺が出現します！
+                  手前のエリアを復旧して**バッジを{selectedArea.requiredBadges}個**集めると、この巨大な雲がサーッと晴れて荒廃した川辺が出現します！
                 </p>
                 <div className="text-xs font-mono font-bold text-amber-400 bg-amber-950/30 py-1.5 rounded-xl border border-amber-500/20">
                   現在の獲得バッジ: {badgesCount} / {selectedArea.requiredBadges}
