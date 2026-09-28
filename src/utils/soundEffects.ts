@@ -3,6 +3,10 @@
 class SoundEffectManager {
   private ctx: AudioContext | null = null;
   private isMuted: boolean = false;
+  private ambientSource: AudioBufferSourceNode | null = null;
+  private ambientGain: GainNode | null = null;
+  private birdTimer: ReturnType<typeof setTimeout> | null = null;
+  private isAmbientRunning: boolean = false;
 
   constructor() {
     // ユーザー操作時に初期化
@@ -20,6 +24,18 @@ class SoundEffectManager {
 
   public toggleMute(): boolean {
     this.isMuted = !this.isMuted;
+    if (this.isMuted) {
+      if (this.ambientGain) {
+        this.ambientGain.gain.setValueAtTime(0, this.ctx?.currentTime || 0);
+      }
+    } else {
+      if (this.ambientGain) {
+        this.ambientGain.gain.setValueAtTime(0.045, this.ctx?.currentTime || 0);
+      }
+      if (this.isAmbientRunning && !this.ambientSource) {
+        this.startAmbient();
+      }
+    }
     return this.isMuted;
   }
 
@@ -328,6 +344,114 @@ class SoundEffectManager {
 
       osc.start(this.ctx.currentTime + idx * 0.08);
       osc.stop(this.ctx.currentTime + idx * 0.08 + 0.35);
+    });
+  }
+
+  // 13. 環境音（川のせせらぎ ＆ 森の小鳥）
+  public startAmbient() {
+    this.isAmbientRunning = true;
+    if (this.isMuted) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    if (this.ambientSource) return; // 既に再生中
+
+    try {
+      // 2秒間のピンク/水流ノイズバッファ生成
+      const sampleRate = this.ctx.sampleRate;
+      const bufferSize = sampleRate * 2;
+      const buffer = this.ctx.createBuffer(1, bufferSize, sampleRate);
+      const data = buffer.getChannelData(0);
+
+      let lastOut = 0.0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        // 簡易ピンクノイズフィルター
+        data[i] = (lastOut + 0.02 * white) / 1.02;
+        lastOut = data[i];
+        data[i] *= 2.5;
+      }
+
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = buffer;
+      noise.loop = true;
+
+      // 川の水の帯域（バンドパス 450Hz〜1200Hz）
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = "bandpass";
+      filter.frequency.setValueAtTime(650, this.ctx.currentTime);
+      filter.Q.setValueAtTime(1.0, this.ctx.currentTime);
+
+      const gain = this.ctx.createGain();
+      gain.gain.setValueAtTime(0.045, this.ctx.currentTime); // 控えめで心地よい音量
+
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      noise.start();
+      this.ambientSource = noise;
+      this.ambientGain = gain;
+
+      this.scheduleBirdChirp();
+    } catch {
+      // AudioContext未初期化などの安全対策
+    }
+  }
+
+  public stopAmbient() {
+    this.isAmbientRunning = false;
+    if (this.birdTimer) {
+      clearTimeout(this.birdTimer);
+      this.birdTimer = null;
+    }
+    if (this.ambientSource) {
+      try {
+        this.ambientSource.stop();
+        this.ambientSource.disconnect();
+      } catch {}
+      this.ambientSource = null;
+      this.ambientGain = null;
+    }
+  }
+
+  // 小鳥のランダムなさえずり（5〜10秒おき）
+  private scheduleBirdChirp() {
+    if (!this.isAmbientRunning) return;
+    const delay = Math.random() * 5000 + 4000;
+    this.birdTimer = setTimeout(() => {
+      if (this.isAmbientRunning && !this.isMuted) {
+        this.playBirdChirp();
+      }
+      this.scheduleBirdChirp();
+    }, delay);
+  }
+
+  // 小鳥のさえずり音（ピピッ♪）
+  public playBirdChirp() {
+    if (this.isMuted) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const baseFreq = 2400 + Math.random() * 600;
+    [0, 0.07].forEach((t, i) => {
+      if (!this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = "sine";
+      const f = i === 0 ? baseFreq : baseFreq * 1.25;
+      osc.frequency.setValueAtTime(f, this.ctx.currentTime + t);
+      osc.frequency.exponentialRampToValueAtTime(f * 0.8, this.ctx.currentTime + t + 0.05);
+
+      gain.gain.setValueAtTime(0.025, this.ctx.currentTime + t);
+      gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + t + 0.05);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(this.ctx.currentTime + t);
+      osc.stop(this.ctx.currentTime + t + 0.05);
     });
   }
 }

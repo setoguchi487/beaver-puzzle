@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { FrontierArea, Creature } from '../../types';
 import { DevStageSelector } from '../common/DevStageSelector';
 import { sounds } from '../../utils/soundEffects';
@@ -51,6 +51,32 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
   const [beaverDialogue, setBeaverDialogue] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(sounds.getMuted());
 
+  const mapScrollRef = useRef<HTMLDivElement>(null);
+  const activePinRef = useRef<HTMLDivElement>(null);
+
+  // マップ表示時に環境音（せせらぎ & 小鳥）を開始
+  useEffect(() => {
+    sounds.startAmbient();
+    return () => {
+      sounds.stopAmbient();
+    };
+  }, []);
+
+  // 初回マウント時、現在開拓中のエリアへスムーズスクロール
+  useEffect(() => {
+    if (viewMode === 'panorama') {
+      const timer = setTimeout(() => {
+        if (activePinRef.current) {
+          activePinRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else if (mapScrollRef.current) {
+          // 下流（下部）へスクロール
+          mapScrollRef.current.scrollTop = mapScrollRef.current.scrollHeight;
+        }
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [viewMode]);
+
   // 紙吹雪エフェクト
   const triggerConfetti = () => {
     confetti({
@@ -66,7 +92,7 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
     sounds.playBuild();
     onCompleteTask(area.id, taskId, cost);
 
-    // 選択中エリアの状態もローカルに反映
+    // 選択中エリアの状態も更新
     if (selectedArea && selectedArea.id === area.id) {
       setSelectedArea({
         ...selectedArea,
@@ -83,9 +109,9 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
 
   const handleCreatureTap = (c: Creature) => {
     setSelectedCreature(c);
-    const reactions = ['ピィッ！♪', 'クエックエッ✨', 'るんるん❤️', 'カリカリ…🌰', 'パタパタ〜🌿', 'グルル〜♪'];
+    const reactions = ['ピィッ！♪', 'クエックエッ✨', 'るんるん❤️', 'カリカリ…🌰', 'パタパタ〜🌿', 'グルル〜♪', 'ホーホー🦉✨'];
     setCreatureReaction(reactions[Math.floor(Math.random() * reactions.length)]);
-    setTimeout(() => setCreatureReaction(null), 2000);
+    setTimeout(() => setCreatureReaction(null), 2200);
   };
 
   const handleBeaverTap = () => {
@@ -106,6 +132,10 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
   };
 
   const completedAreasCount = areas.filter((a) => a.status === 'completed').length;
+
+  // 広域の霧の高さ（バッジ数に応じて上流へ後退）
+  // バッジ0: 上部65%が霧、バッジ1: 52%、バッジ2: 40%、バッジ3: 30%、バッジ4: 18%、バッジ5: 0%（全晴れ）
+  const fogCoverHeightPercent = Math.max(0, 68 - badgesCount * 14);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col max-w-md mx-auto relative shadow-2xl overflow-hidden pb-20 select-none">
@@ -138,14 +168,21 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
             </div>
           </div>
 
-          {/* 右側アクション（ミュート & Devセレクター） */}
+          {/* 右側アクション（環境音ON/OFF & Devセレクター） */}
           <div className="flex items-center space-x-1.5">
             <button
               onClick={handleToggleMute}
               className="p-1.5 text-slate-400 hover:text-white rounded-lg bg-slate-800/80 border border-slate-700 active:scale-95"
-              title="サウンドON/OFF"
+              title={isMuted ? 'サウンドON' : 'ミュート'}
             >
-              {isMuted ? <VolumeX className="w-3.5 h-3.5 text-rose-400" /> : <Volume2 className="w-3.5 h-3.5 text-emerald-400" />}
+              {isMuted ? (
+                <VolumeX className="w-3.5 h-3.5 text-rose-400" />
+              ) : (
+                <div className="relative flex items-center">
+                  <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-emerald-400 rounded-full animate-ping" />
+                </div>
+              )}
             </button>
 
             {/* 開発者用ステージセレクター */}
@@ -217,54 +254,335 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
 
       {/* 2. メインコンテンツエリア */}
       {viewMode === 'panorama' ? (
-        /* パノラマ箱庭自然マップビュー */
-        <div className="relative w-full overflow-y-auto no-scrollbar" style={{ maxHeight: 'calc(100vh - 140px)' }}>
+        /* パノラマ箱庭自然マップビュー（自動スクロール対応） */
+        <div
+          ref={mapScrollRef}
+          className="relative w-full overflow-y-auto no-scrollbar scroll-smooth"
+          style={{ maxHeight: 'calc(100vh - 140px)' }}
+        >
           {/* 縦長パノラママップ画像 */}
-          <div className="relative w-full aspect-[9/16] min-h-[720px] bg-slate-900 select-none">
+          <div className="relative w-full aspect-[9/16] min-h-[760px] bg-slate-900 select-none">
             <img
               src="/assets/river_map.jpg"
               alt="川と森のパノラママップ"
               className="w-full h-full object-cover"
             />
 
+            {/* 広域朝霧レイヤー (バッジ数に応じて上流へ後退) */}
+            {fogCoverHeightPercent > 0 && (
+              <div
+                style={{ height: `${fogCoverHeightPercent}%` }}
+                className="absolute top-0 left-0 right-0 z-10 pointer-events-none transition-all duration-1000 ease-out overflow-hidden"
+              >
+                {/* 霧のグラデーション */}
+                <div className="w-full h-full bg-gradient-to-b from-slate-200/80 via-slate-100/60 to-transparent backdrop-blur-md animate-wide-fog border-b border-white/30" />
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 bg-slate-950/70 backdrop-blur-xs rounded-full border border-white/30 text-[10px] font-black text-slate-200 shadow-lg flex items-center space-x-1">
+                  <Lock className="w-3 h-3 text-slate-300" />
+                  <span>未踏の上流エリア（濃い朝霧）</span>
+                </div>
+              </div>
+            )}
+
             {/* 水面のきらめきエフェクト */}
             <div className="absolute top-[52%] left-[45%] w-12 h-12 bg-white/20 rounded-full blur-md animate-water-shimmer pointer-events-none" />
             <div className="absolute top-[82%] left-[55%] w-16 h-16 bg-cyan-200/20 rounded-full blur-lg animate-water-shimmer pointer-events-none" />
 
-            {/* アニメーション生き物: 下流のカルガモ */}
-            <div
-              onClick={() => {
-                const mallard = areas.find((a) => a.id === 'stream_entry')?.creature;
-                if (mallard) handleCreatureTap(mallard);
-              }}
-              className="absolute top-[85%] left-[38%] z-15 cursor-pointer animate-duck-swim"
-              title="カルガモの親子"
-            >
-              <span className="text-2xl filter drop-shadow-md inline-block">🦆</span>
-            </div>
+            {/* =========================================
+                レイヤード・ビルディング（開拓物のマップ反映）
+                ========================================= */}
+            {areas.map((area) => {
+              const coords = area.mapCoords || { x: 50, y: 50 };
 
-            {/* アニメーション生き物: 中流木陰のシマリス */}
-            <div
-              onClick={() => {
-                const squirrel = areas.find((a) => a.id === 'beaver_lodge')?.creature;
-                if (squirrel) handleCreatureTap(squirrel);
-              }}
-              className="absolute top-[75%] right-[18%] z-15 cursor-pointer animate-creature-hop"
-              title="シマリス"
-            >
-              <span className="text-xl filter drop-shadow-md inline-block">🐿️</span>
-            </div>
+              return (
+                <React.Fragment key={`decorations_${area.id}`}>
+                  {/* エリア1: はじまりのせせらぎ (stream_entry) */}
+                  {area.id === 'stream_entry' && (
+                    <>
+                      {/* タスク1完了: 小川の透き通る水面 */}
+                      {area.tasks[0].isCompleted && (
+                        <div
+                          style={{ top: `${coords.y - 2}%`, left: `${coords.x + 8}%` }}
+                          className="absolute z-12 animate-pop-in pointer-events-none"
+                        >
+                          <span className="text-sm">✨</span>
+                        </div>
+                      )}
+                      {/* タスク2完了: 小石の歩きやすい足場 */}
+                      {area.tasks[1].isCompleted && (
+                        <div
+                          style={{ top: `${coords.y + 4}%`, left: `${coords.x - 6}%` }}
+                          className="absolute z-12 animate-pop-in pointer-events-none px-1.5 py-0.5 bg-amber-900/60 rounded-md border border-amber-400/40 text-[9px] text-amber-200 font-black shadow-xs"
+                        >
+                          🪵 整備された足場
+                        </div>
+                      )}
+                    </>
+                  )}
 
-            {/* 各エリアのスポットピン＆霧レイヤー */}
+                  {/* エリア2: 小枝ダムの浅瀬 (small_dam) */}
+                  {area.id === 'small_dam' && (
+                    <>
+                      {/* タスク1完了: 骨組み */}
+                      {area.tasks[0].isCompleted && (
+                        <div
+                          style={{ top: `${coords.y + 3}%`, left: `${coords.x - 10}%` }}
+                          className="absolute z-12 animate-pop-in pointer-events-none text-base"
+                        >
+                          🪵
+                        </div>
+                      )}
+                      {/* タスク2完了: 完成した小枝ダム */}
+                      {area.tasks[1].isCompleted && (
+                        <div
+                          style={{ top: `${coords.y + 3}%`, left: `${coords.x + 2}%` }}
+                          className="absolute z-12 animate-pop-in pointer-events-none px-2 py-0.5 bg-teal-950/80 border border-teal-400/50 rounded-xl text-[9px] text-teal-200 font-black shadow-md flex items-center space-x-1"
+                        >
+                          <span>🪵🌊 小枝ダム完成</span>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* エリア3: 木漏れ日のロッジ (beaver_lodge) */}
+                  {area.id === 'beaver_lodge' && (
+                    <>
+                      {/* タスク1完了: ベッド */}
+                      {area.tasks[0].isCompleted && (
+                        <div
+                          style={{ top: `${coords.y + 4}%`, left: `${coords.x - 8}%` }}
+                          className="absolute z-12 animate-pop-in pointer-events-none text-xs"
+                        >
+                          🛏️
+                        </div>
+                      )}
+                      {/* タスク2完了: ビーバーロッジ本体 */}
+                      {area.tasks[1].isCompleted && (
+                        <div
+                          style={{ top: `${coords.y - 5}%`, left: `${coords.x}%` }}
+                          className="absolute z-12 animate-pop-in pointer-events-none flex flex-col items-center"
+                        >
+                          <span className="text-xl animate-bounce-subtle">🏡</span>
+                          <span className="text-[8px] bg-amber-950/90 text-amber-200 font-black px-1.5 rounded-full border border-amber-400">
+                            温かいロッジ
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* エリア4: 釣りテラス＆桟橋 (fishing_pier) */}
+                  {area.id === 'fishing_pier' && (
+                    <>
+                      {area.tasks[0].isCompleted && (
+                        <div
+                          style={{ top: `${coords.y + 4}%`, left: `${coords.x - 5}%` }}
+                          className="absolute z-12 animate-pop-in pointer-events-none text-sm"
+                        >
+                          🪵🎣
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* エリア5: 古い水車小屋 (watermill_zone) */}
+                  {area.id === 'watermill_zone' && (
+                    <>
+                      {/* タスク1完了: 回転水車 */}
+                      {area.tasks[0].isCompleted && (
+                        <div
+                          style={{ top: `${coords.y + 3}%`, left: `${coords.x - 8}%` }}
+                          className="absolute z-12 animate-pop-in pointer-events-none"
+                        >
+                          <span className="text-lg inline-block animate-spin-slow">⚙️</span>
+                        </div>
+                      )}
+                      {/* タスク2完了: 工房完成 */}
+                      {area.tasks[1].isCompleted && (
+                        <div
+                          style={{ top: `${coords.y - 5}%`, left: `${coords.x - 2}%` }}
+                          className="absolute z-12 animate-pop-in pointer-events-none px-2 py-0.5 bg-blue-950/80 border border-blue-400/50 rounded-xl text-[9px] text-blue-200 font-black shadow-md flex items-center space-x-1"
+                        >
+                          <span>🥖 水車パン工房</span>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* エリア6: ホタルの花園 (flower_garden) */}
+                  {area.id === 'flower_garden' && (
+                    <>
+                      {area.tasks[0].isCompleted && (
+                        <div
+                          style={{ top: `${coords.y + 4}%`, left: `${coords.x + 4}%` }}
+                          className="absolute z-12 animate-pop-in pointer-events-none text-xs"
+                        >
+                          🌸🌺
+                        </div>
+                      )}
+                      {area.tasks[1].isCompleted && (
+                        <div
+                          style={{ top: `${coords.y - 4}%`, left: `${coords.x + 2}%` }}
+                          className="absolute z-12 animate-pop-in pointer-events-none text-sm animate-pulse"
+                        >
+                          ✨🌟
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* エリア7: ビーバーの桃源郷 (emerald_lake) */}
+                  {area.id === 'emerald_lake' && (
+                    <>
+                      {area.tasks[0].isCompleted && (
+                        <div
+                          style={{ top: `${coords.y + 4}%`, left: `${coords.x - 6}%` }}
+                          className="absolute z-12 animate-pop-in pointer-events-none text-base"
+                        >
+                          🏰
+                        </div>
+                      )}
+                      {area.tasks[1].isCompleted && (
+                        <div
+                          style={{ top: `${coords.y - 5}%`, left: `${coords.x}%` }}
+                          className="absolute z-12 animate-pop-in pointer-events-none flex flex-col items-center"
+                        >
+                          <span className="text-xl animate-bounce-subtle">👑✨</span>
+                          <span className="text-[8px] bg-purple-950/90 text-purple-200 font-black px-1.5 rounded-full border border-purple-400">
+                            桃源郷モニュメント
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </React.Fragment>
+              );
+            })}
+
+            {/* =========================================
+                開拓完了した生き物たちのダイナミック活動演出
+                ========================================= */}
+            {areas.map((area) => {
+              if (area.status !== 'completed') return null;
+              const creature = area.creature;
+              const coords = area.mapCoords || { x: 50, y: 50 };
+
+              if (creature.id === 'mallard_duck') {
+                return (
+                  <div
+                    key={creature.id}
+                    onClick={() => handleCreatureTap(creature)}
+                    style={{ top: `${coords.y + 5}%`, left: `${coords.x - 12}%` }}
+                    className="absolute z-15 cursor-pointer animate-duck-swim"
+                    title={creature.name}
+                  >
+                    <span className="text-2xl filter drop-shadow-md inline-block">🦆</span>
+                  </div>
+                );
+              }
+
+              if (creature.id === 'sweetfish') {
+                return (
+                  <div
+                    key={creature.id}
+                    onClick={() => handleCreatureTap(creature)}
+                    style={{ top: `${coords.y + 2}%`, left: `${coords.x + 10}%` }}
+                    className="absolute z-15 cursor-pointer animate-fish-jump"
+                    title={creature.name}
+                  >
+                    <span className="text-lg filter drop-shadow-md inline-block">🐟</span>
+                  </div>
+                );
+              }
+
+              if (creature.id === 'chipmunk') {
+                return (
+                  <div
+                    key={creature.id}
+                    onClick={() => handleCreatureTap(creature)}
+                    style={{ top: `${coords.y + 3}%`, left: `${coords.x + 12}%` }}
+                    className="absolute z-15 cursor-pointer animate-creature-hop"
+                    title={creature.name}
+                  >
+                    <span className="text-xl filter drop-shadow-md inline-block">🐿️</span>
+                  </div>
+                );
+              }
+
+              if (creature.id === 'kingfisher') {
+                return (
+                  <div
+                    key={creature.id}
+                    onClick={() => handleCreatureTap(creature)}
+                    style={{ top: `${coords.y - 4}%`, left: `${coords.x - 10}%` }}
+                    className="absolute z-15 cursor-pointer animate-bird-hover"
+                    title={creature.name}
+                  >
+                    <span className="text-xl filter drop-shadow-md inline-block">🐦</span>
+                  </div>
+                );
+              }
+
+              if (creature.id === 'owl') {
+                return (
+                  <div
+                    key={creature.id}
+                    onClick={() => handleCreatureTap(creature)}
+                    style={{ top: `${coords.y - 5}%`, left: `${coords.x + 10}%` }}
+                    className="absolute z-15 cursor-pointer animate-bounce-subtle"
+                    title={creature.name}
+                  >
+                    <span className="text-xl filter drop-shadow-md inline-block">🦉</span>
+                  </div>
+                );
+              }
+
+              if (creature.id === 'deer') {
+                return (
+                  <div
+                    key={creature.id}
+                    onClick={() => handleCreatureTap(creature)}
+                    style={{ top: `${coords.y + 2}%`, left: `${coords.x - 12}%` }}
+                    className="absolute z-15 cursor-pointer animate-bounce-subtle"
+                    title={creature.name}
+                  >
+                    <span className="text-2xl filter drop-shadow-md inline-block">🦌</span>
+                  </div>
+                );
+              }
+
+              if (creature.id === 'bear_family') {
+                return (
+                  <div
+                    key={creature.id}
+                    onClick={() => handleCreatureTap(creature)}
+                    style={{ top: `${coords.y + 2}%`, left: `${coords.x + 12}%` }}
+                    className="absolute z-15 cursor-pointer animate-bounce-subtle"
+                    title={creature.name}
+                  >
+                    <span className="text-3xl filter drop-shadow-md inline-block">🐻</span>
+                  </div>
+                );
+              }
+
+              return null;
+            })}
+
+            {/* =========================================
+                各エリアのスポットピン＆インタラクション
+                ========================================= */}
             {areas.map((area) => {
               const isLocked = area.status === 'locked_fog';
               const isCleared = area.status === 'cleared_fog';
               const isCompleted = area.status === 'completed';
               const coords = area.mapCoords || { x: 50, y: 50 };
 
+              // フォーカス対象のアクティブピン判定（最前線の cleared_fog エリア）
+              const isActivePin = isCleared;
+
               return (
                 <div
                   key={area.id}
+                  ref={isActivePin ? activePinRef : null}
                   style={{ top: `${coords.y}%`, left: `${coords.x}%` }}
                   className="absolute -translate-x-1/2 -translate-y-1/2 z-20"
                 >
@@ -274,7 +592,7 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                       onClick={() => setSelectedArea(area)}
                       className="group cursor-pointer flex flex-col items-center"
                     >
-                      {/* 立ち込める朝霧エフェクト */}
+                      {/* 朝霧エフェクト */}
                       <div className="absolute -inset-6 bg-slate-100/50 backdrop-blur-md rounded-full blur-sm animate-fog pointer-events-none border border-white/40" />
 
                       {/* ロックピン */}
