@@ -12,6 +12,7 @@ import {
   Volume2,
   VolumeX,
   Sparkles,
+  Lock,
 } from 'lucide-react';
 
 interface AreaDetailScreenProps {
@@ -73,7 +74,12 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
     });
   };
 
-  const handleTaskClick = (taskId: string, cost: number) => {
+  // 順番に処理するため、現在対象となるタスク（最初の未完了タスク）のインデックス
+  const currentTaskIndex = area.tasks.findIndex((t) => !t.isCompleted);
+
+  const handleTaskClick = (taskId: string, cost: number, idx: number) => {
+    // 順番通りにしか処理できない（現在のタスク以外は拒否）
+    if (idx !== currentTaskIndex) return;
     if (woodPoints < cost) return;
 
     sounds.playBuild();
@@ -191,9 +197,11 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
           <div className="absolute top-[45%] left-[45%] w-16 h-16 bg-cyan-200/30 rounded-full blur-md animate-water-shimmer pointer-events-none" />
         )}
 
-        {/* 5箇所のインタラクティブ・スポットピン */}
+        {/* 5箇所のインタラクティブ・スポットピン（順番にアンロック） */}
         {area.tasks.map((task, idx) => {
           const coords = SPOT_COORDINATES[idx] || { x: 50, y: 50 };
+          const isCurrent = idx === currentTaskIndex;
+          const isLocked = currentTaskIndex !== -1 && idx > currentTaskIndex;
           const canAfford = woodPoints >= task.woodCost;
           const isSelected = activeSpotIndex === idx;
 
@@ -201,27 +209,33 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
             <div
               key={task.id}
               style={{ top: `${coords.y}%`, left: `${coords.x}%` }}
-              onClick={() => setActiveSpotIndex(isSelected ? null : idx)}
-              className="absolute -translate-x-1/2 -translate-y-1/2 z-20 cursor-pointer flex flex-col items-center group"
+              onClick={() => {
+                if (!isLocked) {
+                  setActiveSpotIndex(isSelected ? null : idx);
+                }
+              }}
+              className={`absolute -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center group ${
+                isLocked ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+              }`}
             >
               {/* ピン本体 */}
               <div
                 className={`relative w-9 h-9 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 ${
                   task.isCompleted
-                    ? 'bg-gradient-to-tr from-emerald-500 to-teal-400 border-2 border-white scale-95'
-                    : isSelected
-                    ? 'bg-amber-400 border-2 border-white ring-4 ring-amber-400/50 scale-110 animate-bounce-subtle'
-                    : canAfford
-                    ? 'bg-gradient-to-tr from-amber-500 to-orange-400 border-2 border-white animate-ruined-alert'
-                    : 'bg-slate-800/90 border-2 border-slate-600 opacity-90'
+                    ? 'bg-gradient-to-tr from-emerald-500 to-teal-400 border-2 border-white scale-95 shadow-emerald-500/20'
+                    : isCurrent
+                    ? canAfford
+                      ? 'bg-gradient-to-tr from-amber-400 to-amber-500 border-2 border-white ring-4 ring-amber-400/60 scale-110 animate-bounce-subtle'
+                      : 'bg-gradient-to-tr from-amber-600 to-amber-700 border-2 border-amber-300 ring-2 ring-amber-500/40 scale-105'
+                    : 'bg-slate-800/80 border-2 border-slate-600 opacity-60'
                 }`}
               >
                 <span className="text-sm">
-                  {task.isCompleted ? '✨' : task.icon}
+                  {task.isCompleted ? '✨' : isLocked ? '🔒' : task.icon}
                 </span>
 
-                {/* 未完了の通知ポッチ */}
-                {!task.isCompleted && canAfford && (
+                {/* 現在の修復対象で木材が足りる場合の通知ポッチ */}
+                {isCurrent && canAfford && (
                   <span className="absolute -top-1 -right-1 w-3 h-3 bg-rose-500 rounded-full border border-white animate-ping" />
                 )}
               </div>
@@ -231,10 +245,12 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
                 className={`mt-1 px-1.5 py-0.2 rounded-full text-[8px] font-black border shadow-md whitespace-nowrap ${
                   task.isCompleted
                     ? 'bg-emerald-950/90 text-emerald-300 border-emerald-500/40'
-                    : 'bg-slate-950/90 text-amber-200 border-amber-400/50'
+                    : isCurrent
+                    ? 'bg-amber-950/90 text-amber-200 border-amber-400/60 ring-1 ring-amber-400/40 font-black'
+                    : 'bg-slate-900/90 text-slate-500 border-slate-700'
                 }`}
               >
-                {task.isCompleted ? 'きれい！' : `場所 ${idx + 1}`}
+                {task.isCompleted ? 'きれい！' : isCurrent ? 'ここを修復！🔨' : `🔒 場所 ${idx + 1}`}
               </span>
             </div>
           );
@@ -254,20 +270,22 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
         )}
       </div>
 
-      {/* 4. きれいにする5つのタスク一覧 */}
+      {/* 4. きれいにする5つのタスク一覧（順番に1つずつ処理） */}
       <div className="flex-1 p-4 space-y-2.5 overflow-y-auto no-scrollbar">
         <div className="flex items-center justify-between text-xs font-black text-slate-300">
           <span className="flex items-center space-x-1">
             <Hammer className="w-3.5 h-3.5 text-amber-400" />
-            <span>きれいに修復する5つの場所</span>
+            <span>きれいに修復するステップ（順番に進めよう）</span>
           </span>
           <span className="text-[10px] text-slate-400">
-            {completedCount === 5 ? 'すべてきれいになりました！🎉' : '木材を使って1つずつ修復しよう'}
+            {completedCount === 5 ? 'すべてきれいになりました！🎉' : `Step ${completedCount + 1} / 5`}
           </span>
         </div>
 
         <div className="space-y-2">
           {area.tasks.map((task, idx) => {
+            const isCurrent = idx === currentTaskIndex;
+            const isLocked = currentTaskIndex !== -1 && idx > currentTaskIndex;
             const canAfford = woodPoints >= task.woodCost;
             const isHighlighted = activeSpotIndex === idx;
 
@@ -277,32 +295,51 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
                 className={`p-3 rounded-2xl border transition-all ${
                   task.isCompleted
                     ? 'bg-emerald-950/30 border-emerald-500/30 opacity-75'
-                    : isHighlighted
-                    ? 'bg-amber-950/30 border-amber-400 ring-1 ring-amber-400 shadow-md'
-                    : 'bg-slate-900 border-slate-800'
+                    : isCurrent
+                    ? `bg-amber-950/40 border-amber-400 ring-2 ring-amber-400/50 shadow-lg ${isHighlighted ? 'scale-[1.02]' : ''}`
+                    : `bg-slate-900/50 border-slate-800/80 opacity-50 ${isHighlighted ? 'border-slate-600' : ''}`
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2.5">
                     <div
-                      className={`w-8 h-8 rounded-xl flex items-center justify-center text-lg ${
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg ${
                         task.isCompleted
                           ? 'bg-emerald-500/20 border border-emerald-500/30'
-                          : 'bg-slate-800 border border-slate-700'
+                          : isCurrent
+                          ? 'bg-amber-500/20 border border-amber-500/40 shadow-xs'
+                          : 'bg-slate-800/40 border border-slate-800 text-slate-600'
                       }`}
                     >
-                      {task.isCompleted ? '✅' : task.icon}
+                      {task.isCompleted ? '✅' : isLocked ? '🔒' : task.icon}
                     </div>
                     <div>
                       <div className="flex items-center space-x-1.5">
-                        <span className="text-[9px] font-mono text-slate-400 font-bold">
-                          場所 {idx + 1}
+                        <span
+                          className={`text-[9px] font-mono font-bold ${
+                            isCurrent ? 'text-amber-400' : 'text-slate-500'
+                          }`}
+                        >
+                          Step {idx + 1}
                         </span>
-                        <span className="text-xs font-black text-white">
+                        {isCurrent && (
+                          <span className="text-[9px] bg-amber-500/20 text-amber-300 px-1.5 py-0.2 rounded-md font-bold animate-pulse">
+                            修復中
+                          </span>
+                        )}
+                        <span
+                          className={`text-xs font-black ${
+                            task.isCompleted
+                              ? 'text-white'
+                              : isCurrent
+                              ? 'text-amber-100'
+                              : 'text-slate-400'
+                          }`}
+                        >
                           {task.title}
                         </span>
                       </div>
-                      <div className="text-[10px] text-slate-400">
+                      <div className="text-[10px] text-slate-400 mt-0.5">
                         効果: {task.visualLabel}
                       </div>
                     </div>
@@ -314,19 +351,24 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
                         <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
                         完了
                       </span>
-                    ) : (
+                    ) : isCurrent ? (
                       <button
-                        onClick={() => handleTaskClick(task.id, task.woodCost)}
+                        onClick={() => handleTaskClick(task.id, task.woodCost, idx)}
                         disabled={!canAfford}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-black flex items-center space-x-1 shadow-sm transition-all ${
+                        className={`px-3 py-1.5 rounded-xl text-xs font-black flex items-center space-x-1 shadow-md transition-all ${
                           canAfford
-                            ? 'bg-amber-500 hover:bg-amber-600 text-amber-950 active:scale-95 cursor-pointer'
+                            ? 'bg-amber-500 hover:bg-amber-400 text-amber-950 active:scale-95 cursor-pointer shadow-amber-500/30'
                             : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
                         }`}
                       >
                         <Hammer className="w-3 h-3" />
                         <span>きれいに (🪵{task.woodCost})</span>
                       </button>
+                    ) : (
+                      <div className="flex items-center text-slate-500 text-[11px] px-2.5 py-1 bg-slate-800/40 rounded-xl border border-slate-800">
+                        <Lock className="w-3 h-3 mr-1" />
+                        <span>ロック</span>
+                      </div>
                     )}
                   </div>
                 </div>
