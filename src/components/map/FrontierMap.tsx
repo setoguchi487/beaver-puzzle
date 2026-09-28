@@ -122,7 +122,7 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
 
   const handleBeaverTap = () => {
     const dialogues = [
-      '丸太を集めて、立ち込める朝霧の奥を開拓しよう！🦫✨',
+      '丸太を集めて、ふんわりとした雲の奥を開拓しよう！🦫✨',
       'エリアを1つ復活させるとバッジが手に入り、次の巨大な雲が晴れるよ！🏅',
       '荒廃した川辺を修復すると、森の仲間たちがどんどん戻ってくるよ！🦆🐟',
       '全15エリアの最上流には、伝説の「ビーバーの桃源郷」が待っているよ！👑',
@@ -295,13 +295,13 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                       onClick={() => setSelectedArea(area)}
                       className="absolute -translate-x-1/2 -translate-y-1/2 z-25 cursor-pointer flex flex-col items-center group"
                     >
-                      {/* AI生成したAI生成した川沿いにたなびく濃密な朝霧イラスト (完全目隠し・世界観連動) */}
+                      {/* AI生成した絵本調のふんわり巨大雲塊イラスト (完全目隠し・世界観連動) */}
                       <div className="relative w-64 h-48 flex items-center justify-center pointer-events-none select-none">
                         {/* 雲のイラスト (中央は100%ソリッド不透明で完全に目隠し) */}
                         <img
-                          src="/assets/forest_fog.png"
+                          src="/assets/fog_cloud.png"
                           alt="朝霧の雲"
-                          className="w-full h-full object-contain filter drop-shadow-2xl animate-river-fog"
+                          className="w-full h-full object-contain filter drop-shadow-2xl animate-fog-cloud-1"
                         />
 
                         {/* 雲の中央に浮かぶロック標識 */}
@@ -543,7 +543,7 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                       </span>
                     ) : (
                       <span className="text-[9px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded-full font-bold">
-                        立ち込める朝霧の奥
+                        ふんわりとした雲の奥
                       </span>
                     )}
                   </div>
@@ -567,14 +567,14 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
             {selectedArea.status === 'locked_fog' && (
               <div className="p-4 bg-slate-950/60 border border-slate-800 rounded-2xl text-center space-y-2">
                 <div className="relative w-16 h-12 mx-auto flex items-center justify-center">
-                  <img src="/assets/forest_fog.png" alt="霧" className="w-full h-full object-contain filter drop-shadow-md animate-river-fog" />
+                  <img src="/assets/fog_cloud.png" alt="霧" className="w-full h-full object-contain filter drop-shadow-md animate-fog-cloud-1" />
                   <Lock className="w-5 h-5 text-amber-300 absolute z-10" />
                 </div>
                 <h4 className="text-xs font-black text-slate-300">
-                  このエリアは濃密な朝霧で覆われています
+                  このエリアはふんわりとした白い雲で覆われています
                 </h4>
                 <p className="text-[11px] text-slate-400 leading-relaxed">
-                  手前のエリアを復旧して**バッジを{selectedArea.requiredBadges}個**集めると、この立ち込める朝霧がサーッと晴れて荒廃した川辺が出現します！
+                  手前のエリアを復旧して**バッジを{selectedArea.requiredBadges}個**集めると、このモクモクした雲がサーッと晴れて荒廃した川辺が出現します！
                 </p>
                 <div className="text-xs font-mono font-bold text-amber-400 bg-amber-950/30 py-1.5 rounded-xl border border-amber-500/20">
                   現在の獲得バッジ: {badgesCount} / {selectedArea.requiredBadges}
