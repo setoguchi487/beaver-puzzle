@@ -45,7 +45,6 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
   const [selectedCreature, setSelectedCreature] = useState<Creature | null>(null);
   const [creatureReaction, setCreatureReaction] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(sounds.getMuted());
-  const [activeSpotIndex, setActiveSpotIndex] = useState<number | null>(null);
 
   const completedCount = area.tasks.filter((t) => t.isCompleted).length;
   const isAllCompleted = completedCount === area.tasks.length;
@@ -57,14 +56,7 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
     ? '/assets/watermill.jpg'
     : '/assets/river_map.jpg';
 
-  // 5箇所のスポット座標 (X%, Y%)
-  const SPOT_COORDINATES = [
-    { x: 30, y: 72 }, // スポット1: 手前の浮遊ゴミ・水際
-    { x: 68, y: 68 }, // スポット2: 右側の泥水・ヘドロ
-    { x: 22, y: 48 }, // スポット3: 左側の倒木・川岸
-    { x: 50, y: 44 }, // スポット4: 中央の歩道橋・ダム
-    { x: 78, y: 38 }, // スポット5: 右奥の水草・花畑
-  ];
+
 
   const triggerConfetti = () => {
     confetti({
@@ -174,7 +166,7 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
         </div>
       </div>
 
-      {/* 3. エリア詳細ビジュアルマップ（タスク完了で段階的に図が更新！） */}
+      {/* 3. エリア詳細ビジュアルマップ（下のタスク完了で段階的に図が美しく移り変わる！） */}
       <div className="relative w-full aspect-[4/3] bg-slate-900 overflow-hidden shadow-inner border-b border-slate-800">
         {/* 段階画像（クロスフェード切り替え） */}
         <img
@@ -197,64 +189,19 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
           <div className="absolute top-[45%] left-[45%] w-16 h-16 bg-cyan-200/30 rounded-full blur-md animate-water-shimmer pointer-events-none" />
         )}
 
-        {/* 5箇所のインタラクティブ・スポットピン（順番にアンロック） */}
-        {area.tasks.map((task, idx) => {
-          const coords = SPOT_COORDINATES[idx] || { x: 50, y: 50 };
-          const isCurrent = idx === currentTaskIndex;
-          const isLocked = currentTaskIndex !== -1 && idx > currentTaskIndex;
-          const canAfford = woodPoints >= task.woodCost;
-          const isSelected = activeSpotIndex === idx;
-
-          return (
-            <div
-              key={task.id}
-              style={{ top: `${coords.y}%`, left: `${coords.x}%` }}
-              onClick={() => {
-                if (!isLocked) {
-                  setActiveSpotIndex(isSelected ? null : idx);
-                }
-              }}
-              className={`absolute -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center group ${
-                isLocked ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
-              }`}
-            >
-              {/* ピン本体 */}
-              <div
-                className={`relative w-9 h-9 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 ${
-                  task.isCompleted
-                    ? 'bg-gradient-to-tr from-emerald-500 to-teal-400 border-2 border-white scale-95 shadow-emerald-500/20'
-                    : isCurrent
-                    ? canAfford
-                      ? 'bg-gradient-to-tr from-amber-400 to-amber-500 border-2 border-white ring-4 ring-amber-400/60 scale-110 animate-bounce-subtle'
-                      : 'bg-gradient-to-tr from-amber-600 to-amber-700 border-2 border-amber-300 ring-2 ring-amber-500/40 scale-105'
-                    : 'bg-slate-800/80 border-2 border-slate-600 opacity-60'
-                }`}
-              >
-                <span className="text-sm">
-                  {task.isCompleted ? '✨' : isLocked ? '🔒' : task.icon}
-                </span>
-
-                {/* 現在の修復対象で木材が足りる場合の通知ポッチ */}
-                {isCurrent && canAfford && (
-                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-rose-500 rounded-full border border-white animate-ping" />
-                )}
-              </div>
-
-              {/* スポット番号ラベル */}
-              <span
-                className={`mt-1 px-1.5 py-0.2 rounded-full text-[8px] font-black border shadow-md whitespace-nowrap ${
-                  task.isCompleted
-                    ? 'bg-emerald-950/90 text-emerald-300 border-emerald-500/40'
-                    : isCurrent
-                    ? 'bg-amber-950/90 text-amber-200 border-amber-400/60 ring-1 ring-amber-400/40 font-black'
-                    : 'bg-slate-900/90 text-slate-500 border-slate-700'
-                }`}
-              >
-                {task.isCompleted ? 'きれい！' : isCurrent ? 'ここを修復！🔨' : `🔒 場所 ${idx + 1}`}
-              </span>
-            </div>
-          );
-        })}
+        {/* 段階ステータスバッジ（右上に上品に小さく表示） */}
+        <div className="absolute top-2.5 right-2.5 z-20 bg-slate-950/80 backdrop-blur-xs border border-slate-750 px-2.5 py-1 rounded-xl text-[10px] font-bold shadow-md">
+          {isAllCompleted ? (
+            <span className="text-emerald-400 flex items-center space-x-1">
+              <Sparkles className="w-3 h-3" />
+              <span>完全復活 ✨</span>
+            </span>
+          ) : (
+            <span className="text-amber-300 flex items-center space-x-1">
+              <span>修復段階: {completedCount} / {area.tasks.length}</span>
+            </span>
+          )}
+        </div>
 
         {/* 完全復活時のカルガモ・生き物アニメーション */}
         {isAllCompleted && (
@@ -287,7 +234,6 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
             const isCurrent = idx === currentTaskIndex;
             const isLocked = currentTaskIndex !== -1 && idx > currentTaskIndex;
             const canAfford = woodPoints >= task.woodCost;
-            const isHighlighted = activeSpotIndex === idx;
 
             return (
               <div
@@ -296,8 +242,8 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
                   task.isCompleted
                     ? 'bg-emerald-950/30 border-emerald-500/30 opacity-75'
                     : isCurrent
-                    ? `bg-amber-950/40 border-amber-400 ring-2 ring-amber-400/50 shadow-lg ${isHighlighted ? 'scale-[1.02]' : ''}`
-                    : `bg-slate-900/50 border-slate-800/80 opacity-50 ${isHighlighted ? 'border-slate-600' : ''}`
+                    ? 'bg-amber-950/40 border-amber-400 ring-2 ring-amber-400/50 shadow-lg scale-[1.01]'
+                    : 'bg-slate-900/50 border-slate-800/80 opacity-50'
                 }`}
               >
                 <div className="flex items-center justify-between">
