@@ -384,17 +384,6 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                       ---------------------------------------------------- */}
                   {isCompleted && (
                     <>
-                      {/* 復活後の固有オブジェクト演出 */}
-                      <div
-                        style={{ top: `${coords.y + 3}%`, left: `${coords.x}%` }}
-                        className="absolute -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none animate-pop-in flex flex-col items-center"
-                      >
-                        <span className="text-xs px-2 py-0.5 bg-slate-950/80 rounded-full border border-emerald-400/50 text-emerald-200 font-black shadow-md flex items-center space-x-1 whitespace-nowrap">
-                          <span>{area.icon}</span>
-                          <span>{area.name}</span>
-                        </span>
-                      </div>
-
                       {/* コンプリートピン（エメラルドの輝き） */}
                       <div
                         style={{ top: `${coords.y}%`, left: `${coords.x}%` }}
