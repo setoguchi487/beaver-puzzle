@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import type { FrontierArea } from '../../types';
 import { sounds } from '../../utils/soundEffects';
+import { getAssetUrl } from '../../utils/assetPath';
 import { Trophy, Check, Sparkles } from 'lucide-react';
 
 interface AreaCompleteModalProps {
@@ -41,7 +42,7 @@ export const AreaCompleteModal: React.FC<AreaCompleteModalProps> = ({
         {area.id === 'watermill_zone' && (
           <div className="relative w-full h-32 rounded-2xl overflow-hidden border border-emerald-400/40 shadow-md">
             <img
-              src="/assets/watermill.jpg"
+              src={getAssetUrl("/assets/watermill.jpg")}
               alt="水車小屋完成"
               className="w-full h-full object-cover"
             />

@@ -15,6 +15,7 @@ import {
   Star,
 } from 'lucide-react';
 import { sounds } from '../../utils/soundEffects';
+import { getAssetUrl } from '../../utils/assetPath';
 import { 
   getSaveDataSummary, 
   exportSaveDataString, 
@@ -169,7 +170,7 @@ export const TitleHomeScreen: React.FC<TitleHomeScreenProps> = ({
         >
           <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-full p-1 bg-gradient-to-tr from-amber-500 via-yellow-300 to-emerald-400 shadow-2xl relative">
             <img
-              src="/assets/beaver_hero.jpg"
+              src={getAssetUrl("/assets/beaver_hero.jpg")}
               alt="ビーバー棟梁"
               className="w-full h-full object-cover rounded-full border-4 border-slate-950 shadow-inner group-hover:scale-102 transition-transform"
             />

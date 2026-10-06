@@ -1,3 +1,4 @@
+import { getAssetUrl } from '../../utils/assetPath';
 import React, { useEffect } from 'react';
 import type { FrontierArea } from '../../types';
 import { Crown, Sparkles, Trophy, Heart, CheckCircle2 } from 'lucide-react';
@@ -78,7 +79,7 @@ export const GrandEndingModal: React.FC<GrandEndingModalProps> = ({
         {/* 桃源郷の絶景ビジュアル */}
         <div className="relative rounded-2xl overflow-hidden border border-amber-400/60 shadow-lg">
           <img
-            src="/assets/paradise_stage_5.jpg"
+            src={getAssetUrl("/assets/paradise_stage_5.jpg")}
             alt="桃源郷グランドダム"
             className="w-full h-44 object-cover"
           />

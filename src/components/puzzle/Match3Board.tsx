@@ -3,6 +3,7 @@ import type { PieceType, SpecialType, PuzzleStage, TileGimmick, TileUnderlay, Bo
 import { PIECE_CONFIG } from '../../data/masterData';
 import { BUDDY_SKILLS, type BuddySkill } from '../../data/buddySkills';
 import { sounds } from '../../utils/soundEffects';
+import { getAssetUrl } from '../../utils/assetPath';
 import confetti from 'canvas-confetti';
 import { RefreshCw, X, ArrowLeft, Trophy, Volume2, VolumeX, Star, Sparkles } from 'lucide-react';
 import { calculateStageStars, getStarWoodBonus, getStarThresholds } from '../../utils/stageEvaluation';
@@ -113,10 +114,10 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
   // チャプターに応じた高解像度背景画像
   const getChapterBg = (sId: number) => {
-    if (sId <= 25) return '/assets/shallows_stage_5.jpg';
-    if (sId <= 50) return '/assets/mill_stage_5.jpg';
-    if (sId <= 75) return '/assets/spring_stage_5.jpg';
-    return '/assets/paradise_stage_5.jpg';
+    if (sId <= 25) return getAssetUrl('/assets/shallows_stage_5.jpg');
+    if (sId <= 50) return getAssetUrl('/assets/mill_stage_5.jpg');
+    if (sId <= 75) return getAssetUrl('/assets/spring_stage_5.jpg');
+    return getAssetUrl('/assets/paradise_stage_5.jpg');
   };
 
   // 開始時相棒スキル（フクロウ+2手、クマ+3手など）

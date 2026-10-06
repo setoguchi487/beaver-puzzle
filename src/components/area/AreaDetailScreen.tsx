@@ -1,3 +1,4 @@
+import { getAssetUrl } from '../../utils/assetPath';
 import React, { useState, useEffect, useRef } from 'react';
 import type { FrontierArea, Creature } from '../../types';
 import { DevStageSelector } from '../common/DevStageSelector';
@@ -56,11 +57,12 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
   const isAllCompleted = completedCount === area.tasks.length;
 
   // 段階画像 (第1エリアは生成した shallows_stage_0〜5、他エリアはフォールバック)
-  const currentImage = area.detailImages && area.detailImages[completedCount]
+  const rawImage = area.detailImages && area.detailImages[completedCount]
     ? area.detailImages[completedCount]
     : isAllCompleted
     ? '/assets/watermill.jpg'
     : '/assets/river_map.jpg';
+  const currentImage = getAssetUrl(rawImage);
 
   // 案A: 自然復活サークル波紋演出用のステート
   const [baseImage, setBaseImage] = useState(currentImage);
@@ -274,7 +276,7 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
         <img
           src={baseImage}
           alt={area.name}
-          onError={(e) => { e.currentTarget.src = isAllCompleted ? "/assets/watermill.jpg" : "/assets/river_map.jpg"; }}
+          onError={(e) => { e.currentTarget.src = getAssetUrl(isAllCompleted ? "/assets/watermill.jpg" : "/assets/river_map.jpg"); }}
           className="absolute inset-0 w-full h-full object-cover"
         />
 
@@ -284,7 +286,7 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
             key={rippleImage}
             src={rippleImage}
             alt={area.name}
-            onError={(e) => { e.currentTarget.src = isAllCompleted ? "/assets/watermill.jpg" : "/assets/river_map.jpg"; }}
+            onError={(e) => { e.currentTarget.src = getAssetUrl(isAllCompleted ? "/assets/watermill.jpg" : "/assets/river_map.jpg"); }}
             className="absolute inset-0 w-full h-full object-cover animate-circle-ripple z-10"
           />
         )}

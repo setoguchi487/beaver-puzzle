@@ -12,6 +12,7 @@ import type { StarMilestone } from '../../data/starRoadMilestones';
 import type { StageRecord } from '../../types';
 import { Star } from 'lucide-react';
 import { sounds } from '../../utils/soundEffects';
+import { getAssetUrl } from '../../utils/assetPath';
 import {
   Home,
   Lock,
@@ -195,7 +196,7 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
           >
             <div className="relative">
               <img
-                src="/assets/beaver_hero.jpg"
+                src={getAssetUrl("/assets/beaver_hero.jpg")}
                 alt="ビーバー棟梁"
                 className="w-10 h-10 rounded-full border-2 border-amber-400 object-cover shadow-md"
               />
@@ -351,7 +352,7 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
           <div className="relative w-full aspect-[9/16] min-h-[760px] bg-slate-900 select-none">
             {/* メイン自然俯瞰背景 */}
             <img
-              src="/assets/river_map.jpg"
+              src={getAssetUrl("/assets/river_map.jpg")}
               alt="川と森のパノラママップ"
               className="w-full h-full object-cover"
             />
@@ -385,7 +386,7 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                       <div className="relative w-64 h-48 flex items-center justify-center pointer-events-none select-none">
                         {/* 雲のイラスト (中央は100%ソリッド不透明で完全に目隠し) */}
                         <img
-                          src="/assets/fog_cloud.png"
+                          src={getAssetUrl("/assets/fog_cloud.png")}
                           alt="朝霧の雲"
                           className="w-full h-full object-contain filter drop-shadow-2xl animate-fog-cloud-1"
                         />
@@ -647,7 +648,7 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                 <div className="p-4 bg-slate-950/60 border border-slate-800 rounded-2xl text-center space-y-3">
                   <div className="relative w-20 h-14 mx-auto flex items-center justify-center">
                     <img
-                      src="/assets/fog_cloud.png"
+                      src={getAssetUrl("/assets/fog_cloud.png")}
                       alt="雲"
                       className="w-full h-full object-contain filter drop-shadow-md animate-fog-cloud-1"
                     />
