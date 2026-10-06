@@ -2,11 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import type { FrontierArea, Creature } from '../../types';
 import { DevStageSelector } from '../common/DevStageSelector';
 import { CreatureBadgeModal } from '../common/CreatureBadgeModal';
+import { StageSelectModal } from '../common/StageSelectModal';
+import type { StageRecord } from '../../types';
+import { Star } from 'lucide-react';
 import { sounds } from '../../utils/soundEffects';
 import {
   Lock,
   CheckCircle2,
-  Play,
   Heart,
   Hammer,
   Map as MapIcon,
@@ -17,7 +19,6 @@ import {
   VolumeX,
   AlertTriangle,
   Sparkles,
-  BookOpen,
 } from 'lucide-react';
 
 interface FrontierMapProps {
@@ -27,6 +28,9 @@ interface FrontierMapProps {
   creaturesCount: number;
   badges?: string[];
   unlockedCreatures?: string[];
+  unlockedStageId?: number;
+  stageRecords?: { [stageId: number]: StageRecord };
+  totalStars?: number;
   onStartPuzzle: (stageId: number) => void;
   onCompleteTask: (areaId: string, taskId: string, cost: number) => void;
   onCompleteArea: (area: FrontierArea) => void;
@@ -47,6 +51,9 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
   creaturesCount,
   badges = [],
   unlockedCreatures = [],
+  unlockedStageId = 1,
+  stageRecords = {},
+  totalStars = 0,
   onStartPuzzle,
   onCompleteTask,
   onCompleteArea,
@@ -65,6 +72,7 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
   const [creatureReaction, setCreatureReaction] = useState<string | null>(null);
   const [beaverDialogue, setBeaverDialogue] = useState<string | null>(null);
   const [isBookModalOpen, setIsBookModalOpen] = useState<boolean>(false);
+  const [isStageSelectOpen, setIsStageSelectOpen] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState(sounds.getMuted());
 
   const mapScrollRef = useRef<HTMLDivElement>(null);
@@ -194,31 +202,28 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
               <span className="text-amber-300 font-mono text-sm">{woodPoints}</span>
             </div>
 
-            {/* バッジ＆生き物図鑑ボタン */}
+            {/* 獲得星数カウンター（タップでステージ選択を開く） */}
             <button
-              onClick={() => setIsBookModalOpen(true)}
-              className="flex items-center space-x-1 bg-purple-950/50 hover:bg-purple-900/60 border border-purple-500/40 hover:border-purple-400 px-2 py-1 rounded-xl cursor-pointer active:scale-95 transition-all shadow-xs"
-              title="開拓バッジ一覧を見る"
+              onClick={() => setIsStageSelectOpen(true)}
+              className="flex items-center space-x-1.5 bg-yellow-950/45 hover:bg-yellow-900/60 border border-yellow-500/45 hover:border-yellow-400 px-2.5 py-1 rounded-xl cursor-pointer active:scale-95 transition-all shadow-xs"
+              title="獲得スター数（タップでステージ選択へ）"
             >
-              <span className="text-xs">🏅</span>
-              <span className="text-purple-300 font-mono text-xs">{badgesCount}</span>
+              <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-300" />
+              <span className="text-yellow-300 font-mono text-xs font-black">{totalStars}</span>
+              <span className="text-[10px] text-yellow-500/80 font-bold">/300</span>
             </button>
 
+            {/* 仲間・勲章図鑑ボタン（メダル・生き物・図鑑を集約） */}
             <button
               onClick={() => setIsBookModalOpen(true)}
-              className="flex items-center space-x-1 bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-500/40 hover:border-emerald-400 px-2 py-1 rounded-xl cursor-pointer active:scale-95 transition-all shadow-xs"
-              title="生き物図鑑を見る"
+              className="flex items-center space-x-1.5 bg-gradient-to-r from-emerald-950/60 to-teal-950/60 hover:from-emerald-900/70 hover:to-teal-900/70 border border-emerald-500/45 hover:border-emerald-400 px-2.5 py-1 rounded-xl cursor-pointer active:scale-95 transition-all shadow-xs"
+              title="仲間と勲章の図鑑を開く"
             >
-              <span className="text-xs">🐾</span>
-              <span className="text-emerald-300 font-mono text-xs">{creaturesCount}</span>
-            </button>
-
-            <button
-              onClick={() => setIsBookModalOpen(true)}
-              className="flex items-center space-x-1 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 hover:from-emerald-500/30 hover:to-teal-500/30 border border-emerald-400/50 text-emerald-300 px-2 py-1 rounded-xl text-[10px] font-black cursor-pointer active:scale-95 transition-all shadow-xs"
-            >
-              <BookOpen className="w-3 h-3" />
-              <span>図鑑</span>
+              <span className="text-xs">🐾🏅</span>
+              <span className="text-emerald-300 font-mono text-xs font-black">
+                {creaturesCount}/{areas.length}
+              </span>
+              <span className="text-[10px] text-emerald-400 font-bold hidden sm:inline">図鑑</span>
             </button>
           </div>
 
@@ -708,13 +713,27 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
         </div>
 
         <button
-          onClick={() => onStartPuzzle(currentStageId)}
-          className="flex-1 ml-4 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-amber-950 font-black text-sm rounded-2xl shadow-lg flex items-center justify-center space-x-2 active:scale-98 transition-all cursor-pointer"
+          onClick={() => setIsStageSelectOpen(true)}
+          className="flex-1 ml-4 py-3 bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-amber-950 font-black text-sm rounded-2xl shadow-lg shadow-amber-500/25 flex items-center justify-center space-x-2 active:scale-98 transition-all cursor-pointer"
         >
-          <Play className="w-4 h-4 fill-current" />
-          <span>パズルで木材を集める！ 🪵</span>
+          <Sparkles className="w-4 h-4 fill-current" />
+          <span>ステージ選択へ進む 🗺️</span>
         </button>
       </footer>
+      {/* 一般ユーザー向けステージ選択モーダル */}
+      {isStageSelectOpen && (
+        <StageSelectModal
+          unlockedStageId={unlockedStageId || currentStageId}
+          currentStageId={currentStageId}
+          stageRecords={stageRecords}
+          onSelectStage={(sId) => {
+            setIsStageSelectOpen(false);
+            onStartPuzzle(sId);
+          }}
+          onClose={() => setIsStageSelectOpen(false)}
+        />
+      )}
+
       {/* 生き物図鑑＆開拓バッジモーダル */}
       {isBookModalOpen && (
         <CreatureBadgeModal

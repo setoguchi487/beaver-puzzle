@@ -118,3 +118,10 @@ export interface GameState {
   unlockedCreatures: string[];
   taskCompletions: Record<string, boolean>;
 }
+
+export interface StageRecord {
+  stars: number; // 1, 2, or 3
+  bestScore?: number;
+  bestRemainingMoves?: number;
+  clearedAt?: number;
+}

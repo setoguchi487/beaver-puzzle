@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { FrontierArea } from './types';
+import type { FrontierArea, StageRecord } from './types';
 import { STAGES, INITIAL_AREAS } from './data/masterData';
 import { FrontierMap } from './components/map/FrontierMap';
 import { Match3Board } from './components/puzzle/Match3Board';
@@ -53,13 +53,35 @@ export const App: React.FC = () => {
     return saved ? JSON.parse(saved) : [];
   });
 
+  // 到達・解放済みステージ番号（1〜100）
+  const [unlockedStageId, setUnlockedStageId] = useState<number>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY + '_unlocked_stage');
+    return saved ? Math.max(1, Number(saved)) : 1;
+  });
+
+  // 各ステージのクリア実績・最高獲得スター
+  const [stageRecords, setStageRecords] = useState<{ [stageId: number]: StageRecord }>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY + '_stage_records');
+    if (!saved) return {};
+    try {
+      return JSON.parse(saved);
+    } catch {
+      return {};
+    }
+  });
+
+  // 累計獲得スター数
+  const totalStars = Object.values(stageRecords).reduce((acc, rec) => acc + (rec?.stars || 0), 0);
+
   // 自動保存
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY + '_wood', String(woodPoints));
     localStorage.setItem(STORAGE_KEY + '_areas', JSON.stringify(areas));
     localStorage.setItem(STORAGE_KEY + '_badges', JSON.stringify(badges));
     localStorage.setItem(STORAGE_KEY + '_creatures', JSON.stringify(unlockedCreatures));
-  }, [woodPoints, areas, badges, unlockedCreatures]);
+    localStorage.setItem(STORAGE_KEY + '_unlocked_stage', String(unlockedStageId));
+    localStorage.setItem(STORAGE_KEY + '_stage_records', JSON.stringify(stageRecords));
+  }, [woodPoints, areas, badges, unlockedCreatures, unlockedStageId, stageRecords]);
 
   // 開発者用チート・ステージ選択
   const handleResetAll = () => {
@@ -67,11 +89,15 @@ export const App: React.FC = () => {
     localStorage.removeItem(STORAGE_KEY + "_areas");
     localStorage.removeItem(STORAGE_KEY + "_badges");
     localStorage.removeItem(STORAGE_KEY + "_creatures");
+    localStorage.removeItem(STORAGE_KEY + "_unlocked_stage");
+    localStorage.removeItem(STORAGE_KEY + "_stage_records");
 
     setWoodPoints(60);
     setAreas(INITIAL_AREAS);
     setBadges([]);
     setUnlockedCreatures([]);
+    setUnlockedStageId(1);
+    setStageRecords({});
     setCurrentStageId(1);
     setSelectedAreaIdForDetail(null);
     setScreenMode("map");
@@ -105,17 +131,41 @@ export const App: React.FC = () => {
         status: a.status === 'completed' ? 'completed' : 'cleared_fog',
       }))
     );
+    // デバッグ・開発者モード用：全100ステージも解放
+    setUnlockedStageId(100);
   };
 
-  // パズルクリア時の処理（木材ポイント獲得のみ。エリア解放はエリアコンプリート・バッジ獲得時）
-  const handleStageClear = (rewardWood: number, _unfogAreaIds: string[]) => {
+  // パズルクリア時の処理（木材ポイント獲得 & ★1〜3評価・進捗保存）
+  const handleStageClear = (
+    rewardWood: number,
+    _unfogAreaIds: string[],
+    stars: number = 1,
+    remainingMoves: number = 0
+  ) => {
     // 1. 木材ポイント獲得
     setWoodPoints((prev) => prev + rewardWood);
 
-    // 2. 次のパズルステージへ進行
-    setCurrentStageId((prev) => Math.min(STAGES.length, prev + 1));
+    // 2. ステージ記録（最高スター数）の更新・保存
+    setStageRecords((prev) => {
+      const prevRec = prev[currentStageId];
+      const bestStars = Math.max(prevRec?.stars || 0, stars);
+      const bestRem = Math.max(prevRec?.bestRemainingMoves || 0, remainingMoves);
+      return {
+        ...prev,
+        [currentStageId]: {
+          stars: bestStars,
+          bestRemainingMoves: bestRem,
+          clearedAt: Date.now(),
+        },
+      };
+    });
 
-    // 3. 元の画面へ戻る（エリア詳細から来ていたならエリア詳細へ、マップならマップへ）
+    // 3. 次のパズルステージへ進行 & 解放ステージ更新
+    const nextStage = Math.min(STAGES.length, currentStageId + 1);
+    setUnlockedStageId((prev) => Math.max(prev, nextStage));
+    setCurrentStageId(nextStage);
+
+    // 4. 元の画面へ戻る
     setScreenMode(previousScreenMode);
   };
 
@@ -197,6 +247,9 @@ export const App: React.FC = () => {
           creaturesCount={unlockedCreatures.length}
           badges={badges}
           unlockedCreatures={unlockedCreatures}
+          unlockedStageId={unlockedStageId}
+          stageRecords={stageRecords}
+          totalStars={totalStars}
           currentStageId={currentStageId}
           onStartPuzzle={(stageId) => {
             setCurrentStageId(stageId);

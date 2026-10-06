@@ -3,7 +3,8 @@ import type { PieceType, SpecialType, PuzzleStage, TileGimmick, TileUnderlay, Bo
 import { PIECE_CONFIG } from '../../data/masterData';
 import { sounds } from '../../utils/soundEffects';
 import confetti from 'canvas-confetti';
-import { RefreshCw, X, ArrowLeft, Trophy, Volume2, VolumeX } from 'lucide-react';
+import { RefreshCw, X, ArrowLeft, Trophy, Volume2, VolumeX, Star, Sparkles } from 'lucide-react';
+import { calculateStageStars, getStarWoodBonus, getStarThresholds } from '../../utils/stageEvaluation';
 import { DevStageSelector } from '../common/DevStageSelector';
 
 interface Tile {
@@ -18,7 +19,7 @@ interface Tile {
 
 interface Match3BoardProps {
   stage: PuzzleStage;
-  onStageClear: (rewardWood: number, unfogAreaIds: string[]) => void;
+  onStageClear: (rewardWood: number, unfogAreaIds: string[], stars?: number, remainingMoves?: number) => void;
   onExit: () => void;
   currentStageId?: number;
   onSelectStage?: (stageId: number) => void;
@@ -2340,47 +2341,106 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
         </div>
       </div>
 
-      {/* ステージクリアモーダル */}
-      {gameResult === 'cleared' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-sm bg-gradient-to-b from-amber-950/90 via-slate-900 to-slate-950 border-2 border-amber-400 rounded-3xl p-6 shadow-2xl text-center space-y-4">
-            <div className="inline-flex p-3 bg-amber-500 text-amber-950 rounded-3xl animate-bounce-subtle">
-              <Trophy className="w-8 h-8" />
-            </div>
+      {/* ステージクリアモーダル（★1〜3評価システム搭載） */}
+      {gameResult === 'cleared' && (() => {
+        const earnedStars = calculateStageStars(stage.maxMoves, movesLeft);
+        const bonusWood = getStarWoodBonus(earnedStars);
+        const totalReward = stage.woodReward + bonusWood;
+        const { star3MinMoves, star2MinMoves } = getStarThresholds(stage.maxMoves);
 
-            <div>
-              <span className="text-[10px] font-black text-amber-300 uppercase tracking-widest bg-amber-500/20 px-2.5 py-0.5 rounded-full">
-                STAGE CLEAR!
-              </span>
-              <h3 className="text-xl font-black text-white mt-2">
-                パズル大成功！🎉
-              </h3>
-            </div>
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm animate-fade-in">
+            <div className="w-full max-w-sm bg-gradient-to-b from-amber-950/90 via-slate-900 to-slate-950 border-2 border-amber-400 rounded-3xl p-6 shadow-2xl text-center space-y-4">
+              {/* トロフィー & 星アニメーション */}
+              <div className="flex flex-col items-center justify-center space-y-2">
+                <div className="inline-flex p-3 bg-amber-500 text-amber-950 rounded-3xl shadow-lg animate-bounce-subtle">
+                  <Trophy className="w-8 h-8" />
+                </div>
 
-            <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-center justify-around">
-              <div className="text-center">
-                <span className="text-2xl">🪵</span>
-                <div className="text-xs font-black text-amber-300">+{stage.woodReward} ウッド</div>
+                {/* ★1〜3 スター表示 */}
+                <div className="flex items-center justify-center space-x-2 pt-1">
+                  {[1, 2, 3].map((starNum) => {
+                    const isEarned = starNum <= earnedStars;
+                    return (
+                      <div
+                        key={starNum}
+                        className={`transition-all duration-300 transform ${
+                          isEarned
+                            ? 'text-yellow-400 scale-110 drop-shadow-[0_0_8px_rgba(250,204,21,0.8)]'
+                            : 'text-slate-600 scale-95'
+                        }`}
+                        style={{
+                          animation: isEarned ? `popIn 0.4s ease-out ${starNum * 0.15}s both` : 'none',
+                        }}
+                      >
+                        <Star
+                          className={`w-9 h-9 ${
+                            isEarned ? 'fill-yellow-400 text-yellow-300' : 'text-slate-600'
+                          }`}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-              <div className="text-center">
-                <span className="text-2xl">🦫✨</span>
-                <div className="text-xs font-black text-cyan-300">次のエリアを開拓！</div>
+
+              <div>
+                <span className="text-[10px] font-black text-amber-300 uppercase tracking-widest bg-amber-500/20 px-2.5 py-0.5 rounded-full inline-flex items-center space-x-1">
+                  <Sparkles className="w-3 h-3 text-amber-300" />
+                  <span>
+                    {earnedStars === 3
+                      ? '★★★ PERFECT CLEAR!'
+                      : earnedStars === 2
+                      ? '★★☆ GREAT CLEAR!'
+                      : '★☆☆ STAGE CLEAR!'}
+                  </span>
+                </span>
+                <h3 className="text-xl font-black text-white mt-1.5">
+                  {earnedStars === 3 ? '完璧な手腕！超絶クリア！🎉' : 'パズル大成功！🎉'}
+                </h3>
+                <div className="text-xs text-amber-200/90 mt-1 font-bold">
+                  残り手数: <span className="text-amber-400 text-sm font-black">{movesLeft}</span>手
+                  <span className="text-[10px] text-slate-400 ml-1.5 font-normal">
+                    (★3条件: {star3MinMoves}手以上 / ★2: {star2MinMoves}手以上)
+                  </span>
+                </div>
               </div>
+
+              {/* 獲得報酬（基本＋星ボーナス） */}
+              <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl space-y-1.5">
+                <div className="flex items-center justify-between text-xs font-bold text-slate-300">
+                  <span>ステージ基本報酬:</span>
+                  <span className="text-amber-300 font-black">+{stage.woodReward} 🪵</span>
+                </div>
+                {bonusWood > 0 && (
+                  <div className="flex items-center justify-between text-xs font-bold text-yellow-300">
+                    <span className="flex items-center space-x-1">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>{earnedStars === 3 ? '★3 パーフェクトボーナス:' : '★2 グッドボーナス:'}</span>
+                    </span>
+                    <span className="font-black">+{bonusWood} 🪵</span>
+                  </div>
+                )}
+                <div className="pt-1 border-t border-amber-500/20 flex items-center justify-between text-sm font-black text-white">
+                  <span>合計獲得木材:</span>
+                  <span className="text-amber-400 text-base font-black">+{totalReward} 🪵</span>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-300 leading-relaxed">
+                手に入れた木材を使って、新たな開拓地を復興させよう！
+              </p>
+
+              <button
+                onClick={() => onStageClear(totalReward, stage.unfogAreaIds, earnedStars, movesLeft)}
+                className="w-full py-3.5 bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-amber-950 font-black text-sm rounded-2xl shadow-lg shadow-amber-500/30 active:scale-98 transition-transform cursor-pointer"
+              >
+                開拓マップへ進む！ 🚀
+              </button>
             </div>
-
-            <p className="text-xs text-slate-300 leading-relaxed">
-              手に入れた木材や素材を使って、新たな開拓地を復興しよう！
-            </p>
-
-            <button
-              onClick={() => onStageClear(stage.woodReward, stage.unfogAreaIds)}
-              className="w-full py-3.5 bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-amber-950 font-black text-sm rounded-2xl shadow-lg shadow-amber-500/30 active:scale-98 transition-transform"
-            >
-              開拓マップへ進む！ 🚀
-            </button>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ゲームオーバーモーダル */}
       {gameResult === 'failed' && (
