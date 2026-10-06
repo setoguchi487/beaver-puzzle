@@ -233,6 +233,46 @@ class SoundEffectManager {
     osc.stop(this.ctx.currentTime + 0.12);
   }
 
+  // 爆弾爆発音（ドカーン！）
+  public playBomb(mega: boolean = false) {
+    if (this.isMuted) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(mega ? 160 : 200, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + (mega ? 0.35 : 0.25));
+
+    gain.gain.setValueAtTime(mega ? 0.28 : 0.2, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + (mega ? 0.35 : 0.25));
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc.start();
+    osc.stop(this.ctx.currentTime + (mega ? 0.35 : 0.25));
+
+    try {
+      const bufferSize = Math.floor(this.ctx.sampleRate * (mega ? 0.3 : 0.2));
+      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = buffer;
+      const noiseGain = this.ctx.createGain();
+      noiseGain.gain.setValueAtTime(mega ? 0.15 : 0.1, this.ctx.currentTime);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + (mega ? 0.3 : 0.2));
+      noise.connect(noiseGain);
+      noiseGain.connect(this.ctx.destination);
+      noise.start();
+    } catch {}
+  }
+
   // ロケット丸太音
   public playRocket() {
     if (this.isMuted) return;
