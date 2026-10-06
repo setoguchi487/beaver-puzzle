@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import type { FrontierArea, StageRecord, PlayerBoosters } from './types';
 import type { StarMilestone } from './data/starRoadMilestones';
+import type { DecorationItem } from './data/decorations';
+import { getDailyPuzzleStage, getDailyRewardInfo, markDailyClearedToday } from './utils/dailyPuzzle';
 import { STAGES, INITIAL_AREAS } from './data/masterData';
 import { FrontierMap } from './components/map/FrontierMap';
 import { Match3Board } from './components/puzzle/Match3Board';
@@ -56,6 +58,21 @@ export const App: React.FC = () => {
     return saved ? JSON.parse(saved) : [];
   });
 
+  // デイリーパズルプレイ中フラグ
+  const [isDailyPlaying, setIsDailyPlaying] = useState<boolean>(false);
+
+  // 所持デコレーションアイテムID
+  const [ownedDecorationIds, setOwnedDecorationIds] = useState<string[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY + '_owned_decorations');
+    return saved ? JSON.parse(saved) : ['deco_bench'];
+  });
+
+  // 広場配置中デコレーション（最大3個）
+  const [activePlacements, setActivePlacements] = useState<string[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY + '_active_decorations');
+    return saved ? JSON.parse(saved) : ['deco_bench'];
+  });
+
   // パズルの相棒（バディ）生き物ID
   const [selectedBuddyId, setSelectedBuddyId] = useState<string>(() => {
     const saved = localStorage.getItem(STORAGE_KEY + '_buddy');
@@ -103,7 +120,9 @@ export const App: React.FC = () => {
     localStorage.setItem(STORAGE_KEY + '_stage_records', JSON.stringify(stageRecords));
     localStorage.setItem(STORAGE_KEY + '_buddy', selectedBuddyId);
     localStorage.setItem(STORAGE_KEY + '_star_milestones', JSON.stringify(claimedStarMilestones));
-  }, [woodPoints, areas, badges, unlockedCreatures, unlockedStageId, stageRecords, selectedBuddyId, claimedStarMilestones]);
+    localStorage.setItem(STORAGE_KEY + '_owned_decorations', JSON.stringify(ownedDecorationIds));
+    localStorage.setItem(STORAGE_KEY + '_active_decorations', JSON.stringify(activePlacements));
+  }, [woodPoints, areas, badges, unlockedCreatures, unlockedStageId, stageRecords, selectedBuddyId, claimedStarMilestones, ownedDecorationIds, activePlacements]);
 
   // 開発者用チート・ステージ選択
   const handleResetAll = () => {
@@ -115,7 +134,12 @@ export const App: React.FC = () => {
     localStorage.removeItem(STORAGE_KEY + "_stage_records");
     localStorage.removeItem(STORAGE_KEY + "_buddy");
     localStorage.removeItem(STORAGE_KEY + "_star_milestones");
+    localStorage.removeItem(STORAGE_KEY + "_owned_decorations");
+    localStorage.removeItem(STORAGE_KEY + "_active_decorations");
 
+    setOwnedDecorationIds(['deco_bench']);
+    setActivePlacements(['deco_bench']);
+    setIsDailyPlaying(false);
     setSelectedBuddyId('mallard_duck');
     setClaimedStarMilestones([]);
     setWoodPoints(60);
@@ -130,6 +154,7 @@ export const App: React.FC = () => {
   };
 
   const handleSelectStage = (stageId: number) => {
+    setIsDailyPlaying(false);
     setCurrentStageId(stageId);
     setPreviousScreenMode(screenMode === 'puzzle' ? 'map' : screenMode);
     setScreenMode('puzzle');
@@ -148,6 +173,34 @@ export const App: React.FC = () => {
     setBadges([]);
     setUnlockedCreatures([]);
     setSelectedAreaIdForDetail(null);
+  };
+
+  // デイリーパズル開始
+  const handleStartDailyPuzzle = () => {
+    setIsDailyPlaying(true);
+    setPreviousScreenMode('map');
+    setScreenMode('puzzle');
+  };
+
+  // デコレーションのクラフト
+  const handleCraftDecoration = (item: DecorationItem) => {
+    if (woodPoints < item.woodCost || ownedDecorationIds.includes(item.id)) return;
+    setWoodPoints((prev) => prev - item.woodCost);
+    setOwnedDecorationIds((prev) => [...prev, item.id]);
+    setActivePlacements((prev) => (prev.length < 3 ? [...prev, item.id] : prev));
+  };
+
+  // デコレーションの配置切り替え
+  const handleTogglePlacement = (itemId: string) => {
+    setActivePlacements((prev) => {
+      if (prev.includes(itemId)) {
+        return prev.filter((id) => id !== itemId);
+      }
+      if (prev.length < 3) {
+        return [...prev, itemId];
+      }
+      return prev;
+    });
   };
 
   // 相棒の選択切り替え
@@ -204,6 +257,34 @@ export const App: React.FC = () => {
     stars: number = 1,
     remainingMoves: number = 0
   ) => {
+    if (isDailyPlaying) {
+      markDailyClearedToday();
+      const dailyReward = getDailyRewardInfo();
+      setWoodPoints((prev) => prev + dailyReward.wood);
+
+      if (dailyReward.boosters) {
+        try {
+          const savedBoosters = localStorage.getItem('beaver_puzzle_boosters');
+          let currentBoosters: PlayerBoosters = savedBoosters
+            ? JSON.parse(savedBoosters)
+            : { hammer: 3, saw: 2, tail: 2, clock: 3 };
+
+          currentBoosters = {
+            hammer: currentBoosters.hammer + (dailyReward.boosters.hammer || 0),
+            saw: currentBoosters.saw + (dailyReward.boosters.saw || 0),
+            tail: currentBoosters.tail + (dailyReward.boosters.tail || 0),
+            clock: currentBoosters.clock + (dailyReward.boosters.clock || 0),
+          };
+          localStorage.setItem('beaver_puzzle_boosters', JSON.stringify(currentBoosters));
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      setIsDailyPlaying(false);
+      setScreenMode('map');
+      return;
+    }
     // 1. 木材ポイント獲得
     setWoodPoints((prev) => prev + rewardWood);
 
@@ -305,7 +386,7 @@ export const App: React.FC = () => {
     setScreenMode('area_detail');
   };
 
-  const currentStage = STAGES.find((s) => s.id === currentStageId) || STAGES[0];
+  const currentStage = isDailyPlaying ? getDailyPuzzleStage() : (STAGES.find((s) => s.id === currentStageId) || STAGES[0]);
   const activeDetailArea = areas.find((a) => a.id === selectedAreaIdForDetail) || areas[0];
 
   return (
@@ -326,6 +407,11 @@ export const App: React.FC = () => {
           onSelectBuddy={handleSelectBuddy}
           claimedStarMilestones={claimedStarMilestones}
           onClaimStarMilestone={handleClaimStarMilestone}
+          ownedDecorationIds={ownedDecorationIds}
+          activePlacements={activePlacements}
+          onCraftDecoration={handleCraftDecoration}
+          onTogglePlacement={handleTogglePlacement}
+          onStartDailyPuzzle={handleStartDailyPuzzle}
           currentStageId={currentStageId}
           onStartPuzzle={(stageId) => {
             setCurrentStageId(stageId);

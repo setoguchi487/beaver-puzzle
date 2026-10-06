@@ -4,6 +4,10 @@ import { DevStageSelector } from '../common/DevStageSelector';
 import { CreatureBadgeModal } from '../common/CreatureBadgeModal';
 import { StageSelectModal } from '../common/StageSelectModal';
 import { StarRoadModal } from '../common/StarRoadModal';
+import { DailyPuzzleModal } from '../common/DailyPuzzleModal';
+import { DecorationModal } from '../common/DecorationModal';
+import { type DecorationItem } from '../../data/decorations';
+import { Calendar } from 'lucide-react';
 import type { StarMilestone } from '../../data/starRoadMilestones';
 import type { StageRecord } from '../../types';
 import { Star } from 'lucide-react';
@@ -37,6 +41,11 @@ interface FrontierMapProps {
   onSelectBuddy?: (buddyId: string) => void;
   claimedStarMilestones?: number[];
   onClaimStarMilestone?: (milestone: StarMilestone) => void;
+  ownedDecorationIds?: string[];
+  activePlacements?: string[];
+  onCraftDecoration?: (item: DecorationItem) => void;
+  onTogglePlacement?: (itemId: string) => void;
+  onStartDailyPuzzle?: () => void;
   onStartPuzzle: (stageId: number) => void;
   onCompleteTask: (areaId: string, taskId: string, cost: number) => void;
   onCompleteArea: (area: FrontierArea) => void;
@@ -64,6 +73,11 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
   onSelectBuddy,
   claimedStarMilestones = [],
   onClaimStarMilestone,
+  ownedDecorationIds = [],
+  activePlacements = [],
+  onCraftDecoration,
+  onTogglePlacement,
+  onStartDailyPuzzle,
   onStartPuzzle,
   onCompleteTask,
   onCompleteArea,
@@ -84,6 +98,8 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
   const [isBookModalOpen, setIsBookModalOpen] = useState<boolean>(false);
   const [isStageSelectOpen, setIsStageSelectOpen] = useState<boolean>(false);
   const [isStarRoadOpen, setIsStarRoadOpen] = useState<boolean>(false);
+  const [isDailyModalOpen, setIsDailyModalOpen] = useState<boolean>(false);
+  const [isDecoModalOpen, setIsDecoModalOpen] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState(sounds.getMuted());
 
   const mapScrollRef = useRef<HTMLDivElement>(null);
@@ -175,8 +191,27 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
             </div>
           </div>
 
-          {/* サウンド & Devセレクター */}
+          {/* 日替わり・クラフト・サウンド・Devセレクター */}
           <div className="flex items-center space-x-1.5">
+            {/* 日替わりパズルボタン */}
+            <button
+              onClick={() => setIsDailyModalOpen(true)}
+              className="px-2 py-1 bg-gradient-to-r from-cyan-500/25 to-blue-500/25 hover:from-cyan-500/35 hover:to-blue-500/35 border border-cyan-400/50 text-cyan-300 rounded-xl text-[10px] font-black flex items-center space-x-1 shadow-xs active:scale-95 transition-all cursor-pointer"
+              title="日替わり渓流パズルを開く"
+            >
+              <Calendar className="w-3 h-3 text-cyan-400" />
+              <span>日替わり</span>
+            </button>
+
+            {/* クラフト・デコレーションボタン */}
+            <button
+              onClick={() => setIsDecoModalOpen(true)}
+              className="px-2 py-1 bg-gradient-to-r from-emerald-500/25 to-teal-500/25 hover:from-emerald-500/35 hover:to-teal-500/35 border border-emerald-400/50 text-emerald-300 rounded-xl text-[10px] font-black flex items-center space-x-1 shadow-xs active:scale-95 transition-all cursor-pointer"
+              title="木工デコレーション工房を開く"
+            >
+              <Hammer className="w-3 h-3 text-emerald-400" />
+              <span>クラフト</span>
+            </button>
             <button
               onClick={handleToggleMute}
               className="p-1.5 text-slate-400 hover:text-white rounded-lg bg-slate-800/80 border border-slate-700 active:scale-95"
@@ -755,6 +790,33 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
             if (onClaimStarMilestone) onClaimStarMilestone(m);
           }}
           onClose={() => setIsStarRoadOpen(false)}
+        />
+      )}
+
+      {/* 日替わりパズルモーダル */}
+      {isDailyModalOpen && (
+        <DailyPuzzleModal
+          onStartDaily={() => {
+            setIsDailyModalOpen(false);
+            if (onStartDailyPuzzle) onStartDailyPuzzle();
+          }}
+          onClose={() => setIsDailyModalOpen(false)}
+        />
+      )}
+
+      {/* 木工デコレーションモーダル */}
+      {isDecoModalOpen && (
+        <DecorationModal
+          woodPoints={woodPoints}
+          ownedDecorationIds={ownedDecorationIds}
+          activePlacements={activePlacements}
+          onCraftDecoration={(item) => {
+            if (onCraftDecoration) onCraftDecoration(item);
+          }}
+          onTogglePlacement={(itemId) => {
+            if (onTogglePlacement) onTogglePlacement(itemId);
+          }}
+          onClose={() => setIsDecoModalOpen(false)}
         />
       )}
 
