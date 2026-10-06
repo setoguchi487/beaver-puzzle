@@ -800,79 +800,85 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
         </div>
       )}
 
-      {/* 上部ヘッダー */}
-      <div className="w-full flex items-center justify-between p-2 rounded-2xl bg-slate-950/80 backdrop-blur-md border border-amber-500/30 shadow-lg z-10">
-        <button
-          onClick={onExit}
-          className="p-2 text-slate-400 hover:text-white rounded-full bg-slate-900 active:scale-95 transition-transform"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-
-        <div className="text-center">
-          <h2 className="text-sm font-black text-amber-400 tracking-wide">
-            {stage.title}
-          </h2>
-          <span className="text-[10px] text-slate-400">
-            クリア報酬: 🪵 +{stage.woodReward} ウッド
-          </span>
-        </div>
-
-        <div className="flex items-center space-x-1.5">
-          {onSelectStage && onAddWood && onUnlockAllAreas && (
-            <DevStageSelector
-              currentStageId={currentStageId || stage.id}
-              onSelectStage={onSelectStage}
-              onAddWood={onAddWood}
-              onUnlockAllAreas={onUnlockAllAreas}
-              onResetAll={onResetAll}
-            />
-          )}
+      {/* 上部ヘッダー（ステージ名・残り手数・目標材料を最上部に一体化配置） */}
+      <div className="w-full p-2 rounded-2xl bg-slate-950/85 backdrop-blur-md border border-amber-500/30 shadow-xl z-20 space-y-1.5">
+        {/* 最上段：戻るボタン、ステージ名、操作ボタン */}
+        <div className="flex items-center justify-between">
           <button
-            onClick={handleToggleMute}
-            title={isMuted ? 'ミュート解除' : 'ミュート'}
-            className="p-2 text-slate-400 hover:text-white rounded-full bg-slate-900 active:scale-95 transition-transform"
+            onClick={onExit}
+            className="p-1.5 text-amber-200 hover:text-white rounded-xl bg-amber-950/60 hover:bg-amber-900/80 active:scale-95 transition-transform"
           >
-            {isMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
+            <ArrowLeft className="w-4 h-4" />
           </button>
-          <button
-            onClick={initBoard}
-            title="リスタート"
-            className="p-2 text-slate-400 hover:text-white rounded-full bg-slate-900 active:scale-95 transition-transform"
-          >
-            <RefreshCw className="w-4 h-4" />
-          </button>
+
+          <div className="text-center">
+            <h2 className="text-xs sm:text-sm font-black text-amber-300 tracking-wide drop-shadow-sm">
+              {stage.title}
+            </h2>
+            <span className="text-[9px] text-amber-200/80 font-medium">
+              クリア報酬: 🪵 +{stage.woodReward} ウッド
+            </span>
+          </div>
+
+          <div className="flex items-center space-x-1">
+            {onSelectStage && onAddWood && onUnlockAllAreas && (
+              <DevStageSelector
+                currentStageId={currentStageId || stage.id}
+                onSelectStage={onSelectStage}
+                onAddWood={onAddWood}
+                onUnlockAllAreas={onUnlockAllAreas}
+                onResetAll={onResetAll}
+              />
+            )}
+            <button
+              onClick={handleToggleMute}
+              title={isMuted ? 'ミュート解除' : 'ミュート'}
+              className="p-1.5 text-slate-300 hover:text-white rounded-xl bg-slate-900/80 active:scale-95 transition-transform"
+            >
+              {isMuted ? <VolumeX className="w-3.5 h-3.5 text-rose-400" /> : <Volume2 className="w-3.5 h-3.5 text-emerald-400" />}
+            </button>
+            <button
+              onClick={initBoard}
+              title="リスタート"
+              className="p-1.5 text-slate-300 hover:text-white rounded-xl bg-slate-900/80 active:scale-95 transition-transform"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* 目標素材カウンター＆残り手数 */}
-      <div className="w-full grid grid-cols-3 gap-2 my-2 z-10">
-        <div className="p-2 bg-gradient-to-b from-amber-950/90 to-amber-900/90 border border-amber-400/50 rounded-2xl text-center backdrop-blur-md shadow-lg">
-          <div className="text-[9px] font-bold text-amber-300 uppercase">残り手数</div>
-          <div className="text-2xl font-black text-amber-400">{movesLeft}</div>
-        </div>
+        {/* ステージ名のすぐ下：残り手数 ＆ 目標材料カウンター */}
+        <div className="flex items-center justify-between gap-2 pt-1 border-t border-amber-500/20">
+          {/* 残り手数 */}
+          <div className="flex items-center space-x-1.5 bg-amber-950/80 border border-amber-400/50 rounded-xl px-2.5 py-0.5 shadow-inner">
+            <span className="text-[9px] font-bold text-amber-300 uppercase">手数</span>
+            <span className="text-lg font-black text-amber-400 drop-shadow-sm">{movesLeft}</span>
+          </div>
 
-        <div className="col-span-2 flex items-center justify-around p-2 bg-slate-950/85 border border-amber-500/30 rounded-2xl backdrop-blur-md shadow-lg">
-          {stage.targets.map((t) => {
-            const current = targets[t.type]?.current || 0;
-            const isDone = current >= t.required;
-            const icon =
-              t.type === 'ice' ? '🧊' : t.type === 'rock' ? '🪨' : t.type === 'vine' ? '🌿' : PIECE_CONFIG[t.type]?.icon || '🪵';
-            const label =
-              t.type === 'ice' ? '氷' : t.type === 'rock' ? '岩' : t.type === 'vine' ? 'ツタ' : PIECE_CONFIG[t.type]?.label || '素材';
+          {/* 目標素材カウンター */}
+          <div className="flex-1 flex items-center justify-around bg-slate-900/85 border border-slate-700/60 rounded-xl px-2 py-0.5 shadow-inner">
+            {stage.targets.map((t) => {
+              const current = targets[t.type]?.current || 0;
+              const isDone = current >= t.required;
+              const icon =
+                t.type === 'ice' ? '🧊' : t.type === 'rock' ? '🪨' : t.type === 'vine' ? '🌿' : PIECE_CONFIG[t.type]?.icon || '🪵';
+              const label =
+                t.type === 'ice' ? '氷' : t.type === 'rock' ? '岩' : t.type === 'vine' ? 'ツタ' : PIECE_CONFIG[t.type]?.label || '素材';
 
-            return (
-              <div key={t.type} className="flex items-center space-x-1.5">
-                <span className="text-2xl">{icon}</span>
-                <div className="text-left">
-                  <div className="text-[10px] text-slate-400">{label}</div>
-                  <div className={`text-xs font-black ${isDone ? 'text-emerald-400' : 'text-white'}`}>
-                    {current} / {t.required} {isDone && '✓'}
+              return (
+                <div key={t.type} className="flex items-center space-x-1">
+                  <span className="text-lg drop-shadow-sm">{icon}</span>
+                  <div className="text-left leading-tight">
+                    <span className="text-[9px] text-amber-200/70 font-bold block">{label}</span>
+                    <span className={`text-[11px] font-black ${isDone ? "text-emerald-400" : "text-white"}`}>
+
+                      {current}/{t.required} {isDone && '✓'}
+                    </span>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
 
