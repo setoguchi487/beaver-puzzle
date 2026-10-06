@@ -2,7 +2,12 @@ export type PieceType = 'wood' | 'twig' | 'water' | 'acorn' | 'stone' | 'berry' 
 
 export type SpecialType = 'none' | 'rocket_h' | 'rocket_v' | 'bomb' | 'rainbow';
 
-export type GimmickType = 'none' | 'ice' | 'rock' | 'vine';
+export type GimmickType = 'none' | 'ice' | 'rock' | 'vine' | 'chest' | 'boulder';
+
+export interface TileUnderlay {
+  type: 'mud';
+  hp: number; // 泥んこ耐久度（1: 通常泥、2: 濃い泥）
+}
 
 export type BoosterItemType = 'hammer' | 'saw' | 'tail' | 'clock';
 
@@ -15,7 +20,8 @@ export interface PlayerBoosters {
 
 export interface TileGimmick {
   type: GimmickType;
-  hp: number; // 残り耐久力 (例: 氷は2または1、岩は2または1)
+  hp: number; // 残り耐久力 (例: 氷は2または1、岩は2または1、宝箱は3〜1、巨石は3〜1)
+  reward?: SpecialType; // 宝箱オープン時に飛び出す特殊ピース (rocket_h / rocket_v / bomb)
 }
 
 export interface PuzzleTile {
@@ -23,6 +29,7 @@ export interface PuzzleTile {
   type: PieceType;
   special: SpecialType;
   gimmick?: TileGimmick;
+  underlay?: TileUnderlay;
   isMatched?: boolean;
 }
 
@@ -52,6 +59,8 @@ export interface PuzzleStage {
   gravityDirection?: 'down' | 'up'; // 重力方向（'down'=通常落下、'up'=水底浮力反転。未指定なら 'down'）
   allowedPieceTypes?: PieceType[]; // 出現する素材の種類（未指定ならデフォルト5種）
   disabledTiles?: { r: number; c: number }[]; // 穴あき盤面の無効マス座標
+  initialUnderlays?: { r: number; c: number; type: 'mud'; hp: number }[]; // 下地ギミック（泥んこ）初期配置
+  creepingVine?: boolean; // ターン経過でツタが侵食・増殖するか（trueなら未消去ターンに侵食）
 }
 
 export interface AreaTask {

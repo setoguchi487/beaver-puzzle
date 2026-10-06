@@ -119,32 +119,132 @@ export const generate100Stages = (): PuzzleStage[] => {
         woodReward: 150,
         unfogAreaIds: ['beaver_lodge'],
       });
-    } else if (i === 10) {
-      // 🧊 氷ブロック解禁！
+    } else if (i === 7) {
+      // 🟫 新ギミック：泥んこタイル登場！
       stages.push({
-        id: 10,
-        title: 'Stage 10: 氷解のせせらぎ 🧊',
-        description: '新ギミック【氷ブロック】登場！氷の隣で素材を消すと、氷が割れて中の丸太が手に入るよ！',
-        maxMoves: 22,
+        id: 7,
+        title: 'Stage 7: 泥んこクリーン作戦！🟫',
+        description: '新ギミック【泥んこ】登場！泥の上に敷かれたピースを3つ揃えて、キレイに洗い流そう！',
+        maxMoves: 20,
         targets: [
-          { type: 'ice', required: 6, current: 0 },
-          { type: 'wood', required: 15, current: 0 },
+          { type: 'mud', required: 12, current: 0 },
+          { type: 'wood', required: 12, current: 0 },
         ],
-        woodReward: 150,
+        woodReward: 160,
         unfogAreaIds: ['beaver_lodge'],
         newGimmickIntro: {
-          type: 'ice',
-          title: '新ギミック：氷ブロック 🧊',
-          description: 'カチコチに凍った丸太！隣でピースを消して氷を割ろう！',
-          icon: '🧊',
+          type: 'mud' as GimmickType,
+          title: '新ギミック：泥んこタイル 🟫',
+          description: 'マスの下地に泥が塗られているよ！そのマスの上で素材を揃えて泥をきれいに洗い流そう！',
+          icon: '🟫',
+        },
+        initialUnderlays: [
+          { r: 2, c: 2, type: 'mud', hp: 1 },
+          { r: 2, c: 3, type: 'mud', hp: 1 },
+          { r: 2, c: 4, type: 'mud', hp: 1 },
+          { r: 3, c: 1, type: 'mud', hp: 2 },
+          { r: 3, c: 2, type: 'mud', hp: 2 },
+          { r: 3, c: 3, type: 'mud', hp: 2 },
+          { r: 3, c: 4, type: 'mud', hp: 2 },
+          { r: 3, c: 5, type: 'mud', hp: 2 },
+          { r: 4, c: 2, type: 'mud', hp: 1 },
+          { r: 4, c: 3, type: 'mud', hp: 1 },
+          { r: 4, c: 4, type: 'mud', hp: 1 },
+          { r: 1, c: 3, type: 'mud', hp: 1 },
+        ],
+      });
+    } else if (i === 8) {
+      // 📦 新ギミック：からくり宝箱登場！
+      stages.push({
+        id: 8,
+        title: 'Stage 8: 木工のからくり宝箱！📦✨',
+        description: '新ギミック【からくり宝箱】登場！隣でピースを消して木箱を開けると、中からロケットやボムが飛び出すよ！',
+        maxMoves: 22,
+        targets: [
+          { type: 'chest', required: 3, current: 0 },
+          { type: 'water', required: 15, current: 0 },
+        ],
+        woodReward: 180,
+        unfogAreaIds: ['beaver_lodge'],
+        newGimmickIntro: {
+          type: 'chest' as GimmickType,
+          title: '新ギミック：からくり宝箱 📦',
+          description: '頑丈な木箱だよ！隣で3マッチさせて叩き割ると、中からロケットやボムが飛び出して大連鎖！',
+          icon: '📦',
         },
         initialGimmicks: [
-          { r: 2, c: 2, type: 'ice', hp: 2 },
-          { r: 2, c: 4, type: 'ice', hp: 2 },
-          { r: 4, c: 2, type: 'ice', hp: 2 },
-          { r: 4, c: 4, type: 'ice', hp: 2 },
-          { r: 3, c: 3, type: 'ice', hp: 2 },
-          { r: 3, c: 2, type: 'ice', hp: 1 },
+          { r: 2, c: 3, type: 'chest' as GimmickType, hp: 3, reward: 'rocket_h' } as any,
+          { r: 4, c: 2, type: 'chest' as GimmickType, hp: 3, reward: 'bomb' } as any,
+          { r: 4, c: 4, type: 'chest' as GimmickType, hp: 3, reward: 'rocket_v' } as any,
+        ],
+      });
+    } else if (i === 9) {
+      // 🌿 新ギミック：増殖する侵食ツタ登場！
+      stages.push({
+        id: 9,
+        title: 'Stage 9: 迫りくる侵食ツタ！🌿',
+        description: '新ギミック【侵食ツタ】登場！1ターン中にツタを刈り取らないと、毎ターンじわじわ増殖するスリル！',
+        maxMoves: 24,
+        creepingVine: true,
+        targets: [
+          { type: 'vine', required: 8, current: 0 },
+          { type: 'acorn', required: 15, current: 0 },
+        ],
+        woodReward: 200,
+        unfogAreaIds: ['beaver_lodge'],
+        newGimmickIntro: {
+          type: 'vine' as GimmickType,
+          title: '新ギミック：侵食するツタ 🌿',
+          description: 'ツタを放置すると毎ターン周囲に増殖してしまう！ツタの隣でマッチさせて素早く刈り取ろう！',
+          icon: '🌿',
+        },
+        initialGimmicks: [
+          { r: 1, c: 1, type: 'vine' as GimmickType, hp: 1 },
+          { r: 1, c: 5, type: 'vine' as GimmickType, hp: 1 },
+          { r: 5, c: 1, type: 'vine' as GimmickType, hp: 1 },
+          { r: 5, c: 5, type: 'vine' as GimmickType, hp: 1 },
+        ],
+      });
+    } else if (i === 10) {
+      // 🗿 新ギミック：ダムの巨石 ＆ 泥んこ ＆ 宝箱の複合クライマックス！
+      stages.push({
+        id: 10,
+        title: 'Stage 10: 巨石ダムの総力戦！🗿💥',
+        description: '新ギミック【ダムの巨石】登場！超硬い巨石と宝箱・泥んこが入り混じる大決戦！',
+        boardRows: 8,
+        boardCols: 8,
+        maxMoves: 28,
+        creepingVine: true,
+        targets: [
+          { type: 'boulder', required: 2, current: 0 },
+          { type: 'chest', required: 2, current: 0 },
+          { type: 'mud', required: 8, current: 0 },
+        ],
+        woodReward: 250,
+        unfogAreaIds: ['beaver_lodge'],
+        newGimmickIntro: {
+          type: 'boulder' as GimmickType,
+          title: '新ギミック：ダムの巨石 🗿',
+          description: '超頑丈な巨大ブロック！マッチや爆弾の衝撃を3回当てて粉砕しよう！',
+          icon: '🗿',
+        },
+        initialGimmicks: [
+          { r: 3, c: 3, type: 'boulder' as GimmickType, hp: 3 },
+          { r: 4, c: 4, type: 'boulder' as GimmickType, hp: 3 },
+          { r: 2, c: 5, type: 'chest' as GimmickType, hp: 3, reward: 'bomb' } as any,
+          { r: 5, c: 2, type: 'chest' as GimmickType, hp: 3, reward: 'rocket_h' } as any,
+          { r: 0, c: 0, type: 'vine' as GimmickType, hp: 1 },
+          { r: 7, c: 7, type: 'vine' as GimmickType, hp: 1 },
+        ],
+        initialUnderlays: [
+          { r: 2, c: 2, type: 'mud', hp: 1 },
+          { r: 2, c: 3, type: 'mud', hp: 1 },
+          { r: 3, c: 2, type: 'mud', hp: 2 },
+          { r: 4, c: 5, type: 'mud', hp: 2 },
+          { r: 5, c: 4, type: 'mud', hp: 1 },
+          { r: 5, c: 5, type: 'mud', hp: 1 },
+          { r: 1, c: 4, type: 'mud', hp: 1 },
+          { r: 6, c: 3, type: 'mud', hp: 1 },
         ],
       });
     } else if (i === 20) {

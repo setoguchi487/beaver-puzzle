@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import type { PieceType, SpecialType, PuzzleStage, TileGimmick, BoosterItemType, PlayerBoosters } from '../../types';
+import type { PieceType, SpecialType, PuzzleStage, TileGimmick, TileUnderlay, BoosterItemType, PlayerBoosters } from '../../types';
 import { PIECE_CONFIG } from '../../data/masterData';
 import { sounds } from '../../utils/soundEffects';
 import confetti from 'canvas-confetti';
@@ -11,6 +11,7 @@ interface Tile {
   type: PieceType;
   special: SpecialType;
   gimmick?: TileGimmick;
+  underlay?: TileUnderlay;
   dropDistance?: number;
   disabled?: boolean;
 }
@@ -127,6 +128,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
   const [clearingTileIds, setClearingTileIds] = useState<Set<string>>(new Set());
   const [dropVersion, setDropVersion] = useState<number>(0);
   const isMouseDownRef = useRef<boolean>(false);
+  const vinesClearedThisTurnRef = useRef<number>(0);
 
   const touchStartRef = useRef<{ x: number; y: number; r: number; c: number } | null>(null);
 
@@ -147,7 +149,16 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     if (stage.initialGimmicks) {
       stage.initialGimmicks.forEach((g) => {
         if (g.r >= 0 && g.r < numRows && g.c >= 0 && g.c < numCols) {
-          newBoard[g.r][g.c].gimmick = { type: g.type, hp: g.hp };
+          newBoard[g.r][g.c].gimmick = { type: g.type, hp: g.hp, reward: (g as any).reward };
+        }
+      });
+    }
+
+    // ステージ初期下地（泥んこ）の適用
+    if (stage.initialUnderlays) {
+      stage.initialUnderlays.forEach((u) => {
+        if (u.r >= 0 && u.r < numRows && u.c >= 0 && u.c < numCols) {
+          newBoard[u.r][u.c].underlay = { type: u.type, hp: u.hp };
         }
       });
     }
@@ -418,7 +429,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     if (isAnimating || gameResult !== 'playing' || !introDismissed) return;
     const tile = board[r][c];
     // ツタや岩はスワイプ不可
-    if (tile.gimmick?.type === 'vine' || tile.gimmick?.type === 'rock') return;
+    if (tile.gimmick?.type === 'vine' || tile.gimmick?.type === 'rock' || tile.gimmick?.type === 'chest' || tile.gimmick?.type === 'boulder') return;
 
     const touch = e.touches[0];
     touchStartRef.current = { x: touch.clientX, y: touch.clientY, r, c };
@@ -549,6 +560,11 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
       setTimeout(() => setIsShaking(false), 250);
 
       const tile = newBoard[targetR][targetC];
+      if (tile.underlay?.type === 'mud') {
+        tile.underlay = undefined;
+        collectedCounts['mud'] = (collectedCounts['mud'] || 0) + 1;
+        sounds.playMudSplash();
+      }
       if (tile.gimmick) {
         if (tile.gimmick.type === 'rock') {
           collectedCounts['rock'] = (collectedCounts['rock'] || 0) + 1;
@@ -559,6 +575,15 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
         } else if (tile.gimmick.type === 'vine') {
           collectedCounts['vine'] = (collectedCounts['vine'] || 0) + 1;
           sounds.playVineCut();
+          vinesClearedThisTurnRef.current += 1;
+        } else if (tile.gimmick.type === 'boulder') {
+          collectedCounts['boulder'] = (collectedCounts['boulder'] || 0) + 1;
+          sounds.playRockBreak();
+        } else if (tile.gimmick.type === 'chest') {
+          collectedCounts['chest'] = (collectedCounts['chest'] || 0) + 1;
+          sounds.playChestOpen();
+          const reward = tile.gimmick.reward || 'bomb';
+          tile.special = reward;
         }
         tile.gimmick = undefined;
       }
@@ -579,6 +604,11 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
       for (let c = 0; c < numCols; c++) {
         const tile = newBoard[targetR][c];
         if (tile.disabled) continue;
+        if (tile.underlay?.type === 'mud') {
+          tile.underlay = undefined;
+          collectedCounts['mud'] = (collectedCounts['mud'] || 0) + 1;
+          sounds.playMudSplash();
+        }
         if (tile.gimmick) {
           if (tile.gimmick.type === 'rock') {
             collectedCounts['rock'] = (collectedCounts['rock'] || 0) + 1;
@@ -589,6 +619,15 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
           } else if (tile.gimmick.type === 'vine') {
             collectedCounts['vine'] = (collectedCounts['vine'] || 0) + 1;
             sounds.playVineCut();
+            vinesClearedThisTurnRef.current += 1;
+          } else if (tile.gimmick.type === 'boulder') {
+            collectedCounts['boulder'] = (collectedCounts['boulder'] || 0) + 1;
+            sounds.playRockBreak();
+          } else if (tile.gimmick.type === 'chest') {
+            collectedCounts['chest'] = (collectedCounts['chest'] || 0) + 1;
+            sounds.playChestOpen();
+            const reward = tile.gimmick.reward || 'rocket_h';
+            tile.special = reward;
           }
           tile.gimmick = undefined;
         }
@@ -619,6 +658,11 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
           if (r >= 0 && r < numRows && c >= 0 && c < numCols) {
             const tile = newBoard[r][c];
             if (tile.disabled) continue;
+            if (tile.underlay?.type === 'mud') {
+              tile.underlay = undefined;
+              collectedCounts['mud'] = (collectedCounts['mud'] || 0) + 1;
+              sounds.playMudSplash();
+            }
             if (tile.gimmick) {
               if (tile.gimmick.type === 'rock') {
                 collectedCounts['rock'] = (collectedCounts['rock'] || 0) + 1;
@@ -629,6 +673,15 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
               } else if (tile.gimmick.type === 'vine') {
                 collectedCounts['vine'] = (collectedCounts['vine'] || 0) + 1;
                 sounds.playVineCut();
+                vinesClearedThisTurnRef.current += 1;
+              } else if (tile.gimmick.type === 'boulder') {
+                collectedCounts['boulder'] = (collectedCounts['boulder'] || 0) + 1;
+                sounds.playRockBreak();
+              } else if (tile.gimmick.type === 'chest') {
+                collectedCounts['chest'] = (collectedCounts['chest'] || 0) + 1;
+                sounds.playChestOpen();
+                const reward = tile.gimmick.reward || 'bomb';
+                tile.special = reward;
               }
               tile.gimmick = undefined;
             }
@@ -816,9 +869,64 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     return allDone;
   };
 
+  // 侵食ツタの増殖処理（ターン中にツタが1つも消去されなかった場合に隣接1マス侵食）
+  const growVineIfPossible = (currentBoard: Tile[][]): Tile[][] => {
+    const vineCoords: { r: number; c: number }[] = [];
+    currentBoard.forEach((row, r) => {
+      row.forEach((t, c) => {
+        if (t.gimmick?.type === 'vine') {
+          vineCoords.push({ r, c });
+        }
+      });
+    });
+
+    if (vineCoords.length === 0) return currentBoard;
+
+    const candidateCoords: { r: number; c: number }[] = [];
+    const dirs = [
+      { dr: -1, dc: 0 },
+      { dr: 1, dc: 0 },
+      { dr: 0, dc: -1 },
+      { dr: 0, dc: 1 },
+    ];
+
+    vineCoords.forEach(({ r, c }) => {
+      dirs.forEach(({ dr, dc }) => {
+        const nr = r + dr;
+        const nc = c + dc;
+        if (nr >= 0 && nr < numRows && nc >= 0 && nc < numCols) {
+          const target = currentBoard[nr][nc];
+          if (!target.disabled && !target.gimmick && target.id !== '') {
+            if (!candidateCoords.some((p) => p.r === nr && p.c === nc)) {
+              candidateCoords.push({ r: nr, c: nc });
+            }
+          }
+        }
+      });
+    });
+
+    if (candidateCoords.length > 0) {
+      const chosen = candidateCoords[Math.floor(Math.random() * candidateCoords.length)];
+      const updated = currentBoard.map((row) => row.map((t) => ({ ...t })));
+      updated[chosen.r][chosen.c].gimmick = { type: 'vine', hp: 1 };
+      sounds.playVineGrow();
+      setComboToast('ツタが侵食した！🌿');
+      setTimeout(() => setComboToast(null), 1500);
+      return updated;
+    }
+    return currentBoard;
+  };
+
   const finishMove = () => {
     const nextMoves = movesLeft - 1;
     setMovesLeft(nextMoves);
+
+    // ★侵食ツタのターン終了時チェック
+    if (stage.creepingVine && vinesClearedThisTurnRef.current === 0) {
+      setBoard((prevBoard) => growVineIfPossible(prevBoard));
+    }
+    // ターン終了時にツタ消去カウントをリセット
+    vinesClearedThisTurnRef.current = 0;
 
     setTimeout(() => {
       checkGameStatus(nextMoves);
@@ -844,6 +952,10 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
   // 重力落下 / 浮力反転アニメーション共通処理
   const dropBoardWithGravity = async (b: Tile[][]): Promise<Tile[][]> => {
+    // マスの下地（泥んこ）はピース落下・補充に関わらず座標に固定保持する
+    const originalUnderlays: (TileUnderlay | undefined)[][] = b.map((row) =>
+      row.map((tile) => (tile.underlay ? { ...tile.underlay } : undefined))
+    );
     const fallenBoard: Tile[][] = b.map((row) => row.map((tile) => ({ ...tile, dropDistance: 0 })));
     let hasFalling = false;
 
@@ -928,12 +1040,21 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
       await new Promise((res) => setTimeout(res, 380));
       sounds.playDrop();
 
-      const settledBoard = fallenBoard.map((row) =>
-        row.map((tile) => ({ ...tile, dropDistance: 0 }))
+      const settledBoard = fallenBoard.map((row, r) =>
+        row.map((tile, c) => ({
+          ...tile,
+          underlay: originalUnderlays[r][c],
+          dropDistance: 0,
+        }))
       );
       setBoard(settledBoard);
       return settledBoard;
     } else {
+      for (let r = 0; r < numRows; r++) {
+        for (let c = 0; c < numCols; c++) {
+          fallenBoard[r][c].underlay = originalUnderlays[r][c];
+        }
+      }
       setBoard(fallenBoard);
       return fallenBoard;
     }
@@ -980,6 +1101,17 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
         newBoard[r][c].gimmick = undefined;
         sounds.playVineCut();
         collectedCounts['vine'] = (collectedCounts['vine'] || 0) + 1;
+        vinesClearedThisTurnRef.current += 1;
+      }
+
+      // マスの下地（泥んこ）消去
+      if (newBoard[r][c].underlay?.type === 'mud') {
+        newBoard[r][c].underlay!.hp -= 1;
+        if (newBoard[r][c].underlay!.hp <= 0) {
+          newBoard[r][c].underlay = undefined;
+          collectedCounts['mud'] = (collectedCounts['mud'] || 0) + 1;
+          sounds.playMudSplash();
+        }
       }
     });
 
@@ -1023,6 +1155,28 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
                   collectedCounts['rock'] = (collectedCounts['rock'] || 0) + 1;
                 } else {
                   sounds.playRockBreak();
+                }
+              } else if (g.type === 'boulder') {
+                // 🗿 ダムの巨石（HP3〜1）
+                g.hp -= 1;
+                sounds.playRockBreak();
+                if (g.hp <= 0) {
+                  targetTile.gimmick = undefined;
+                  targetTile.id = '';
+                  collectedCounts['boulder'] = (collectedCounts['boulder'] || 0) + 1;
+                }
+              } else if (g.type === 'chest') {
+                // 📦 木工のからくり宝箱（HP3〜1）
+                g.hp -= 1;
+                if (g.hp <= 0) {
+                  targetTile.gimmick = undefined;
+                  collectedCounts['chest'] = (collectedCounts['chest'] || 0) + 1;
+                  sounds.playChestOpen();
+                  // 宝箱オープン！中からロケットまたは爆弾が飛び出すボーナス！
+                  const reward = g.reward || (Math.random() < 0.5 ? 'rocket_h' : 'bomb');
+                  targetTile.special = reward;
+                } else {
+                  sounds.playChestHit();
                 }
               }
             }
@@ -1100,15 +1254,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
             const nr = r + dr;
             const nc = c + dc;
             if (nr >= 0 && nr < numRows && nc >= 0 && nc < numCols) {
-              const t = newBoard[nr][nc];
-              if (t.id !== '') {
-                collectedCounts[t.type] = (collectedCounts[t.type] || 0) + 1;
-                if (t.gimmick) {
-                  collectedCounts[t.gimmick.type] = (collectedCounts[t.gimmick.type] || 0) + 1;
-                  t.gimmick = undefined;
-                }
-                newBoard[nr][nc] = { id: '', type: 'wood', special: 'none' };
-              }
+              destroyTileAt(newBoard, nr, nc, collectedCounts);
             }
           }
         }
@@ -1146,6 +1292,55 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     const nextResult = findMatchesAndSpecials(settledBoard);
     if (nextResult.matches.length > 0) {
       await processMatches(settledBoard, nextResult.matches, currentCombo + 1, nextResult.specialsToCreate);
+    }
+  };
+
+  // タイルおよびギミック・下地（泥んこ）の汎用破壊・素材回収ヘルパー
+  const destroyTileAt = (
+    b: Tile[][],
+    r: number,
+    c: number,
+    collectedCounts: { [key: string]: number }
+  ) => {
+    const tile = b[r][c];
+    if (tile.disabled) return;
+
+    // 下地（泥んこ）消去
+    if (tile.underlay?.type === 'mud') {
+      tile.underlay = undefined;
+      collectedCounts['mud'] = (collectedCounts['mud'] || 0) + 1;
+      sounds.playMudSplash();
+    }
+
+    // ギミック破壊
+    if (tile.gimmick) {
+      if (tile.gimmick.type === 'rock') {
+        collectedCounts['rock'] = (collectedCounts['rock'] || 0) + 1;
+        sounds.playRockBreak();
+      } else if (tile.gimmick.type === 'ice') {
+        collectedCounts['ice'] = (collectedCounts['ice'] || 0) + 1;
+        sounds.playIceBreak();
+      } else if (tile.gimmick.type === 'vine') {
+        collectedCounts['vine'] = (collectedCounts['vine'] || 0) + 1;
+        sounds.playVineCut();
+        vinesClearedThisTurnRef.current += 1;
+      } else if (tile.gimmick.type === 'boulder') {
+        collectedCounts['boulder'] = (collectedCounts['boulder'] || 0) + 1;
+        sounds.playRockBreak();
+      } else if (tile.gimmick.type === 'chest') {
+        collectedCounts['chest'] = (collectedCounts['chest'] || 0) + 1;
+        sounds.playChestOpen();
+        const reward = tile.gimmick.reward || (Math.random() < 0.5 ? 'rocket_h' : 'bomb');
+        tile.special = reward;
+      }
+      tile.gimmick = undefined;
+    }
+
+    if (tile.id !== '') {
+      collectedCounts[tile.type] = (collectedCounts[tile.type] || 0) + 1;
+      if (tile.special === 'none') {
+        b[r][c] = { id: '', type: 'wood', special: 'none', underlay: tile.underlay };
+      }
     }
   };
 
@@ -1188,22 +1383,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
     targetsToClear.forEach((coord) => {
       const [r, c] = coord.split(',').map(Number);
-      const tile = newBoard[r][c];
-      if (tile.gimmick?.type === 'rock') {
-        tile.gimmick = undefined;
-        collectedCounts['rock'] = (collectedCounts['rock'] || 0) + 1;
-        sounds.playRockBreak();
-      } else if (tile.gimmick?.type === 'ice') {
-        tile.gimmick = undefined;
-        collectedCounts['ice'] = (collectedCounts['ice'] || 0) + 1;
-        sounds.playIceBreak();
-      } else if (tile.gimmick?.type === 'vine') {
-        tile.gimmick = undefined;
-        collectedCounts['vine'] = (collectedCounts['vine'] || 0) + 1;
-        sounds.playVineCut();
-      }
-      collectedCounts[tile.type] = (collectedCounts[tile.type] || 0) + 1;
-      newBoard[r][c] = { id: '', type: 'wood', special: 'none' };
+      destroyTileAt(newBoard, r, c, collectedCounts);
     });
 
     addCollectedTargets(collectedCounts);
@@ -1269,22 +1449,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
     targetsToClear.forEach((coord) => {
       const [r, c] = coord.split(',').map(Number);
-      const tile = newBoard[r][c];
-      if (tile.gimmick?.type === 'rock') {
-        tile.gimmick = undefined;
-        collectedCounts['rock'] = (collectedCounts['rock'] || 0) + 1;
-        sounds.playRockBreak();
-      } else if (tile.gimmick?.type === 'ice') {
-        tile.gimmick = undefined;
-        collectedCounts['ice'] = (collectedCounts['ice'] || 0) + 1;
-        sounds.playIceBreak();
-      } else if (tile.gimmick?.type === 'vine') {
-        tile.gimmick = undefined;
-        collectedCounts['vine'] = (collectedCounts['vine'] || 0) + 1;
-        sounds.playVineCut();
-      }
-      collectedCounts[tile.type] = (collectedCounts[tile.type] || 0) + 1;
-      newBoard[r][c] = { id: '', type: 'wood', special: 'none' };
+      destroyTileAt(newBoard, r, c, collectedCounts);
     });
 
     addCollectedTargets(collectedCounts);
@@ -1706,9 +1871,21 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
               const current = targets[t.type]?.current || 0;
               const isDone = current >= t.required;
               const icon =
-                t.type === 'ice' ? '🧊' : t.type === 'rock' ? '🪨' : t.type === 'vine' ? '🌿' : PIECE_CONFIG[t.type]?.icon || '🪵';
+                t.type === 'ice' ? '🧊' :
+                t.type === 'rock' ? '🪨' :
+                t.type === 'vine' ? '🌿' :
+                t.type === 'mud' ? '🟫' :
+                t.type === 'chest' ? '📦' :
+                t.type === 'boulder' ? '🗿' :
+                PIECE_CONFIG[t.type]?.icon || '🪵';
               const label =
-                t.type === 'ice' ? '氷' : t.type === 'rock' ? '岩' : t.type === 'vine' ? 'ツタ' : PIECE_CONFIG[t.type]?.label || '素材';
+                t.type === 'ice' ? '氷' :
+                t.type === 'rock' ? '岩' :
+                t.type === 'vine' ? 'ツタ' :
+                t.type === 'mud' ? '泥んこ' :
+                t.type === 'chest' ? '宝箱' :
+                t.type === 'boulder' ? '巨石' :
+                PIECE_CONFIG[t.type]?.label || '素材';
 
               return (
                 <div key={t.type} className="flex items-center space-x-1">
@@ -1915,9 +2092,25 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
                     <span className="drop-shadow-sm select-none">{config.icon}</span>
                   )}
 
+                  {/* 下地ギミック：泥んこレイヤー */}
+                  {tile.underlay?.type === 'mud' && (
+                    <div className={`absolute inset-0 rounded-xl pointer-events-none z-0 transition-all ${
+                      tile.underlay.hp >= 2
+                        ? 'bg-amber-950/80 border-2 border-amber-800/90 shadow-inner'
+                        : 'bg-amber-900/50 border border-amber-700/60'
+                    }`}>
+                      <div className="absolute inset-0 flex items-center justify-center opacity-30 select-none">
+                        <span className="text-xl">🟫</span>
+                      </div>
+                      <span className="absolute bottom-0.5 right-0.5 text-[8px] font-black text-amber-300 bg-amber-950/90 px-1 rounded-sm leading-none border border-amber-700/60">
+                        泥{tile.underlay.hp}
+                      </span>
+                    </div>
+                  )}
+
                   {/* ギミック① 氷ブロックオーバーレイ */}
                   {gimmick?.type === 'ice' && (
-                    <div className="absolute inset-0 bg-cyan-400/35 backdrop-blur-2xs border-2 border-cyan-300/80 rounded-xl flex items-center justify-center pointer-events-none">
+                    <div className="absolute inset-0 bg-cyan-400/35 backdrop-blur-2xs border-2 border-cyan-300/80 rounded-xl flex items-center justify-center pointer-events-none z-20">
                       {gimmick.hp === 1 ? (
                         <span className="text-xs text-white drop-shadow-sm font-black">⚡️ヒビ</span>
                       ) : (
@@ -1928,8 +2121,44 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
                   {/* ギミック③ ツタオーバーレイ */}
                   {gimmick?.type === 'vine' && (
-                    <div className="absolute inset-0 border-2 border-dashed border-emerald-500 bg-emerald-950/30 rounded-xl flex items-center justify-center pointer-events-none">
+                    <div className="absolute inset-0 border-2 border-dashed border-emerald-500 bg-emerald-950/30 rounded-xl flex items-center justify-center pointer-events-none z-20">
                       <span className="text-xs text-emerald-300 drop-shadow-sm font-black absolute bottom-0 right-0 p-0.5">🌿</span>
+                    </div>
+                  )}
+
+                  {/* ギミック④ 木工のからくり宝箱 */}
+                  {gimmick?.type === 'chest' && (
+                    <div className="absolute inset-0 bg-gradient-to-b from-amber-700 to-amber-950 border-2 border-amber-400 rounded-xl flex flex-col items-center justify-center shadow-lg z-20">
+                      <span className="text-2xl drop-shadow-md select-none animate-bounce-subtle">📦</span>
+                      <div className="flex gap-0.5 mt-0.5">
+                        {[1, 2, 3].map((hpIndex) => (
+                          <div
+                            key={hpIndex}
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              hpIndex <= (gimmick.hp || 1)
+                                ? 'bg-amber-300 shadow-[0_0_4px_rgba(251,191,36,0.9)]'
+                                : 'bg-slate-700'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ギミック⑤ ダムの巨石 */}
+                  {gimmick?.type === 'boulder' && (
+                    <div className="absolute inset-0 bg-slate-900 border-2 border-slate-500 rounded-xl flex flex-col items-center justify-center shadow-inner z-20">
+                      <span className="text-2xl drop-shadow-md select-none">🗿</span>
+                      <div className="flex gap-0.5 mt-0.5">
+                        {[1, 2, 3].map((hpIndex) => (
+                          <div
+                            key={hpIndex}
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              hpIndex <= (gimmick.hp || 1) ? 'bg-slate-300' : 'bg-slate-800'
+                            }`}
+                          />
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>

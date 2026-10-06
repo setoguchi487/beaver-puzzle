@@ -579,6 +579,95 @@ class SoundEffectManager {
     }, delay);
   }
 
+  // 泥んこ消去音（シャパッ！水しぶき）
+  public playMudSplash() {
+    if (this.isMuted) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(400, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(120, this.ctx.currentTime + 0.15);
+
+    gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.15);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.15);
+  }
+
+  // 宝箱ダメージ音（コンッ！硬い木箱）
+  public playChestHit() {
+    if (this.isMuted) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(220, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(80, this.ctx.currentTime + 0.1);
+
+    gain.gain.setValueAtTime(0.18, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.1);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.1);
+  }
+
+  // 宝箱オープン音（パカーン！ファンファーレ）
+  public playChestOpen() {
+    if (this.isMuted) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const notes = [440, 554.37, 659.25, 880]; // A C# E A
+    notes.forEach((freq, idx) => {
+      const osc = this.ctx!.createOscillator();
+      const gain = this.ctx!.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, this.ctx!.currentTime + idx * 0.06);
+
+      gain.gain.setValueAtTime(0.2, this.ctx!.currentTime + idx * 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx!.currentTime + idx * 0.06 + 0.25);
+
+      osc.connect(gain);
+      gain.connect(this.ctx!.destination);
+      osc.start(this.ctx!.currentTime + idx * 0.06);
+      osc.stop(this.ctx!.currentTime + idx * 0.06 + 0.25);
+    });
+  }
+
+  // ツタ侵食音（サササッ…）
+  public playVineGrow() {
+    if (this.isMuted) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(120, this.ctx.currentTime);
+    osc.frequency.linearRampToValueAtTime(280, this.ctx.currentTime + 0.2);
+
+    gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.2);
+  }
+
   // 小鳥のさえずり音（ピピッ♪）
   public playBirdChirp() {
     if (this.isMuted) return;
