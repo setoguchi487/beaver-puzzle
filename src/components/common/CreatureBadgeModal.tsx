@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import type { FrontierArea, Creature } from '../../types';
 import { sounds } from '../../utils/soundEffects';
+import { BUDDY_SKILLS } from '../../data/buddySkills';
+import { Sparkles, ShieldCheck } from 'lucide-react';
 import {
   X,
   BookOpen,
@@ -18,6 +20,8 @@ interface CreatureBadgeModalProps {
   unlockedCreatures: string[];
   woodPoints: number;
   currentStageId: number;
+  selectedBuddyId?: string;
+  onSelectBuddy?: (buddyId: string) => void;
   onClose: () => void;
   onNavigateToArea?: (areaId: string) => void;
 }
@@ -28,6 +32,8 @@ export const CreatureBadgeModal: React.FC<CreatureBadgeModalProps> = ({
   unlockedCreatures,
   woodPoints,
   currentStageId,
+  selectedBuddyId,
+  onSelectBuddy,
   onClose,
   onNavigateToArea,
 }) => {
@@ -286,6 +292,46 @@ export const CreatureBadgeModal: React.FC<CreatureBadgeModalProps> = ({
                 <Heart className="w-3.5 h-3.5 fill-current animate-pulse text-rose-400" />
                 <span>「{selectedCreature.creature.comment}」</span>
               </div>
+              {/* 相棒スキルカード */}
+              {(() => {
+                const skill = BUDDY_SKILLS[selectedCreature.creature.id];
+                if (!skill) return null;
+                const isCurrentBuddy = selectedBuddyId === selectedCreature.creature.id;
+
+                return (
+                  <div className="p-3 bg-gradient-to-r from-amber-950/40 via-slate-900 to-amber-950/30 border border-amber-500/40 rounded-2xl text-left space-y-1.5 shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-amber-300 flex items-center space-x-1">
+                        <Sparkles className="w-3 h-3 text-amber-400" />
+                        <span>相棒スキル: {skill.name}</span>
+                      </span>
+                      <span className={`text-[9px] px-1.5 py-0.2 rounded-md font-bold border ${skill.badgeColor}`}>
+                        {skill.shortDesc}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 leading-snug">
+                      {skill.description}
+                    </p>
+                    {onSelectBuddy && (
+                      <button
+                        onClick={() => {
+                          onSelectBuddy(selectedCreature.creature.id);
+                          sounds.playRainbow();
+                        }}
+                        className={`w-full mt-1.5 py-2 px-3 rounded-xl text-xs font-black flex items-center justify-center space-x-1.5 transition-all active:scale-95 cursor-pointer shadow-md ${
+                          isCurrentBuddy
+                            ? 'bg-amber-400 text-slate-950 ring-2 ring-white font-black'
+                            : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950'
+                        }`}
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <span>{isCurrentBuddy ? '✨ 現在パズルの相棒に設定中！' : 'この仲間を相棒にする！ 🤝'}</span>
+                      </button>
+                    )}
+                  </div>
+                );
+              })()}
+
               <div className="flex space-x-2 pt-1">
                 {onNavigateToArea && (
                   <button

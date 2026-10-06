@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { PieceType, SpecialType, PuzzleStage, TileGimmick, TileUnderlay, BoosterItemType, PlayerBoosters } from '../../types';
 import { PIECE_CONFIG } from '../../data/masterData';
+import { BUDDY_SKILLS, type BuddySkill } from '../../data/buddySkills';
 import { sounds } from '../../utils/soundEffects';
 import confetti from 'canvas-confetti';
 import { RefreshCw, X, ArrowLeft, Trophy, Volume2, VolumeX, Star, Sparkles } from 'lucide-react';
@@ -22,6 +23,7 @@ interface Match3BoardProps {
   onStageClear: (rewardWood: number, unfogAreaIds: string[], stars?: number, remainingMoves?: number) => void;
   onExit: () => void;
   currentStageId?: number;
+  selectedBuddyId?: string;
   onSelectStage?: (stageId: number) => void;
   onAddWood?: (amount: number) => void;
   onSetWood?: (amount: number) => void;
@@ -70,6 +72,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
   onStageClear,
   onExit,
   currentStageId,
+  selectedBuddyId = 'mallard_duck',
   onSelectStage,
   onAddWood,
   onSetWood,
@@ -101,6 +104,49 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
   const [isAnimating, setIsAnimating] = useState(false);
   const [gameResult, setGameResult] = useState<'playing' | 'cleared' | 'failed'>('playing');
+
+  // 相棒スキル関連ステート
+  const buddySkill: BuddySkill | undefined = BUDDY_SKILLS[selectedBuddyId];
+  const [buddyCutIn, setBuddyCutIn] = useState<string | null>(null);
+  const swanTriggeredRef = useRef(false);
+  const onStartTriggeredRef = useRef(false);
+
+  // チャプターに応じた高解像度背景画像
+  const getChapterBg = (sId: number) => {
+    if (sId <= 25) return '/assets/shallows_stage_5.jpg';
+    if (sId <= 50) return '/assets/mill_stage_5.jpg';
+    if (sId <= 75) return '/assets/spring_stage_5.jpg';
+    return '/assets/paradise_stage_5.jpg';
+  };
+
+  // 開始時相棒スキル（フクロウ+2手、クマ+3手など）
+  useEffect(() => {
+    if (onStartTriggeredRef.current || !buddySkill) return;
+    onStartTriggeredRef.current = true;
+
+    if (buddySkill.creatureId === 'owl') {
+      setMovesLeft((prev) => prev + 2);
+      setBuddyCutIn('🦉 森の知恵袋フクロウの先見！手数が+2手増加！');
+      sounds.playRainbow();
+      setTimeout(() => setBuddyCutIn(null), 2500);
+    } else if (buddySkill.creatureId === 'bear_family') {
+      setMovesLeft((prev) => prev + 3);
+      setBuddyCutIn('🐻 やさしいクマさんの剛力！手数が+3手増加！');
+      sounds.playRainbow();
+      setTimeout(() => setBuddyCutIn(null), 2500);
+    }
+  }, [buddySkill]);
+
+  // ピンチ時スキル（白鳥: 残り2手以下で一度だけ+3手）
+  useEffect(() => {
+    if (movesLeft <= 2 && buddySkill?.creatureId === 'swan' && !swanTriggeredRef.current && gameResult === 'playing') {
+      swanTriggeredRef.current = true;
+      setMovesLeft((prev) => prev + 3);
+      setBuddyCutIn('🦢 優美なコハクチョウの祈り！手数が+3手回復！✨');
+      sounds.playRainbow();
+      setTimeout(() => setBuddyCutIn(null), 2600);
+    }
+  }, [movesLeft, buddySkill, gameResult]);
   const [comboToast, setComboToast] = useState<string | null>(null);
   const [boosters, setBoosters] = useState<PlayerBoosters>(loadBoosters);
   const [activeBooster, setActiveBooster] = useState<BoosterItemType | null>(null);
@@ -1846,7 +1892,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
   return (
     <div 
       className="flex flex-col items-center justify-between min-h-screen text-white max-w-md mx-auto p-3.5 select-none relative overflow-hidden bg-cover bg-top"
-      style={{ backgroundImage: 'url(/assets/puzzle_bg.jpg)' }}
+      style={{ backgroundImage: `url(${getChapterBg(stage.id)})` }}
     >
       {/* 画面全体の可読性・奥行きを高めるグラデーション */}
       <div className="absolute inset-0 bg-gradient-to-b from-slate-950/40 via-transparent to-slate-950/60 pointer-events-none" />
@@ -1878,8 +1924,29 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
         </div>
       )}
 
+      {/* 相棒スキル発動カットインアニメーション */}
+      {buddyCutIn && (
+        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-60 bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400 text-slate-950 px-4 py-2.5 rounded-2xl shadow-2xl font-black text-xs flex items-center space-x-2 animate-bounce-subtle ring-2 ring-white drop-shadow-lg whitespace-nowrap">
+          <Sparkles className="w-4 h-4 fill-current text-slate-950" />
+          <span>{buddyCutIn}</span>
+        </div>
+      )}
+
       {/* 上部ヘッダー（ステージ名・残り手数・目標材料を最上部に一体化配置） */}
       <div className="w-full p-2 rounded-2xl bg-slate-950/85 backdrop-blur-md border border-amber-500/30 shadow-xl z-20 space-y-1.5">
+        {/* 相棒バディ情報バナー */}
+        {buddySkill && (
+          <div className="flex items-center justify-between px-2.5 py-1 bg-slate-900/90 rounded-xl border border-amber-500/25 text-[10px]">
+            <div className="flex items-center space-x-1.5">
+              <span className="text-sm leading-none">{buddySkill.creatureIcon}</span>
+              <span className="font-black text-amber-200">{buddySkill.creatureName}</span>
+              <span className="text-slate-400 font-medium">({buddySkill.name})</span>
+            </div>
+            <span className={`px-1.5 py-0.2 rounded-md font-bold text-[9px] border ${buddySkill.badgeColor}`}>
+              {buddySkill.shortDesc}
+            </span>
+          </div>
+        )}
         {/* 最上段：戻るボタン、ステージ名、操作ボタン */}
         <div className="flex items-center justify-between">
           <button

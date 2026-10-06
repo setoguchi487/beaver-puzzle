@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import type { FrontierArea, StageRecord } from './types';
+import type { FrontierArea, StageRecord, PlayerBoosters } from './types';
+import type { StarMilestone } from './data/starRoadMilestones';
 import { STAGES, INITIAL_AREAS } from './data/masterData';
 import { FrontierMap } from './components/map/FrontierMap';
 import { Match3Board } from './components/puzzle/Match3Board';
 import { AreaDetailScreen } from './components/area/AreaDetailScreen';
 import { AreaCompleteModal } from './components/common/AreaCompleteModal';
+import { GrandEndingModal } from './components/common/GrandEndingModal';
 
 const STORAGE_KEY = 'beaver_puzzle_state_v1';
 
@@ -14,6 +16,7 @@ export const App: React.FC = () => {
   const [previousScreenMode, setPreviousScreenMode] = useState<'map' | 'area_detail'>('map');
   const [currentStageId, setCurrentStageId] = useState<number>(1);
   const [completedAreaModalData, setCompletedAreaModalData] = useState<FrontierArea | null>(null);
+  const [isGrandEndingOpen, setIsGrandEndingOpen] = useState<boolean>(false);
 
   // ローカルストレージからの復元
   const [woodPoints, setWoodPoints] = useState<number>(() => {
@@ -53,6 +56,23 @@ export const App: React.FC = () => {
     return saved ? JSON.parse(saved) : [];
   });
 
+  // パズルの相棒（バディ）生き物ID
+  const [selectedBuddyId, setSelectedBuddyId] = useState<string>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY + '_buddy');
+    return saved || 'mallard_duck';
+  });
+
+  // スターロード受取済みマイルストーン
+  const [claimedStarMilestones, setClaimedStarMilestones] = useState<number[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY + '_star_milestones');
+    if (!saved) return [];
+    try {
+      return JSON.parse(saved);
+    } catch {
+      return [];
+    }
+  });
+
   // 到達・解放済みステージ番号（1〜100）
   const [unlockedStageId, setUnlockedStageId] = useState<number>(() => {
     const saved = localStorage.getItem(STORAGE_KEY + '_unlocked_stage');
@@ -81,7 +101,9 @@ export const App: React.FC = () => {
     localStorage.setItem(STORAGE_KEY + '_creatures', JSON.stringify(unlockedCreatures));
     localStorage.setItem(STORAGE_KEY + '_unlocked_stage', String(unlockedStageId));
     localStorage.setItem(STORAGE_KEY + '_stage_records', JSON.stringify(stageRecords));
-  }, [woodPoints, areas, badges, unlockedCreatures, unlockedStageId, stageRecords]);
+    localStorage.setItem(STORAGE_KEY + '_buddy', selectedBuddyId);
+    localStorage.setItem(STORAGE_KEY + '_star_milestones', JSON.stringify(claimedStarMilestones));
+  }, [woodPoints, areas, badges, unlockedCreatures, unlockedStageId, stageRecords, selectedBuddyId, claimedStarMilestones]);
 
   // 開発者用チート・ステージ選択
   const handleResetAll = () => {
@@ -91,7 +113,11 @@ export const App: React.FC = () => {
     localStorage.removeItem(STORAGE_KEY + "_creatures");
     localStorage.removeItem(STORAGE_KEY + "_unlocked_stage");
     localStorage.removeItem(STORAGE_KEY + "_stage_records");
+    localStorage.removeItem(STORAGE_KEY + "_buddy");
+    localStorage.removeItem(STORAGE_KEY + "_star_milestones");
 
+    setSelectedBuddyId('mallard_duck');
+    setClaimedStarMilestones([]);
     setWoodPoints(60);
     setAreas(INITIAL_AREAS);
     setBadges([]);
@@ -122,6 +148,42 @@ export const App: React.FC = () => {
     setBadges([]);
     setUnlockedCreatures([]);
     setSelectedAreaIdForDetail(null);
+  };
+
+  // 相棒の選択切り替え
+  const handleSelectBuddy = (buddyId: string) => {
+    setSelectedBuddyId(buddyId);
+  };
+
+  // スターロード報酬の受け取り処理
+  const handleClaimStarMilestone = (milestone: StarMilestone) => {
+    if (claimedStarMilestones.includes(milestone.starsRequired)) return;
+
+    // 1. 木材ポイント加算
+    setWoodPoints((prev) => prev + milestone.rewardWood);
+
+    // 2. お助けアイテム（ブースター）の付与
+    if (milestone.boosters) {
+      try {
+        const savedBoosters = localStorage.getItem('beaver_puzzle_boosters');
+        let currentBoosters: PlayerBoosters = savedBoosters
+          ? JSON.parse(savedBoosters)
+          : { hammer: 3, saw: 2, tail: 2, clock: 3 };
+
+        currentBoosters = {
+          hammer: currentBoosters.hammer + (milestone.boosters.hammer || 0),
+          saw: currentBoosters.saw + (milestone.boosters.saw || 0),
+          tail: currentBoosters.tail + (milestone.boosters.tail || 0),
+          clock: currentBoosters.clock + (milestone.boosters.clock || 0),
+        };
+        localStorage.setItem('beaver_puzzle_boosters', JSON.stringify(currentBoosters));
+      } catch (e) {
+        console.error('Failed to update boosters:', e);
+      }
+    }
+
+    // 3. 受取済みフラグの保存
+    setClaimedStarMilestones((prev) => [...prev, milestone.starsRequired]);
   };
 
   const handleUnlockAllAreas = () => {
@@ -226,6 +288,16 @@ export const App: React.FC = () => {
     }
 
     setCompletedAreaModalData(completedArea);
+
+    // 全15エリア制覇判定
+    const completedCount = areas.filter(
+      (a) => a.id === completedArea.id || a.status === 'completed'
+    ).length;
+    if (completedCount >= areas.length) {
+      setTimeout(() => {
+        setIsGrandEndingOpen(true);
+      }, 1800);
+    }
   };
 
   const handleNavigateToAreaDetail = (areaId: string) => {
@@ -250,6 +322,10 @@ export const App: React.FC = () => {
           unlockedStageId={unlockedStageId}
           stageRecords={stageRecords}
           totalStars={totalStars}
+          selectedBuddyId={selectedBuddyId}
+          onSelectBuddy={handleSelectBuddy}
+          claimedStarMilestones={claimedStarMilestones}
+          onClaimStarMilestone={handleClaimStarMilestone}
           currentStageId={currentStageId}
           onStartPuzzle={(stageId) => {
             setCurrentStageId(stageId);
@@ -295,6 +371,7 @@ export const App: React.FC = () => {
           onStageClear={handleStageClear}
           onExit={() => setScreenMode(previousScreenMode)}
           currentStageId={currentStageId}
+          selectedBuddyId={selectedBuddyId}
           onSelectStage={handleSelectStage}
           onAddWood={handleAddWood}
           onSetWood={handleSetWood}
@@ -309,6 +386,14 @@ export const App: React.FC = () => {
         area={completedAreaModalData}
         onClose={() => setCompletedAreaModalData(null)}
       />
+
+      {/* 祝・全15エリア完全制覇 大団円グランドフィナーレモーダル */}
+      {isGrandEndingOpen && (
+        <GrandEndingModal
+          areas={areas}
+          onClose={() => setIsGrandEndingOpen(false)}
+        />
+      )}
     </div>
   );
 };

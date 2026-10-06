@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import type { StageRecord } from '../../types';
 import { STAGES, PIECE_CONFIG } from '../../data/masterData';
-import { X, Play, Star, Lock, Sparkles, ChevronRight } from 'lucide-react';
+import { X, Play, Star, Lock, Sparkles, ChevronRight, Gift } from 'lucide-react';
 
 interface StageSelectModalProps {
   unlockedStageId: number; // ユーザーが到達している最大ステージ番号（1〜100）
   currentStageId: number;  // 現在選択されているステージ
   stageRecords: { [stageId: number]: StageRecord }; // ステージ別レコード
   onSelectStage: (stageId: number) => void;
+  onOpenStarRoad?: () => void;
   onClose: () => void;
 }
 
@@ -16,6 +17,7 @@ export const StageSelectModal: React.FC<StageSelectModalProps> = ({
   currentStageId,
   stageRecords,
   onSelectStage,
+  onOpenStarRoad,
   onClose,
 }) => {
   // チャプター定義
@@ -82,10 +84,16 @@ export const StageSelectModal: React.FC<StageSelectModalProps> = ({
               <div className="text-[10px] text-slate-400 flex items-center space-x-2">
                 <span>最新到達: Stage {unlockedStageId}</span>
                 <span>•</span>
-                <span className="text-yellow-400 font-bold flex items-center space-x-0.5">
+                <button
+                  onClick={onOpenStarRoad}
+                  className="text-yellow-300 font-bold flex items-center space-x-1 bg-yellow-500/20 hover:bg-yellow-500/30 px-2 py-0.5 rounded-lg border border-yellow-500/40 active:scale-95 transition-all cursor-pointer"
+                  title="スターロード（星集め報酬）を開く"
+                >
                   <Star className="w-3 h-3 fill-yellow-400 text-yellow-300 inline" />
                   <span>{totalStars} / 300</span>
-                </span>
+                  <Gift className="w-3 h-3 text-amber-300 ml-0.5 animate-bounce-subtle" />
+                  <span className="text-[9px] text-amber-200">報酬</span>
+                </button>
               </div>
             </div>
           </div>

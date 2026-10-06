@@ -3,6 +3,8 @@ import type { FrontierArea, Creature } from '../../types';
 import { DevStageSelector } from '../common/DevStageSelector';
 import { CreatureBadgeModal } from '../common/CreatureBadgeModal';
 import { StageSelectModal } from '../common/StageSelectModal';
+import { StarRoadModal } from '../common/StarRoadModal';
+import type { StarMilestone } from '../../data/starRoadMilestones';
 import type { StageRecord } from '../../types';
 import { Star } from 'lucide-react';
 import { sounds } from '../../utils/soundEffects';
@@ -31,6 +33,10 @@ interface FrontierMapProps {
   unlockedStageId?: number;
   stageRecords?: { [stageId: number]: StageRecord };
   totalStars?: number;
+  selectedBuddyId?: string;
+  onSelectBuddy?: (buddyId: string) => void;
+  claimedStarMilestones?: number[];
+  onClaimStarMilestone?: (milestone: StarMilestone) => void;
   onStartPuzzle: (stageId: number) => void;
   onCompleteTask: (areaId: string, taskId: string, cost: number) => void;
   onCompleteArea: (area: FrontierArea) => void;
@@ -54,6 +60,10 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
   unlockedStageId = 1,
   stageRecords = {},
   totalStars = 0,
+  selectedBuddyId = 'mallard_duck',
+  onSelectBuddy,
+  claimedStarMilestones = [],
+  onClaimStarMilestone,
   onStartPuzzle,
   onCompleteTask,
   onCompleteArea,
@@ -73,6 +83,7 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
   const [beaverDialogue, setBeaverDialogue] = useState<string | null>(null);
   const [isBookModalOpen, setIsBookModalOpen] = useState<boolean>(false);
   const [isStageSelectOpen, setIsStageSelectOpen] = useState<boolean>(false);
+  const [isStarRoadOpen, setIsStarRoadOpen] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState(sounds.getMuted());
 
   const mapScrollRef = useRef<HTMLDivElement>(null);
@@ -730,11 +741,24 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
             setIsStageSelectOpen(false);
             onStartPuzzle(sId);
           }}
+          onOpenStarRoad={() => setIsStarRoadOpen(true)}
           onClose={() => setIsStageSelectOpen(false)}
         />
       )}
 
-      {/* 生き物図鑑＆開拓バッジモーダル */}
+      {/* スターロード（星集め報酬）モーダル */}
+      {isStarRoadOpen && (
+        <StarRoadModal
+          totalStars={totalStars}
+          claimedMilestones={claimedStarMilestones}
+          onClaimMilestone={(m) => {
+            if (onClaimStarMilestone) onClaimStarMilestone(m);
+          }}
+          onClose={() => setIsStarRoadOpen(false)}
+        />
+      )}
+
+      {/* 生き物図鑑＆開拓バッジモーダル（相棒選択対応） */}
       {isBookModalOpen && (
         <CreatureBadgeModal
           areas={areas}
@@ -742,6 +766,8 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
           unlockedCreatures={unlockedCreatures}
           woodPoints={woodPoints}
           currentStageId={currentStageId}
+          selectedBuddyId={selectedBuddyId}
+          onSelectBuddy={onSelectBuddy}
           onClose={() => setIsBookModalOpen(false)}
           onNavigateToArea={(areaId) => {
             setIsBookModalOpen(false);
