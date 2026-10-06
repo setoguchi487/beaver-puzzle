@@ -571,3 +571,34 @@ body {
   animation: pieceDrop 0.38s cubic-bezier(0.25, 1, 0.5, 1) forwards;
   will-change: transform;
 }
+
+/* ピース浮力反転（水底からの浮力浮上 ➔ コトンと微細バウンド） */
+@keyframes pieceFloatUp {
+  0% {
+    transform: translateY(var(--drop-offset, 120%));
+    opacity: 0.8;
+    animation-timing-function: cubic-bezier(0.45, 0, 0.8, 0.15); /* 浮力で上へ急速浮上！ */
+  }
+  68% {
+    transform: translateY(-4.5px);
+    opacity: 1;
+    animation-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
+  }
+  84% {
+    transform: translateY(2px);
+    animation-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
+  }
+  94% {
+    transform: translateY(-0.5px);
+    animation-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-piece-float-up {
+  animation: pieceFloatUp 0.38s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  will-change: transform;
+}

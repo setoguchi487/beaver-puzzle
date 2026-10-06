@@ -6,6 +6,8 @@ export const PIECE_CONFIG: Record<string, { label: string; icon: string; color: 
   water: { label: '水滴', icon: '💧', color: 'text-cyan-600', bg: 'bg-cyan-100 border-cyan-300' },
   acorn: { label: 'どんぐり', icon: '🌰', color: 'text-orange-800', bg: 'bg-orange-100 border-orange-300' },
   stone: { label: '小石', icon: '🪨', color: 'text-slate-600', bg: 'bg-slate-100 border-slate-300' },
+  berry: { label: '野イチゴ', icon: '🍓', color: 'text-rose-600', bg: 'bg-rose-100 border-rose-300' },
+  mushroom: { label: 'キノコ', icon: '🍄', color: 'text-purple-600', bg: 'bg-purple-100 border-purple-300' },
 };
 
 // 1〜100ステージの生成関数（節目ステージを手動で精密設計し、間を自動補間）
@@ -26,6 +28,96 @@ export const generate100Stages = (): PuzzleStage[] => {
         ],
         woodReward: 100,
         unfogAreaIds: ['stream_entry', 'small_dam'],
+      });
+    } else if (i === 2) {
+      // 🍓 6×6 コンパクト盤面＆新素材「野イチゴ」4色爽快モード！
+      stages.push({
+        id: 2,
+        title: 'Stage 2: 完熟！野イチゴ摘み 🍓',
+        description: '6×6のコンパクト盤面に新素材【野イチゴ】が登場！4色限定だから連鎖が繋がりやすいよ！',
+        maxMoves: 16,
+        boardRows: 6,
+        boardCols: 6,
+        allowedPieceTypes: ['wood', 'water', 'berry', 'acorn'],
+        targets: [
+          { type: 'berry', required: 12, current: 0 },
+          { type: 'wood', required: 10, current: 0 },
+        ],
+        woodReward: 110,
+        unfogAreaIds: ['small_dam'],
+      });
+    } else if (i === 3) {
+      // ⬆️ 浮力反転！水底からの浮上パズル
+      stages.push({
+        id: 3,
+        title: 'Stage 3: 水底のふしぎな浮力 ⬆️💧',
+        description: '【重力反転ステージ】水底からの浮力で、ピースが下から上へプカプカ浮かび上がるぞ！',
+        maxMoves: 20,
+        gravityDirection: 'up',
+        targets: [
+          { type: 'water', required: 15, current: 0 },
+          { type: 'stone', required: 10, current: 0 },
+        ],
+        woodReward: 120,
+        unfogAreaIds: ['small_dam'],
+      });
+    } else if (i === 4) {
+      // 🍄 8×8 ワイド盤面＆新素材「森のキノコ」
+      stages.push({
+        id: 4,
+        title: 'Stage 4: 巨樹のふもとのキノコ狩り 🍄',
+        description: '広々8×8盤面に新素材【森のキノコ】が登場！広さを活かしてロケットや爆弾を作ろう！',
+        maxMoves: 22,
+        boardRows: 8,
+        boardCols: 8,
+        allowedPieceTypes: ['wood', 'mushroom', 'berry', 'acorn', 'twig'],
+        targets: [
+          { type: 'mushroom', required: 14, current: 0 },
+          { type: 'berry', required: 12, current: 0 },
+          { type: 'wood', required: 15, current: 0 },
+        ],
+        woodReward: 130,
+        unfogAreaIds: ['small_dam'],
+      });
+    } else if (i === 5) {
+      // 💎 ひし形穴あき変形盤面
+      stages.push({
+        id: 5,
+        title: 'Stage 5: ひし形渓谷のせせらぎ 💎',
+        description: '【変形盤面】四隅が欠けたひし形マップ！限られたルートで効率よく消そう！',
+        maxMoves: 18,
+        boardRows: 7,
+        boardCols: 7,
+        disabledTiles: [
+          { r: 0, c: 0 }, { r: 0, c: 1 }, { r: 1, c: 0 },
+          { r: 0, c: 5 }, { r: 0, c: 6 }, { r: 1, c: 6 },
+          { r: 5, c: 0 }, { r: 6, c: 0 }, { r: 6, c: 1 },
+          { r: 5, c: 6 }, { r: 6, c: 5 }, { r: 6, c: 6 },
+        ],
+        targets: [
+          { type: 'wood', required: 14, current: 0 },
+          { type: 'twig', required: 12, current: 0 },
+        ],
+        woodReward: 140,
+        unfogAreaIds: ['beaver_lodge'],
+      });
+    } else if (i === 6) {
+      // 👑 9×9 巨大お祭りメガ盤面！全6色
+      stages.push({
+        id: 6,
+        title: 'Stage 6: 豪快！9×9メガダム建設 👑',
+        description: '超巨大9×9盤面！全6色の素材が入り乱れ、ロケット・ボム・虹が飛び交う大連鎖お祭りパズル！',
+        maxMoves: 26,
+        boardRows: 9,
+        boardCols: 9,
+        allowedPieceTypes: ['wood', 'water', 'twig', 'acorn', 'berry', 'mushroom'],
+        targets: [
+          { type: 'wood', required: 25, current: 0 },
+          { type: 'berry', required: 16, current: 0 },
+          { type: 'mushroom', required: 16, current: 0 },
+        ],
+        woodReward: 150,
+        unfogAreaIds: ['beaver_lodge'],
       });
     } else if (i === 10) {
       // 🧊 氷ブロック解禁！

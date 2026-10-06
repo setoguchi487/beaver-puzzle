@@ -1,4 +1,4 @@
-export type PieceType = 'wood' | 'twig' | 'water' | 'acorn' | 'stone';
+export type PieceType = 'wood' | 'twig' | 'water' | 'acorn' | 'stone' | 'berry' | 'mushroom';
 
 export type SpecialType = 'none' | 'rocket_h' | 'rocket_v' | 'bomb' | 'rainbow';
 
@@ -18,7 +18,7 @@ export interface PuzzleTile {
 }
 
 export interface StageTarget {
-  type: PieceType | 'ice' | 'rock' | 'vine';
+  type: string;
   required: number;
   current: number;
 }
@@ -38,6 +38,11 @@ export interface PuzzleStage {
     icon: string;
   };
   initialGimmicks?: { r: number; c: number; type: GimmickType; hp: number }[];
+  boardRows?: number; // 盤面の行数（未指定なら 7）
+  boardCols?: number; // 盤面の列数（未指定なら 7）
+  gravityDirection?: 'down' | 'up'; // 重力方向（'down'=通常落下、'up'=水底浮力反転。未指定なら 'down'）
+  allowedPieceTypes?: PieceType[]; // 出現する素材の種類（未指定ならデフォルト5種）
+  disabledTiles?: { r: number; c: number }[]; // 穴あき盤面の無効マス座標
 }
 
 export interface AreaTask {

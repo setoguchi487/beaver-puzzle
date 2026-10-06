@@ -12,6 +12,7 @@ interface Tile {
   special: SpecialType;
   gimmick?: TileGimmick;
   dropDistance?: number;
+  disabled?: boolean;
 }
 
 interface Match3BoardProps {
@@ -25,8 +26,8 @@ interface Match3BoardProps {
   onResetAll?: () => void;
 }
 
-const BOARD_SIZE = 7;
-const PIECE_TYPES: PieceType[] = ['wood', 'twig', 'water', 'acorn', 'stone'];
+const DEFAULT_BOARD_SIZE = 7;
+const DEFAULT_PIECE_TYPES: PieceType[] = ['wood', 'twig', 'water', 'acorn', 'stone'];
 
 interface SpecialCreation {
   r: number;
@@ -45,6 +46,15 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
   onUnlockAllAreas,
   onResetAll,
 }) => {
+  const numRows = stage.boardRows || DEFAULT_BOARD_SIZE;
+  const numCols = stage.boardCols || DEFAULT_BOARD_SIZE;
+  const gravityDir = stage.gravityDirection || 'down';
+  const activePieceTypes =
+    stage.allowedPieceTypes && stage.allowedPieceTypes.length >= 3
+      ? stage.allowedPieceTypes
+      : DEFAULT_PIECE_TYPES;
+  const disabledSet = new Set((stage.disabledTiles || []).map((t) => `${t.r},${t.c}`));
+
   const [board, setBoard] = useState<Tile[][]>([]);
   const [selectedPos, setSelectedPos] = useState<{ r: number; c: number } | null>(null);
   const [movesLeft, setMovesLeft] = useState<number>(stage.maxMoves);
@@ -97,7 +107,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     // ステージ初期ギミックの適用
     if (stage.initialGimmicks) {
       stage.initialGimmicks.forEach((g) => {
-        if (g.r >= 0 && g.r < BOARD_SIZE && g.c >= 0 && g.c < BOARD_SIZE) {
+        if (g.r >= 0 && g.r < numRows && g.c >= 0 && g.c < numCols) {
           newBoard[g.r][g.c].gimmick = { type: g.type, hp: g.hp };
         }
       });
@@ -119,15 +129,25 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
   const generateValidBoard = (): Tile[][] => {
     const newBoard: Tile[][] = [];
-    for (let r = 0; r < BOARD_SIZE; r++) {
+    for (let r = 0; r < numRows; r++) {
       newBoard[r] = [];
-      for (let c = 0; c < BOARD_SIZE; c++) {
+      for (let c = 0; c < numCols; c++) {
+        if (disabledSet.has(`${r},${c}`)) {
+          newBoard[r][c] = {
+            id: `disabled-${r}-${c}`,
+            type: 'wood',
+            special: 'none',
+            disabled: true,
+          };
+          continue;
+        }
+
         let type: PieceType;
         do {
-          type = PIECE_TYPES[Math.floor(Math.random() * PIECE_TYPES.length)];
+          type = activePieceTypes[Math.floor(Math.random() * activePieceTypes.length)];
         } while (
-          (r >= 2 && newBoard[r - 1][c].type === type && newBoard[r - 2][c].type === type) ||
-          (c >= 2 && newBoard[r][c - 1].type === type && newBoard[r][c - 2].type === type)
+          (r >= 2 && newBoard[r - 1]?.[c]?.type === type && newBoard[r - 2]?.[c]?.type === type) ||
+          (c >= 2 && newBoard[r]?.[c - 1]?.type === type && newBoard[r]?.[c - 2]?.type === type)
         );
         newBoard[r][c] = {
           id: `tile-${r}-${c}-${Date.now()}-${Math.random()}`,
@@ -164,19 +184,21 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     const hMatches: LineMatch[] = [];
     const vMatches: LineMatch[] = [];
 
-    // 横方向の走査（同じ行 r 内の連続同色）
-    for (let r = 0; r < BOARD_SIZE; r++) {
+    // 横方向の走査
+    for (let r = 0; r < numRows; r++) {
       let c = 0;
-      while (c < BOARD_SIZE - 2) {
-        if (!b[r][c].id || b[r][c].gimmick?.type === 'rock') {
+      while (c < numCols - 2) {
+        if (!b[r] || !b[r][c] || !b[r][c].id || b[r][c].disabled || b[r][c].gimmick?.type === 'rock') {
           c++;
           continue;
         }
         const type = b[r][c].type;
         let matchLen = 1;
         while (
-          c + matchLen < BOARD_SIZE &&
+          c + matchLen < numCols &&
+          b[r][c + matchLen] &&
           b[r][c + matchLen].id &&
+          !b[r][c + matchLen].disabled &&
           b[r][c + matchLen].type === type &&
           b[r][c + matchLen].gimmick?.type !== 'rock'
         ) {
@@ -195,19 +217,22 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
       }
     }
 
-    // 縦方向の走査（同じ列 c 内の連続同色）
-    for (let c = 0; c < BOARD_SIZE; c++) {
+    // 縦方向の走査
+    for (let c = 0; c < numCols; c++) {
       let r = 0;
-      while (r < BOARD_SIZE - 2) {
-        if (!b[r][c].id || b[r][c].gimmick?.type === 'rock') {
+      while (r < numRows - 2) {
+        if (!b[r] || !b[r][c] || !b[r][c].id || b[r][c].disabled || b[r][c].gimmick?.type === 'rock') {
           r++;
           continue;
         }
         const type = b[r][c].type;
         let matchLen = 1;
         while (
-          r + matchLen < BOARD_SIZE &&
+          r + matchLen < numRows &&
+          b[r + matchLen] &&
+          b[r + matchLen][c] &&
           b[r + matchLen][c].id &&
+          !b[r + matchLen][c].disabled &&
           b[r + matchLen][c].type === type &&
           b[r + matchLen][c].gimmick?.type !== 'rock'
         ) {
@@ -245,21 +270,19 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
       }
     });
 
-    // 優先度②: L字・T字・交差（同色の横マッチと縦マッチが交差する点） ➔ 爆弾 (bomb)！
+    // 優先度②: L字・T字・交差 ➔ 爆弾 (bomb)！
     hMatches.forEach((hm, hIdx) => {
       if (hUsed.has(hIdx)) return;
       vMatches.forEach((vm, vIdx) => {
         if (vUsed.has(vIdx)) return;
         if (hm.type !== vm.type) return;
 
-        // 交差判定: 横マッチの行 hm.r が縦マッチの範囲内、かつ縦マッチの列 vm.c が横マッチの範囲内
         const crossR = hm.r!;
         const crossC = vm.c!;
         if (
           crossR >= vm.start && crossR < vm.start + vm.len &&
           crossC >= hm.start && crossC < hm.start + hm.len
         ) {
-          // 交差点に爆弾（bomb）を生成！属性はマッチした素材を継承
           specials.push({ r: crossR, c: crossC, type: hm.type, special: 'bomb' });
           hUsed.add(hIdx);
           vUsed.add(vIdx);
@@ -267,7 +290,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
       });
     });
 
-    // 優先度③: 残りの直線4個マッチ ➔ 横ロケット (rocket_h) / 縦ロケット (rocket_v)
+    // 優先度③: 残りの直線4個マッチ ➔ 横ロケット / 縦ロケット
     hMatches.forEach((hm, hIdx) => {
       if (!hUsed.has(hIdx) && hm.len === 4) {
         const midC = hm.start + 1;
@@ -281,7 +304,6 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
       }
     });
 
-    // 同一マスでの特殊ピース重複を防ぐ
     const uniqueSpecials: SpecialCreation[] = [];
     const seen = new Set<string>();
     specials.forEach((sp) => {
@@ -305,19 +327,19 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
   };
 
   const hasPossibleMoves = (b: Tile[][]): boolean => {
-    for (let r = 0; r < BOARD_SIZE; r++) {
-      for (let c = 0; c < BOARD_SIZE; c++) {
+    for (let r = 0; r < numRows; r++) {
+      for (let c = 0; c < numCols; c++) {
         // ツタや岩は動かせない
         if (b[r][c].gimmick?.type === 'vine' || b[r][c].gimmick?.type === 'rock') continue;
 
-        if (c < BOARD_SIZE - 1 && b[r][c + 1].gimmick?.type !== 'vine' && b[r][c + 1].gimmick?.type !== 'rock') {
+        if (c < numCols - 1 && b[r][c + 1].gimmick?.type !== 'vine' && b[r][c + 1].gimmick?.type !== 'rock') {
           const testBoard = b.map((row) => [...row]);
           const temp = testBoard[r][c];
           testBoard[r][c] = testBoard[r][c + 1];
           testBoard[r][c + 1] = temp;
           if (findMatches(testBoard).length > 0) return true;
         }
-        if (r < BOARD_SIZE - 1 && b[r + 1][c].gimmick?.type !== 'vine' && b[r + 1][c].gimmick?.type !== 'rock') {
+        if (r < numRows - 1 && b[r + 1][c].gimmick?.type !== 'vine' && b[r + 1][c].gimmick?.type !== 'rock') {
           const testBoard = b.map((row) => [...row]);
           const temp = testBoard[r][c];
           testBoard[r][c] = testBoard[r + 1][c];
@@ -339,8 +361,8 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
       } while (!hasPossibleMoves(shuffled));
 
       // 既存のギミックは引き継ぐ
-      for (let r = 0; r < BOARD_SIZE; r++) {
-        for (let c = 0; c < BOARD_SIZE; c++) {
+      for (let r = 0; r < numRows; r++) {
+        for (let c = 0; c < numCols; c++) {
           if (board[r][c].gimmick) {
             shuffled[r][c].gimmick = board[r][c].gimmick;
           }
@@ -384,7 +406,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
         targetR = dy > 0 ? r + 1 : r - 1;
       }
 
-      if (targetR >= 0 && targetR < BOARD_SIZE && targetC >= 0 && targetC < BOARD_SIZE) {
+      if (targetR >= 0 && targetR < numRows && targetC >= 0 && targetC < numCols && !board[targetR][targetC].disabled) {
         const dest = board[targetR][targetC];
         // 移動先がツタや岩ならスワイプ無効
         if (dest.gimmick?.type === 'vine' || dest.gimmick?.type === 'rock') return;
@@ -430,7 +452,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
         targetR = dy > 0 ? r + 1 : r - 1;
       }
 
-      if (targetR >= 0 && targetR < BOARD_SIZE && targetC >= 0 && targetC < BOARD_SIZE) {
+      if (targetR >= 0 && targetR < numRows && targetC >= 0 && targetC < numCols && !board[targetR][targetC].disabled) {
         const dest = board[targetR][targetC];
         if (dest.gimmick?.type === 'vine' || dest.gimmick?.type === 'rock') return;
 
@@ -620,40 +642,82 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     }
   };
 
-  // 重力落下アニメーション共通処理（マス数に応じた落下距離とコトン微細バウンド演出）
+  // 重力落下 / 浮力反転アニメーション共通処理
   const dropBoardWithGravity = async (b: Tile[][]): Promise<Tile[][]> => {
     const fallenBoard: Tile[][] = b.map((row) => row.map((tile) => ({ ...tile, dropDistance: 0 })));
-
     let hasFalling = false;
-    for (let c = 0; c < BOARD_SIZE; c++) {
-      let emptyRow = BOARD_SIZE - 1;
-      // 既存タイルの落下（下から上へ走査）
-      for (let r = BOARD_SIZE - 1; r >= 0; r--) {
-        if (fallenBoard[r][c].id !== '') {
-          if (emptyRow !== r) {
-            const dist = emptyRow - r;
-            fallenBoard[emptyRow][c] = {
-              ...fallenBoard[r][c],
-              dropDistance: dist,
-            };
-            fallenBoard[r][c] = { id: '', type: 'wood', special: 'none', dropDistance: 0 };
-            hasFalling = true;
+
+    if (gravityDir === 'up') {
+      // ★浮力反転（下から上へ浮かび上がる！）
+      for (let c = 0; c < numCols; c++) {
+        let emptyRow = 0;
+        for (let r = 0; r < numRows; r++) {
+          if (fallenBoard[r][c].disabled) {
+            emptyRow = r + 1;
+            continue;
           }
-          emptyRow--;
+          if (fallenBoard[r][c].id !== '') {
+            if (emptyRow !== r) {
+              const dist = r - emptyRow;
+              fallenBoard[emptyRow][c] = {
+                ...fallenBoard[r][c],
+                dropDistance: dist,
+              };
+              fallenBoard[r][c] = { id: '', type: 'wood', special: 'none', dropDistance: 0 };
+              hasFalling = true;
+            }
+            emptyRow++;
+          }
+        }
+        const totalNew = numRows - emptyRow;
+        for (let r = emptyRow; r < numRows; r++) {
+          if (fallenBoard[r][c].disabled) continue;
+          const type = activePieceTypes[Math.floor(Math.random() * activePieceTypes.length)];
+          const dist = totalNew;
+          fallenBoard[r][c] = {
+            id: `new-${r}-${c}-${Date.now()}-${Math.random()}`,
+            type,
+            special: 'none' as SpecialType,
+            dropDistance: dist,
+          };
+          hasFalling = true;
         }
       }
-      // 上部の空きマスに新ピースを生成（画面上端の枠外から等間隔で落下）
-      const totalNew = emptyRow + 1;
-      for (let r = emptyRow; r >= 0; r--) {
-        const type = PIECE_TYPES[Math.floor(Math.random() * PIECE_TYPES.length)];
-        const dist = totalNew;
-        fallenBoard[r][c] = {
-          id: `new-${r}-${c}-${Date.now()}-${Math.random()}`,
-          type,
-          special: 'none' as SpecialType,
-          dropDistance: dist,
-        };
-        hasFalling = true;
+    } else {
+      // ★通常落下（上から下へ落下）
+      for (let c = 0; c < numCols; c++) {
+        let emptyRow = numRows - 1;
+        for (let r = numRows - 1; r >= 0; r--) {
+          if (fallenBoard[r][c].disabled) {
+            emptyRow = r - 1;
+            continue;
+          }
+          if (fallenBoard[r][c].id !== '') {
+            if (emptyRow !== r) {
+              const dist = emptyRow - r;
+              fallenBoard[emptyRow][c] = {
+                ...fallenBoard[r][c],
+                dropDistance: dist,
+              };
+              fallenBoard[r][c] = { id: '', type: 'wood', special: 'none', dropDistance: 0 };
+              hasFalling = true;
+            }
+            emptyRow--;
+          }
+        }
+        const totalNew = emptyRow + 1;
+        for (let r = emptyRow; r >= 0; r--) {
+          if (fallenBoard[r][c].disabled) continue;
+          const type = activePieceTypes[Math.floor(Math.random() * activePieceTypes.length)];
+          const dist = totalNew;
+          fallenBoard[r][c] = {
+            id: `new-${r}-${c}-${Date.now()}-${Math.random()}`,
+            type,
+            special: 'none' as SpecialType,
+            dropDistance: dist,
+          };
+          hasFalling = true;
+        }
       }
     }
 
@@ -661,13 +725,9 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
       setDropVersion((v) => v + 1);
       setBoard(fallenBoard);
 
-      // 重力落下の時間（380ms）待機：重力加速度で急降下 ➔ コトンと微細バウンド
       await new Promise((res) => setTimeout(res, 380));
-
-      // 着地のコトン音
       sounds.playDrop();
 
-      // 静止状態にリセット
       const settledBoard = fallenBoard.map((row) =>
         row.map((tile) => ({ ...tile, dropDistance: 0 }))
       );
@@ -737,7 +797,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
       adjacentDirs.forEach(({ dr, dc }) => {
         const nr = r + dr;
         const nc = c + dc;
-        if (nr >= 0 && nr < BOARD_SIZE && nc >= 0 && nc < BOARD_SIZE) {
+        if (nr >= 0 && nr < numRows && nc >= 0 && nc < numCols) {
           const key = `${nr},${nc}`;
           if (!damagedGimmicks.has(key)) {
             damagedGimmicks.add(key);
@@ -797,7 +857,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
         const specialType = b[r][c].special;
         if (specialType === 'rocket_h') {
           // 横ロケット：横一列を貫通消去
-          for (let col = 0; col < BOARD_SIZE; col++) {
+          for (let col = 0; col < numCols; col++) {
             const t = newBoard[r][col];
             if (t.id !== '') {
               collectedCounts[t.type] = (collectedCounts[t.type] || 0) + 1;
@@ -810,7 +870,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
           }
         } else if (specialType === 'rocket_v') {
           // 縦ロケット：縦一列を貫通消去
-          for (let row = 0; row < BOARD_SIZE; row++) {
+          for (let row = 0; row < numRows; row++) {
             const t = newBoard[row][c];
             if (t.id !== '') {
               collectedCounts[t.type] = (collectedCounts[t.type] || 0) + 1;
@@ -839,7 +899,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
           for (let dc = -2; dc <= 2; dc++) {
             const nr = r + dr;
             const nc = c + dc;
-            if (nr >= 0 && nr < BOARD_SIZE && nc >= 0 && nc < BOARD_SIZE) {
+            if (nr >= 0 && nr < numRows && nc >= 0 && nc < numCols) {
               const t = newBoard[nr][nc];
               if (t.id !== '') {
                 collectedCounts[t.type] = (collectedCounts[t.type] || 0) + 1;
@@ -916,12 +976,12 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
     const targetsToClear = new Set<string>();
     if (mode === 'h' || mode === 'cross') {
-      for (let c = 0; c < BOARD_SIZE; c++) {
+      for (let c = 0; c < numCols; c++) {
         targetsToClear.add(`${hitR},${c}`);
       }
     }
     if (mode === 'v' || mode === 'cross') {
-      for (let r = 0; r < BOARD_SIZE; r++) {
+      for (let r = 0; r < numRows; r++) {
         targetsToClear.add(`${r},${hitC}`);
       }
     }
@@ -975,13 +1035,13 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     let laserId = Date.now();
     for (let dr = -1; dr <= 1; dr++) {
       const r = hitR + dr;
-      if (r >= 0 && r < BOARD_SIZE) {
+      if (r >= 0 && r < numRows) {
         lasers.push({ id: laserId++, r, direction: 'h' });
       }
     }
     for (let dc = -1; dc <= 1; dc++) {
       const c = hitC + dc;
-      if (c >= 0 && c < BOARD_SIZE) {
+      if (c >= 0 && c < numCols) {
         lasers.push({ id: laserId++, c, direction: 'v' });
       }
     }
@@ -995,15 +1055,15 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     // 横3列の全マス
     for (let dr = -1; dr <= 1; dr++) {
       const r = hitR + dr;
-      if (r >= 0 && r < BOARD_SIZE) {
-        for (let col = 0; col < BOARD_SIZE; col++) targetsToClear.add(`${r},${col}`);
+      if (r >= 0 && r < numRows) {
+        for (let col = 0; col < numCols; col++) targetsToClear.add(`${r},${col}`);
       }
     }
     // 縦3列の全マス
     for (let dc = -1; dc <= 1; dc++) {
       const c = hitC + dc;
-      if (c >= 0 && c < BOARD_SIZE) {
-        for (let row = 0; row < BOARD_SIZE; row++) targetsToClear.add(`${row},${c}`);
+      if (c >= 0 && c < numCols) {
+        for (let row = 0; row < numRows; row++) targetsToClear.add(`${row},${c}`);
       }
     }
 
@@ -1067,7 +1127,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
       for (let dc = -3; dc <= 3; dc++) {
         const r = hitR + dr;
         const c = hitC + dc;
-        if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
+        if (r >= 0 && r < numRows && c >= 0 && c < numCols) {
           const tile = newBoard[r][c];
           if (tile.id !== '') {
             if (tile.gimmick?.type === 'rock') {
@@ -1152,7 +1212,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
         for (let dc = -2; dc <= 2; dc++) {
           const nr = bm.r + dr;
           const nc = bm.c + dc;
-          if (nr >= 0 && nr < BOARD_SIZE && nc >= 0 && nc < BOARD_SIZE) {
+          if (nr >= 0 && nr < numRows && nc >= 0 && nc < numCols) {
             targetsToClear.add(`${nr},${nc}`);
           }
         }
@@ -1243,9 +1303,9 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     const targetsToClear = new Set<string>();
     rocketList.forEach((rk) => {
       if (rk.dir === 'h') {
-        for (let col = 0; col < BOARD_SIZE; col++) targetsToClear.add(`${rk.r},${col}`);
+        for (let col = 0; col < numCols; col++) targetsToClear.add(`${rk.r},${col}`);
       } else {
-        for (let row = 0; row < BOARD_SIZE; row++) targetsToClear.add(`${row},${rk.c}`);
+        for (let row = 0; row < numRows; row++) targetsToClear.add(`${row},${rk.c}`);
       }
     });
 
@@ -1496,7 +1556,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
         {/* レーザー光線オーバーレイ */}
         {activeLasers.map((laser) => {
           if (laser.direction === "h" && laser.r !== undefined) {
-            const topPercent = ((laser.r + 0.5) / BOARD_SIZE) * 100;
+            const topPercent = ((laser.r + 0.5) / numRows) * 100;
             return (
               <div
                 key={`laser-${laser.id}`}
@@ -1508,7 +1568,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
             );
           }
           if (laser.direction === "v" && laser.c !== undefined) {
-            const leftPercent = ((laser.c + 0.5) / BOARD_SIZE) * 100;
+            const leftPercent = ((laser.c + 0.5) / numCols) * 100;
             return (
               <div
                 key={`laser-${laser.id}`}
@@ -1521,14 +1581,37 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
           }
           return null;
         })}
-        <div className="grid grid-cols-7 gap-1.5">
+        <div
+          className="grid gap-1.5 justify-center items-center"
+          style={{
+            gridTemplateColumns: `repeat(${numCols}, minmax(0, 1fr))`,
+          }}
+        >
           {board.map((row, r) =>
             row.map((tile, c) => {
+              const cellSizeClass =
+                numCols <= 6
+                  ? 'w-12 h-12 sm:w-14 sm:h-14 text-2xl'
+                  : numCols === 7
+                  ? 'w-11 h-11 sm:w-12 sm:h-12 text-2xl'
+                  : numCols === 8
+                  ? 'w-9 h-9 sm:w-10 sm:h-10 text-xl'
+                  : 'w-8 h-8 sm:w-9 sm:h-9 text-lg';
+
+              if (tile.disabled) {
+                return (
+                  <div
+                    key={`disabled-${r}-${c}`}
+                    className={`${cellSizeClass} pointer-events-none opacity-0`}
+                  />
+                );
+              }
+
               if (!tile.id) {
                 return (
                   <div
                     key={`empty-${r}-${c}`}
-                    className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-amber-950/40 border border-amber-900/30"
+                    className={`${cellSizeClass} rounded-xl bg-amber-950/40 border border-amber-900/30`}
                   />
                 );
               }
@@ -1545,11 +1628,13 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
               // ロケットの色分け装飾
               const rocketTheme = {
-                wood: { ring: 'ring-amber-500/70 bg-amber-950/50', icon: '🪵', label: '丸太ロケット' },
-                water: { ring: 'ring-cyan-400/70 bg-cyan-950/50', icon: '💧', label: '水流ロケット' },
-                twig: { ring: 'ring-emerald-400/70 bg-emerald-950/50', icon: '🌿', label: '若葉ロケット' },
-                acorn: { ring: 'ring-orange-400/70 bg-orange-950/50', icon: '🌰', label: 'どんぐりロケット' },
-                stone: { ring: 'ring-slate-400/70 bg-slate-850/50', icon: '🪨', label: '岩石ロケット' },
+                wood: { ring: 'ring-amber-500/70 bg-amber-950/50', icon: '🪵', label: '丸太' },
+                water: { ring: 'ring-cyan-400/70 bg-cyan-950/50', icon: '💧', label: '水流' },
+                twig: { ring: 'ring-emerald-400/70 bg-emerald-950/50', icon: '🌿', label: '若葉' },
+                acorn: { ring: 'ring-orange-400/70 bg-orange-950/50', icon: '🌰', label: 'どんぐり' },
+                stone: { ring: 'ring-slate-400/70 bg-slate-850/50', icon: '🪨', label: '岩石' },
+                berry: { ring: 'ring-rose-500/70 bg-rose-950/50', icon: '🍓', label: '野イチゴ' },
+                mushroom: { ring: 'ring-purple-500/70 bg-purple-950/50', icon: '🍄', label: 'キノコ' },
               }[tile.type] || { ring: 'ring-amber-500/70 bg-amber-950/50', icon: '🪵', label: 'ロケット' };
 
               return (
@@ -1561,15 +1646,19 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
                   onMouseDown={(e) => handleMouseDown(r, c, e)}
                   onClick={() => handleTileClick(r, c)}
                   style={{
-                    ...(isDropping ? ({ '--drop-offset': `-${dropDist * 115}%` } as React.CSSProperties) : {}),
+                    ...(isDropping
+                      ? ({
+                          '--drop-offset': gravityDir === 'up' ? `${dropDist * 115}%` : `-${dropDist * 115}%`,
+                        } as React.CSSProperties)
+                      : {}),
                   }}
-                  className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-2xl font-bold cursor-pointer select-none transform active:scale-95 relative overflow-hidden ${
+                  className={`${cellSizeClass} rounded-xl flex items-center justify-center font-bold cursor-pointer select-none transform active:scale-95 relative overflow-hidden ${
                     isDropping ? '' : 'transition-all duration-150'
                   } ${
                     isClearing
                       ? 'animate-piece-pop z-20'
                       : isDropping
-                      ? 'animate-piece-drop z-10'
+                      ? (gravityDir === 'up' ? 'animate-piece-float-up z-10' : 'animate-piece-drop z-10')
                       : isSelected
                       ? 'bg-amber-400/40 ring-4 ring-amber-400 scale-105 z-10'
                       : isRainbowGlow
