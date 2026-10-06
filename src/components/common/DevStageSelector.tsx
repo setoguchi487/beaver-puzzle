@@ -22,12 +22,8 @@ export const DevStageSelector: React.FC<DevStageSelectorProps> = ({
   onResetAll,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<number>(() => {
-    if (currentStageId <= 25) return 1;
-    if (currentStageId <= 50) return 2;
-    if (currentStageId <= 75) return 3;
-    return 4;
-  });
+  // 初期タブ: 'all'（全1〜100ステージ一括表示）で全ステージが一目でわかるようにする
+  const [activeTab, setActiveTab] = useState<string>('all');
 
   // ESCキー押下で開発者モードを閉じる
   useEffect(() => {
@@ -55,22 +51,22 @@ export const DevStageSelector: React.FC<DevStageSelectorProps> = ({
 
   // 開発者モードボタン押下時
   const handleOpen = () => {
-    // 開発者モードを開いた時点で木材を100,000個所持状態にする
     setWoodTo100000();
     setIsOpen(true);
   };
 
-  // チャプターごとのステージ範囲
-  const CHAPTERS = [
-    { id: 1, name: '第1章: 小川・巣作り', range: [1, 25], icon: '🌱' },
-    { id: 2, name: '第2章: 激流・水車小屋', range: [26, 50], icon: '🌊' },
-    { id: 3, name: '第3章: 果樹園・秘境渓谷', range: [51, 75], icon: '🍎' },
-    { id: 4, name: '第4章: 桃源郷グランドダム', range: [76, 100], icon: '👑' },
+  // タブ定義（全100ステージ & チャプター別）
+  const TABS = [
+    { id: 'all', name: '全ステージ', range: [1, 100], icon: '🌟', badge: '1〜100' },
+    { id: 'ch1', name: '第1章', range: [1, 25], icon: '🌱', badge: '1〜25' },
+    { id: 'ch2', name: '第2章', range: [26, 50], icon: '🌊', badge: '26〜50' },
+    { id: 'ch3', name: '第3章', range: [51, 75], icon: '🍎', badge: '51〜75' },
+    { id: 'ch4', name: '第4章', range: [76, 100], icon: '👑', badge: '76〜100' },
   ];
 
-  const currentChapter = CHAPTERS.find((c) => c.id === activeTab) || CHAPTERS[0];
+  const currentTabDef = TABS.find((t) => t.id === activeTab) || TABS[0];
   const stageButtons: number[] = [];
-  for (let s = currentChapter.range[0]; s <= currentChapter.range[1]; s++) {
+  for (let s = currentTabDef.range[0]; s <= currentTabDef.range[1]; s++) {
     stageButtons.push(s);
   }
 
@@ -116,7 +112,7 @@ export const DevStageSelector: React.FC<DevStageSelectorProps> = ({
           >
             {/* モーダルカード本体 */}
             <div
-              className="w-full max-w-md bg-gradient-to-b from-slate-900 via-slate-925 to-slate-950 border-2 border-amber-500/60 rounded-3xl p-5 shadow-2xl text-white space-y-4 max-h-[90vh] overflow-y-auto no-scrollbar relative"
+              className="w-full max-w-lg bg-gradient-to-b from-slate-900 via-slate-925 to-slate-950 border-2 border-amber-500/60 rounded-3xl p-5 shadow-2xl text-white space-y-4 max-h-[92vh] overflow-y-auto no-scrollbar relative"
               onClick={(e) => e.stopPropagation()}
             >
               {/* ヘッダー */}
@@ -124,11 +120,14 @@ export const DevStageSelector: React.FC<DevStageSelectorProps> = ({
                 <div className="flex items-center space-x-2 text-amber-400">
                   <Wrench className="w-5 h-5 text-amber-400" />
                   <div>
-                    <h3 className="text-base font-black tracking-wide">
-                      開発者モード 🛠️
+                    <h3 className="text-base font-black tracking-wide flex items-center space-x-1.5">
+                      <span>開発者モード 🛠️</span>
+                      <span className="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-full font-bold">
+                        全100ステージ対応
+                      </span>
                     </h3>
                     <span className="text-[10px] text-amber-200/70 font-medium block">
-                      ステージ選択 & 開拓デバッグチート
+                      1〜100ステージダイレクト選択 & デバッグチート
                     </span>
                   </div>
                 </div>
@@ -142,11 +141,13 @@ export const DevStageSelector: React.FC<DevStageSelectorProps> = ({
                 </button>
               </div>
 
-              {/* ドロップダウンによる即時ステージジャンプ */}
+              {/* ドロップダウンによる即時ステージジャンプ（全100ステージ） */}
               <div className="space-y-1.5">
                 <label className="text-[11px] font-black text-amber-200 flex items-center justify-between">
-                  <span>🎯 ステージダイレクト選択（全100ステージ）</span>
-                  <span className="text-[10px] text-slate-400">現在: Stage {currentStageId}</span>
+                  <span>🎯 ステージダイレクト選択（全100ステージ収録）</span>
+                  <span className="text-[10px] text-slate-400 font-bold bg-slate-800 px-2 py-0.5 rounded-md">
+                    現在: Stage {currentStageId} / 100
+                  </span>
                 </label>
                 <select
                   value={currentStageId}
@@ -165,31 +166,45 @@ export const DevStageSelector: React.FC<DevStageSelectorProps> = ({
                 </select>
               </div>
 
-              {/* チャプタータブ（1〜100） */}
+              {/* ステージ番号グリッド選択（全100ステージ） */}
               <div className="space-y-2">
-                <span className="text-[11px] font-black text-slate-300 block">
-                  🗺️ ステージ番号グリッド選択（1〜100）
-                </span>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {CHAPTERS.map((ch) => (
-                    <button
-                      key={ch.id}
-                      onClick={() => setActiveTab(ch.id)}
-                      className={`py-1.5 px-2 rounded-xl text-[11px] font-black transition-all flex items-center justify-center space-x-1 cursor-pointer ${
-                        activeTab === ch.id
-                          ? 'bg-amber-500 text-slate-950 shadow-md font-black ring-1 ring-amber-300'
-                          : 'bg-slate-800/80 hover:bg-slate-750 text-slate-300 border border-slate-700/60'
-                      }`}
-                    >
-                      <span>{ch.icon}</span>
-                      <span className="truncate">{ch.name}</span>
-                    </button>
-                  ))}
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-black text-slate-300 flex items-center space-x-1">
+                    <span>🗺️ ステージ番号ボタン選択</span>
+                    <span className="text-[10px] text-amber-400 font-normal">
+                      （{currentTabDef.name}: {currentTabDef.badge}）
+                    </span>
+                  </span>
+                  <span className="text-[10px] text-slate-400">
+                    表示中: {stageButtons.length}ステージ
+                  </span>
                 </div>
 
-                {/* 選択チャプター内の25ステージボタングリッド */}
-                <div className="bg-slate-950/70 p-2 rounded-2xl border border-slate-800/80">
-                  <div className="grid grid-cols-5 gap-1.5">
+                {/* チャプター・全表示タブ切り替えバー */}
+                <div className="grid grid-cols-5 gap-1">
+                  {TABS.map((tab) => {
+                    const isTabActive = activeTab === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`py-1.5 px-1 rounded-xl text-[10px] font-black transition-all flex flex-col items-center justify-center cursor-pointer ${
+                          isTabActive
+                            ? 'bg-amber-500 text-slate-950 shadow-md ring-1 ring-amber-300'
+                            : 'bg-slate-800/80 hover:bg-slate-750 text-slate-300 border border-slate-700/60'
+                        }`}
+                      >
+                        <span className="text-xs leading-none">{tab.icon}</span>
+                        <span className="truncate leading-tight mt-0.5">{tab.name}</span>
+                        <span className="text-[8px] opacity-80 leading-none scale-90">{tab.badge}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* 選択タブのステージボタングリッド（スクロール可能で全ステージ一括閲覧OK） */}
+                <div className="bg-slate-950/70 p-2 rounded-2xl border border-slate-800/80 max-h-56 overflow-y-auto no-scrollbar">
+                  <div className="grid grid-cols-5 sm:grid-cols-10 gap-1.5">
                     {stageButtons.map((sNum) => {
                       const isCurrent = currentStageId === sNum;
                       return (
@@ -199,13 +214,14 @@ export const DevStageSelector: React.FC<DevStageSelectorProps> = ({
                             onSelectStage(sNum);
                             setIsOpen(false);
                           }}
-                          className={`py-2 text-xs font-black rounded-xl transition-all cursor-pointer ${
+                          title={`Stage ${sNum} を開始`}
+                          className={`py-2 text-xs font-black rounded-xl transition-all cursor-pointer flex flex-col items-center justify-center ${
                             isCurrent
-                              ? 'bg-gradient-to-b from-amber-400 to-amber-500 text-slate-950 ring-2 ring-white shadow-lg scale-105'
+                              ? 'bg-gradient-to-b from-amber-400 to-amber-500 text-slate-950 ring-2 ring-white shadow-lg scale-105 font-black'
                               : 'bg-slate-800/90 hover:bg-amber-500/20 hover:border-amber-400/50 hover:text-amber-200 text-slate-200 border border-slate-700/70 active:scale-95'
                           }`}
                         >
-                          {sNum}
+                          <span>{sNum}</span>
                         </button>
                       );
                     })}
