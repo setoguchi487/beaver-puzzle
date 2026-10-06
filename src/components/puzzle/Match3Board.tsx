@@ -882,9 +882,14 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
         </div>
       </div>
 
-      {/* コンボポップアップ */}
-      {comboToast && (
-        <div className="absolute top-28 z-40 bg-gradient-to-r from-amber-500 to-rose-500 text-white font-black text-xs px-4 py-1.5 rounded-full shadow-xl animate-bounce-subtle">
+      {/* ビーバーたちがしっかり見える中央オープンスペース（可変） */}
+      <div className="flex-1 w-full min-h-[16px] pointer-events-none" />
+
+      {/* 画面下部：パズル盤面＆下部説明 */}
+      <div className="w-full flex flex-col items-center space-y-1.5 z-10 pb-1">
+        {/* コンボポップアップ */}
+        {comboToast && (
+        <div className="bg-gradient-to-r from-amber-500 to-rose-500 text-white font-black text-xs px-4 py-1.5 rounded-full shadow-xl animate-bounce-subtle">
           {comboToast}
         </div>
       )}
@@ -1007,9 +1012,10 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
         </div>
       </div>
 
-      {/* 下部ひとこと説明 */}
-      <div className="text-center text-[11px] text-amber-100 font-medium bg-slate-950/80 border border-amber-500/20 px-3 py-1 rounded-full backdrop-blur-md shadow-sm my-2 z-10">
-        {stage.newGimmickIntro ? stage.newGimmickIntro.description : '指でスワイプして入れ替え！同じ素材を3つ揃えよう🪵'}
+        {/* 下部ひとこと説明 */}
+        <div className="text-center text-[11px] text-amber-100 font-medium bg-slate-950/80 border border-amber-500/20 px-3 py-1 rounded-full backdrop-blur-md shadow-sm">
+          {stage.newGimmickIntro ? stage.newGimmickIntro.description : '指でスワイプして入れ替え！同じ素材を3つ揃えよう🪵'}
+        </div>
       </div>
 
       {/* ステージクリアモーダル */}
