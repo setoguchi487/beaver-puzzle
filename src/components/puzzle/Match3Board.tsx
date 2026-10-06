@@ -28,6 +28,13 @@ interface Match3BoardProps {
 const BOARD_SIZE = 7;
 const PIECE_TYPES: PieceType[] = ['wood', 'twig', 'water', 'acorn', 'stone'];
 
+interface SpecialCreation {
+  r: number;
+  c: number;
+  type: PieceType;
+  special: SpecialType;
+}
+
 export const Match3Board: React.FC<Match3BoardProps> = ({
   stage,
   onStageClear,
@@ -133,6 +140,115 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
   };
 
   // 有効な動かせる手があるか
+  // マッチ検出および特殊ピース生成判定（横4個 ➔ 横ロケット、縦4個 ➔ 縦ロケット、5個以上 ➔ 虹）
+  const findMatchesAndSpecials = (b: Tile[][]): {
+    matches: { r: number; c: number }[];
+    specialsToCreate: SpecialCreation[];
+  } => {
+    const matchedCoords = new Set<string>();
+    const specials: SpecialCreation[] = [];
+
+    // 横方向の走査（同じ行 r 内の連続同色）
+    for (let r = 0; r < BOARD_SIZE; r++) {
+      let c = 0;
+      while (c < BOARD_SIZE - 2) {
+        if (!b[r][c].id || b[r][c].gimmick?.type === 'rock') {
+          c++;
+          continue;
+        }
+        const type = b[r][c].type;
+        let matchLen = 1;
+        while (
+          c + matchLen < BOARD_SIZE &&
+          b[r][c + matchLen].id &&
+          b[r][c + matchLen].type === type &&
+          b[r][c + matchLen].gimmick?.type !== 'rock'
+        ) {
+          matchLen++;
+        }
+
+        if (matchLen >= 3) {
+          for (let i = 0; i < matchLen; i++) {
+            matchedCoords.add(`${r},${c + i}`);
+          }
+          if (matchLen >= 5) {
+            // 5個以上並び ➔ 虹生成！
+            const midC = c + Math.floor(matchLen / 2);
+            specials.push({ r, c: midC, type, special: 'rainbow' });
+          } else if (matchLen === 4) {
+            // 横4個並び ➔ 横ロケット（rocket_h）生成！属性はマッチした素材を継承
+            const midC = c + 1;
+            specials.push({ r, c: midC, type, special: 'rocket_h' });
+          }
+          c += matchLen;
+        } else {
+          c++;
+        }
+      }
+    }
+
+    // 縦方向の走査（同じ列 c 内の連続同色）
+    for (let c = 0; c < BOARD_SIZE; c++) {
+      let r = 0;
+      while (r < BOARD_SIZE - 2) {
+        if (!b[r][c].id || b[r][c].gimmick?.type === 'rock') {
+          r++;
+          continue;
+        }
+        const type = b[r][c].type;
+        let matchLen = 1;
+        while (
+          r + matchLen < BOARD_SIZE &&
+          b[r + matchLen][c].id &&
+          b[r + matchLen][c].type === type &&
+          b[r + matchLen][c].gimmick?.type !== 'rock'
+        ) {
+          matchLen++;
+        }
+
+        if (matchLen >= 3) {
+          for (let i = 0; i < matchLen; i++) {
+            matchedCoords.add(`${r + i},${c}`);
+          }
+          if (matchLen >= 5) {
+            // 5個以上並び ➔ 虹生成！
+            const midR = r + Math.floor(matchLen / 2);
+            specials.push({ r: midR, c, type, special: 'rainbow' });
+          } else if (matchLen === 4) {
+            // 縦4個並び ➔ 縦ロケット（rocket_v）生成！属性はマッチした素材を継承
+            const midR = r + 1;
+            specials.push({ r: midR, c, type, special: 'rocket_v' });
+          }
+          r += matchLen;
+        } else {
+          r++;
+        }
+      }
+    }
+
+    // 同一マスでの特殊ピース重複を防ぐ
+    const uniqueSpecials: SpecialCreation[] = [];
+    const seen = new Set<string>();
+    specials.forEach((sp) => {
+      const k = `${sp.r},${sp.c}`;
+      if (!seen.has(k)) {
+        seen.add(k);
+        uniqueSpecials.push(sp);
+      }
+    });
+
+    const matches = Array.from(matchedCoords).map((coord) => {
+      const [r, c] = coord.split(',').map(Number);
+      return { r, c };
+    });
+
+    return { matches, specialsToCreate: uniqueSpecials };
+  };
+
+  const findMatches = (b: Tile[][]): { r: number; c: number }[] => {
+    return findMatchesAndSpecials(b).matches;
+  };
+
   const hasPossibleMoves = (b: Tile[][]): boolean => {
     for (let r = 0; r < BOARD_SIZE; r++) {
       for (let c = 0; c < BOARD_SIZE; c++) {
@@ -279,58 +395,31 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     const tile = board[r][c];
     if (tile.gimmick?.type === 'vine' || tile.gimmick?.type === 'rock') return;
 
-    // A. 何も選択されていない状態でロケットや虹を直接タップ ➔ その場で即座に発動！
+    // A. 未選択時：タイルを選択（ロケットや虹もタップ即時発動せず、入れ替え待機）
     if (!selectedPos) {
-      if (tile.special === 'rocket_h' || tile.special === 'rocket_v') {
-        setIsAnimating(true);
-        await executeRocketClear(board, r, c, false);
-        finishMove();
-        return;
-      }
-      if (tile.special === 'rainbow') {
-        setIsAnimating(true);
-        await executeRainbowClear(board, tile.type);
-        finishMove();
-        return;
-      }
       sounds.playSwipe();
       setSelectedPos({ r, c });
       return;
     }
 
-    // B. すでに選択されているマスを再度タップ（または特殊ピースのタップ起爆）
+    // B. 選択中のマスを再度タップ：選択解除
     if (selectedPos.r === r && selectedPos.c === c) {
-      if (tile.special === 'rocket_h' || tile.special === 'rocket_v') {
-        setSelectedPos(null);
-        setIsAnimating(true);
-        await executeRocketClear(board, r, c, false);
-        finishMove();
-        return;
-      }
-      if (tile.special === 'rainbow') {
-        setSelectedPos(null);
-        setIsAnimating(true);
-        await executeRainbowClear(board, tile.type);
-        finishMove();
-        return;
-      }
       setSelectedPos(null);
       return;
     }
 
-    // C. 別のマスが選択されている状態でタップ（スワップまたは選択切り替え）
-    if (selectedPos) {
-      const dr = Math.abs(selectedPos.r - r);
-      const dc = Math.abs(selectedPos.c - c);
+    // C. 別のマスをタップ：隣接ならスワップ、離れていれば選択切り替え
+    const dr = Math.abs(selectedPos.r - r);
+    const dc = Math.abs(selectedPos.c - c);
 
-      if ((dr === 1 && dc === 0) || (dr === 0 && dc === 1)) {
-        sounds.playSwipe();
-        swapTiles(selectedPos.r, selectedPos.c, r, c);
-        setSelectedPos(null);
-      } else {
-        sounds.playSwipe();
-        setSelectedPos({ r, c });
-      }
+    if ((dr === 1 && dc === 0) || (dr === 0 && dc === 1)) {
+      sounds.playSwipe();
+      const prevPos = selectedPos;
+      setSelectedPos(null);
+      swapTiles(prevPos.r, prevPos.c, r, c);
+    } else {
+      sounds.playSwipe();
+      setSelectedPos({ r, c });
     }
   };
 
@@ -345,25 +434,26 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     const s1 = temp.special;
     const s2 = newBoard[r1][c1].special;
 
-    // A. レインボー × レインボー: 盤面全消去！
+    // A. 虹 × 虹: 盤面全消去の大爆発！
     if (s1 === 'rainbow' && s2 === 'rainbow') {
       await executeRainbowClear(newBoard, 'ALL');
       finishMove();
       return;
     }
 
-    // B. レインボー × ロケット: その色の全ピースをロケットにして起爆
-    if ((s1 === 'rainbow' && (s2 === 'rocket_h' || s2 === 'rocket_v')) ||
-        (s2 === 'rainbow' && (s1 === 'rocket_h' || s1 === 'rocket_v'))) {
+    // B. 虹 × ロケット: その属性の全ピースをロケットにして一斉起爆！
+    if (
+      (s1 === 'rainbow' && (s2 === 'rocket_h' || s2 === 'rocket_v')) ||
+      (s2 === 'rainbow' && (s1 === 'rocket_h' || s1 === 'rocket_v'))
+    ) {
       const rocketTile = s1 === 'rainbow' ? newBoard[r1][c1] : temp;
       const targetColor = rocketTile.type;
-      await executeRainbowClear(newBoard, targetColor);
-      await executeRocketClear(newBoard, r2, c2, true);
+      await executeRainbowRocketCombo(newBoard, targetColor, r2, c2);
       finishMove();
       return;
     }
 
-    // C. レインボー × 通常ピース: その色の全ピースを一掃
+    // C. 虹 × 通常ピース: その色の全ピースを一掃
     if (s1 === 'rainbow' || s2 === 'rainbow') {
       const targetType = s1 === 'rainbow' ? newBoard[r1][c1].type : temp.type;
       await executeRainbowClear(newBoard, targetType);
@@ -372,26 +462,27 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     }
 
     // D. ロケット × ロケット: 十字大爆破！
-    if ((s1 === 'rocket_h' || s1 === 'rocket_v') && (s2 === 'rocket_h' || s2 === 'rocket_v')) {
-      await executeRocketClear(newBoard, r2, c2, true);
+    if (
+      (s1 === 'rocket_h' || s1 === 'rocket_v') &&
+      (s2 === 'rocket_h' || s2 === 'rocket_v')
+    ) {
+      await executeRocketClear(newBoard, r2, c2, 'cross');
       finishMove();
       return;
     }
 
-    // E. ロケット × 通常ピース: ロケット発射（横または縦一列破壊）
-    if (s1 === 'rocket_h' || s1 === 'rocket_v' || s2 === 'rocket_h' || s2 === 'rocket_v') {
-      await executeRocketClear(newBoard, r2, c2, false);
-      finishMove();
-      return;
-    }
-
-    const matches = findMatches(newBoard);
+    // E. ロケット × 通常ピース、または 通常ピース同士:
+    // ★勝手に発射せず、同色3マッチ以上が成立した時のみスワップ＆マッチ処理を実行！
+    const { matches, specialsToCreate } = findMatchesAndSpecials(newBoard);
 
     if (matches.length > 0) {
       setBoard(newBoard);
-      await processMatches(newBoard, matches, 1);
+      // スワップのアニメーション感
+      await new Promise((res) => setTimeout(res, 120));
+      await processMatches(newBoard, matches, 1, specialsToCreate);
       finishMove();
     } else {
+      // マッチ不成立の場合は元の位置に戻す（ロケットも勝手に飛ばない！）
       setBoard(board);
       setIsAnimating(false);
     }
@@ -451,44 +542,6 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     } else if (moves <= 0) {
       setGameResult('failed');
     }
-  };
-
-  const findMatches = (b: Tile[][]): { r: number; c: number }[] => {
-    const matchedCoords = new Set<string>();
-
-    // 横
-    for (let r = 0; r < BOARD_SIZE; r++) {
-      for (let c = 0; c < BOARD_SIZE - 2; c++) {
-        // 岩はマッチに含めない
-        if (b[r][c].gimmick?.type === 'rock' || b[r][c + 1].gimmick?.type === 'rock' || b[r][c + 2].gimmick?.type === 'rock') continue;
-
-        const type = b[r][c].type;
-        if (type === b[r][c + 1].type && type === b[r][c + 2].type) {
-          let endC = c + 2;
-          while (endC + 1 < BOARD_SIZE && b[r][endC + 1].type === type && b[r][endC + 1].gimmick?.type !== 'rock') endC++;
-          for (let i = c; i <= endC; i++) matchedCoords.add(`${r},${i}`);
-        }
-      }
-    }
-
-    // 縦
-    for (let c = 0; c < BOARD_SIZE; c++) {
-      for (let r = 0; r < BOARD_SIZE - 2; r++) {
-        if (b[r][c].gimmick?.type === 'rock' || b[r + 1][c].gimmick?.type === 'rock' || b[r + 2][c].gimmick?.type === 'rock') continue;
-
-        const type = b[r][c].type;
-        if (type === b[r + 1][c].type && type === b[r + 2][c].type) {
-          let endR = r + 2;
-          while (endR + 1 < BOARD_SIZE && b[endR + 1][c].type === type && b[endR + 1][c].gimmick?.type !== 'rock') endR++;
-          for (let i = r; i <= endR; i++) matchedCoords.add(`${i},${c}`);
-        }
-      }
-    }
-
-    return Array.from(matchedCoords).map((coord) => {
-      const [r, c] = coord.split(',').map(Number);
-      return { r, c };
-    });
   };
 
   // 重力落下アニメーション共通処理（マス数に応じた落下距離とコトン微細バウンド演出）
@@ -551,7 +604,12 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
   };
 
   // マッチ消去＆隣接ギミック破壊処理
-  const processMatches = async (b: Tile[][], matches: { r: number; c: number }[], currentCombo: number) => {
+  const processMatches = async (
+    b: Tile[][],
+    matches: { r: number; c: number }[],
+    currentCombo: number,
+    specialsToCreate: SpecialCreation[] = []
+  ) => {
     if (currentCombo >= 2) {
       const messages = ['Good! ✨', 'Great! 🪵', 'Awesome! 👑', 'Unbelievable!! 🔥'];
       const msg = messages[Math.min(messages.length - 1, currentCombo - 2)];
@@ -640,47 +698,78 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     // ターゲット加算 & 即時クリア判定
     addCollectedTargets(collectedCounts);
 
-    // マッチに含まれる既存ロケットの誘爆判定
-    const rocketDetonations = matches.filter(({ r, c }) => b[r][c].special === 'rocket_h' || b[r][c].special === 'rocket_v');
+    // ★ロケット起爆判定：同色3マッチ以上に含まれるロケットを発射！
+    // 横ロケット(rocket_h)なら横一列、縦ロケット(rocket_v)なら縦一列を貫通破壊！
+    const rocketDetonations = matches.filter(
+      ({ r, c }) => b[r][c].special === 'rocket_h' || b[r][c].special === 'rocket_v'
+    );
+
     if (rocketDetonations.length > 0) {
       sounds.playRocket();
       setIsShaking(true);
-      setTimeout(() => setIsShaking(false), 260);
+      setTimeout(() => setIsShaking(false), 350);
+
       const detLasers: ActiveLaser[] = rocketDetonations.map((d, i) => ({
         id: Date.now() + i,
-        r: d.r,
-        direction: 'h' as const,
+        r: b[d.r][d.c].special === 'rocket_h' ? d.r : undefined,
+        c: b[d.r][d.c].special === 'rocket_v' ? d.c : undefined,
+        direction: b[d.r][d.c].special === 'rocket_h' ? ('h' as const) : ('v' as const),
       }));
       setActiveLasers(detLasers);
-      setTimeout(() => setActiveLasers([]), 360);
-      rocketDetonations.forEach(({ r }) => {
-        for (let col = 0; col < BOARD_SIZE; col++) {
-          const t = newBoard[r][col];
-          if (t.id !== '') {
-            collectedCounts[t.type] = (collectedCounts[t.type] || 0) + 1;
-            if (t.gimmick) {
-              collectedCounts[t.gimmick.type] = (collectedCounts[t.gimmick.type] || 0) + 1;
-              t.gimmick = undefined;
+      setTimeout(() => setActiveLasers([]), 650);
+
+      rocketDetonations.forEach(({ r, c }) => {
+        const specialType = b[r][c].special;
+        if (specialType === 'rocket_h') {
+          // 横ロケット：横一列を貫通消去
+          for (let col = 0; col < BOARD_SIZE; col++) {
+            const t = newBoard[r][col];
+            if (t.id !== '') {
+              collectedCounts[t.type] = (collectedCounts[t.type] || 0) + 1;
+              if (t.gimmick) {
+                collectedCounts[t.gimmick.type] = (collectedCounts[t.gimmick.type] || 0) + 1;
+                t.gimmick = undefined;
+              }
+              newBoard[r][col] = { id: '', type: 'wood', special: 'none' };
             }
-            newBoard[r][col] = { id: '', type: 'wood', special: 'none' };
+          }
+        } else if (specialType === 'rocket_v') {
+          // 縦ロケット：縦一列を貫通消去
+          for (let row = 0; row < BOARD_SIZE; row++) {
+            const t = newBoard[row][c];
+            if (t.id !== '') {
+              collectedCounts[t.type] = (collectedCounts[t.type] || 0) + 1;
+              if (t.gimmick) {
+                collectedCounts[t.gimmick.type] = (collectedCounts[t.gimmick.type] || 0) + 1;
+                t.gimmick = undefined;
+              }
+              newBoard[row][c] = { id: '', type: 'wood', special: 'none' };
+            }
           }
         }
       });
       // 誘爆素材も即時加算
       addCollectedTargets(collectedCounts);
+      // ビーム演出余韻
+      await new Promise((res) => setTimeout(res, 250));
     }
 
-    // 消去と特殊ピース生成
-    const matchCount = matches.length;
-    matches.forEach(({ r, c }, idx) => {
-      if (idx === 0 && matchCount >= 5) {
-        newBoard[r][c] = { id: `special-${Date.now()}`, type: 'acorn', special: 'rainbow' };
+    // マッチした通常マスを空マス化
+    matches.forEach(({ r, c }) => {
+      newBoard[r][c] = { id: '', type: 'wood', special: 'none' };
+    });
+
+    // 新たな特殊ピースを生成（横4個 ➔ 横ロケット、縦4個 ➔ 縦ロケット、5個以上 ➔ 虹）
+    specialsToCreate.forEach((spec) => {
+      newBoard[spec.r][spec.c] = {
+        id: `special-${Date.now()}-${Math.random()}`,
+        type: spec.type,
+        special: spec.special,
+      };
+      if (spec.special === 'rainbow') {
         sounds.playRainbow();
-      } else if (idx === 0 && matchCount === 4) {
-        newBoard[r][c] = { id: `special-${Date.now()}`, type: newBoard[r][c].type, special: 'rocket_h' };
-        sounds.playRocket();
       } else {
-        newBoard[r][c] = { id: '', type: 'wood', special: 'none' };
+        sounds.playRocket();
       }
     });
 
@@ -689,38 +778,47 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
     // 3. 連鎖チェック（着地の余韻 100ms を挟んで次へ）
     await new Promise((res) => setTimeout(res, 100));
-    const nextMatches = findMatches(settledBoard);
-    if (nextMatches.length > 0) {
-      await processMatches(settledBoard, nextMatches, currentCombo + 1);
+    const nextResult = findMatchesAndSpecials(settledBoard);
+    if (nextResult.matches.length > 0) {
+      await processMatches(settledBoard, nextResult.matches, currentCombo + 1, nextResult.specialsToCreate);
     }
   };
 
-  // ロケット起爆（横または十字にビームを発射して全消去）
-  const executeRocketClear = async (b: Tile[][], hitR: number, hitC: number, isCross: boolean = false) => {
+  // ロケット起爆（横、縦、または十字にビームを発射して消去）
+  const executeRocketClear = async (
+    b: Tile[][],
+    hitR: number,
+    hitC: number,
+    mode: 'h' | 'v' | 'cross' = 'cross'
+  ) => {
     sounds.playRocket();
 
-    // 画面シェイク（ゆっくり重厚に 450ms）
+    // 画面シェイク（450ms）
     setIsShaking(true);
     setTimeout(() => setIsShaking(false), 450);
 
-    // レーザー閃光ビーム（ゆっくり 750ms 輝く）
-    const lasers: ActiveLaser[] = [{ id: Date.now(), r: hitR, direction: 'h' }];
-    if (isCross) {
+    // レーザー閃光ビーム（750ms）
+    const lasers: ActiveLaser[] = [];
+    if (mode === 'h' || mode === 'cross') {
+      lasers.push({ id: Date.now(), r: hitR, direction: 'h' });
+    }
+    if (mode === 'v' || mode === 'cross') {
       lasers.push({ id: Date.now() + 1, c: hitC, direction: 'v' });
     }
     setActiveLasers(lasers);
     setTimeout(() => setActiveLasers([]), 750);
+
     const collectedCounts: { [key: string]: number } = {};
     const newBoard: Tile[][] = b.map((row) => row.map((tile) => ({ ...tile })));
 
     // 消去対象マスを特定
     const targetsToClear = new Set<string>();
-    // 行（横一列）
-    for (let c = 0; c < BOARD_SIZE; c++) {
-      targetsToClear.add(`${hitR},${c}`);
+    if (mode === 'h' || mode === 'cross') {
+      for (let c = 0; c < BOARD_SIZE; c++) {
+        targetsToClear.add(`${hitR},${c}`);
+      }
     }
-    // 十字爆破なら列（縦一列）も追加
-    if (isCross) {
+    if (mode === 'v' || mode === 'cross') {
       for (let r = 0; r < BOARD_SIZE; r++) {
         targetsToClear.add(`${r},${hitC}`);
       }
@@ -749,16 +847,115 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
     addCollectedTargets(collectedCounts);
 
-    // ビームが突き抜けてピースが砕ける余韻をしっかり見せる（600ms）
+    // ビームが突き抜けてピースが砕ける余韻（550ms）
+    await new Promise((res) => setTimeout(res, 550));
+
+    // 重力落下アニメーション！
+    const settledBoard = await dropBoardWithGravity(newBoard);
+
+    await new Promise((res) => setTimeout(res, 100));
+    const nextResult = findMatchesAndSpecials(settledBoard);
+    if (nextResult.matches.length > 0) {
+      await processMatches(settledBoard, nextResult.matches, 2, nextResult.specialsToCreate);
+    }
+  };
+
+  // レインボー × ロケットの超絶コンボ大爆発！
+  const executeRainbowRocketCombo = async (
+    b: Tile[][],
+    targetType: PieceType,
+    hitR: number,
+    hitC: number
+  ) => {
+    sounds.playRainbow();
+    sounds.playRocket();
+
+    setIsShaking(true);
+    setTimeout(() => setIsShaking(false), 700);
+
+    // 画面全体にスパークルシャワー
+    try {
+      confetti({
+        particleCount: 55,
+        spread: 85,
+        origin: { y: 0.6 },
+        colors: ['#f59e0b', '#38bdf8', '#10b981', '#f43f5e', '#a855f7'],
+      });
+    } catch {}
+
+    const newBoard: Tile[][] = b.map((row) => row.map((t) => ({ ...t })));
+    const rocketList: { r: number; c: number; dir: 'h' | 'v' }[] = [];
+
+    // 元のスワップ位置
+    rocketList.push({ r: hitR, c: hitC, dir: Math.random() < 0.5 ? 'h' : 'v' });
+
+    // 同色の全ピースをロケットに変化！
+    newBoard.forEach((row, r) => {
+      row.forEach((t, c) => {
+        if (t.type === targetType || t.special === 'rainbow') {
+          const dir: 'h' | 'v' = Math.random() < 0.5 ? 'h' : 'v';
+          t.special = dir === 'h' ? 'rocket_h' : 'rocket_v';
+          rocketList.push({ r, c, dir });
+        }
+      });
+    });
+
+    setBoard(newBoard.map((row) => [...row]));
+
+    // ロケットに変形した余韻（300ms）
+    await new Promise((res) => setTimeout(res, 300));
+
+    // 一斉発射！
+    const lasers: ActiveLaser[] = rocketList.map((rk, idx) => ({
+      id: Date.now() + idx,
+      r: rk.dir === 'h' ? rk.r : undefined,
+      c: rk.dir === 'v' ? rk.c : undefined,
+      direction: rk.dir,
+    }));
+    setActiveLasers(lasers);
+    setTimeout(() => setActiveLasers([]), 750);
+
+    const targetsToClear = new Set<string>();
+    rocketList.forEach((rk) => {
+      if (rk.dir === 'h') {
+        for (let col = 0; col < BOARD_SIZE; col++) targetsToClear.add(`${rk.r},${col}`);
+      } else {
+        for (let row = 0; row < BOARD_SIZE; row++) targetsToClear.add(`${row},${rk.c}`);
+      }
+    });
+
+    const collectedCounts: { [key: string]: number } = {};
+    targetsToClear.forEach((coord) => {
+      const [r, c] = coord.split(',').map(Number);
+      const tile = newBoard[r][c];
+      if (tile.gimmick?.type === 'rock') {
+        tile.gimmick = undefined;
+        collectedCounts['rock'] = (collectedCounts['rock'] || 0) + 1;
+        sounds.playRockBreak();
+      } else if (tile.gimmick?.type === 'ice') {
+        tile.gimmick = undefined;
+        collectedCounts['ice'] = (collectedCounts['ice'] || 0) + 1;
+        sounds.playIceBreak();
+      } else if (tile.gimmick?.type === 'vine') {
+        tile.gimmick = undefined;
+        collectedCounts['vine'] = (collectedCounts['vine'] || 0) + 1;
+        sounds.playVineCut();
+      }
+      collectedCounts[tile.type] = (collectedCounts[tile.type] || 0) + 1;
+      newBoard[r][c] = { id: '', type: 'wood', special: 'none' };
+    });
+
+    addCollectedTargets(collectedCounts);
+
     await new Promise((res) => setTimeout(res, 600));
 
     // 重力落下アニメーション！
     const settledBoard = await dropBoardWithGravity(newBoard);
 
     await new Promise((res) => setTimeout(res, 100));
-    const nextMatches = findMatches(settledBoard);
-    if (nextMatches.length > 0) {
-      await processMatches(settledBoard, nextMatches, 2);
+    const nextResult = findMatchesAndSpecials(settledBoard);
+    if (nextResult.matches.length > 0) {
+      await processMatches(settledBoard, nextResult.matches, 2, nextResult.specialsToCreate);
     }
   };
 
@@ -805,16 +1002,16 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
     addCollectedTargets(collectedCounts);
 
-    // ビームが突き抜けてピースが砕ける余韻をしっかり見せる（600ms）
+    // 余韻（600ms）
     await new Promise((res) => setTimeout(res, 600));
 
     // 重力落下アニメーション！
     const settledBoard = await dropBoardWithGravity(newBoard);
 
     await new Promise((res) => setTimeout(res, 100));
-    const nextMatches = findMatches(settledBoard);
-    if (nextMatches.length > 0) {
-      await processMatches(settledBoard, nextMatches, 2);
+    const nextResult = findMatchesAndSpecials(settledBoard);
+    if (nextResult.matches.length > 0) {
+      await processMatches(settledBoard, nextResult.matches, 2, nextResult.specialsToCreate);
     }
   };
 
@@ -1075,7 +1272,18 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
                     </div>
                   ) : isRocket ? (
                     <div className="relative flex items-center justify-center w-full h-full">
-                      <span className="text-2xl filter drop-shadow-md animate-pulse-slow">🚀</span>
+                      <span
+                        className={`text-2xl filter drop-shadow-md animate-pulse-slow transition-transform ${
+                          tile.special === 'rocket_h' ? 'rotate-90' : 'rotate-0'
+                        }`}
+                      >
+                        🚀
+                      </span>
+                      {/* 向きバッジ（横 ↔ / 縦 ↕） */}
+                      <span className="absolute top-0.5 left-0.5 text-[9px] font-black bg-slate-950/85 border border-slate-700/80 rounded px-0.5 py-0 leading-none text-amber-300">
+                        {tile.special === 'rocket_h' ? '↔' : '↕'}
+                      </span>
+                      {/* 属性素材バッジ（🪵, 💧, 🌿, 🌰, 🪨） */}
                       <span className="absolute bottom-0 right-0 text-[10px] bg-slate-950/90 border border-slate-700/80 rounded-full px-0.5 py-0 shadow-xs leading-none">
                         {rocketTheme.icon}
                       </span>
@@ -1110,7 +1318,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
         {/* 下部ひとこと説明 */}
         <div className="text-center text-[11px] text-amber-100 font-medium bg-slate-950/80 border border-amber-500/20 px-3 py-1 rounded-full backdrop-blur-md shadow-sm">
-          {stage.newGimmickIntro ? stage.newGimmickIntro.description : '指でスワイプして入れ替え！同じ素材を3つ揃えよう🪵'}
+          {stage.newGimmickIntro ? stage.newGimmickIntro.description : '同じ素材を3つ揃えよう！4個で縦/横ロケット🚀、5個で虹🌈'}
         </div>
       </div>
 
