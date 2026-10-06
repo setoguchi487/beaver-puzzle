@@ -766,7 +766,12 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
   };
 
   return (
-    <div className="flex flex-col items-center justify-between min-h-screen bg-slate-950 text-white max-w-md mx-auto p-4 select-none relative">
+    <div 
+      className="flex flex-col items-center justify-between min-h-screen text-white max-w-md mx-auto p-3.5 select-none relative overflow-hidden bg-cover bg-top"
+      style={{ backgroundImage: 'url(/assets/puzzle_bg.jpg)' }}
+    >
+      {/* 画面全体の可読性・奥行きを高めるグラデーション */}
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-950/40 via-transparent to-slate-950/60 pointer-events-none" />
       {/* 新ギミック紹介ポップアップ */}
       {!introDismissed && stage.newGimmickIntro && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in">
@@ -796,7 +801,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
       )}
 
       {/* 上部ヘッダー */}
-      <div className="w-full flex items-center justify-between pb-2 border-b border-slate-800">
+      <div className="w-full flex items-center justify-between p-2 rounded-2xl bg-slate-950/80 backdrop-blur-md border border-amber-500/30 shadow-lg z-10">
         <button
           onClick={onExit}
           className="p-2 text-slate-400 hover:text-white rounded-full bg-slate-900 active:scale-95 transition-transform"
@@ -841,13 +846,13 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
       </div>
 
       {/* 目標素材カウンター＆残り手数 */}
-      <div className="w-full grid grid-cols-3 gap-2 my-2.5">
-        <div className="p-2.5 bg-gradient-to-b from-amber-500/20 to-amber-600/10 border border-amber-500/40 rounded-2xl text-center">
+      <div className="w-full grid grid-cols-3 gap-2 my-2 z-10">
+        <div className="p-2 bg-gradient-to-b from-amber-950/90 to-amber-900/90 border border-amber-400/50 rounded-2xl text-center backdrop-blur-md shadow-lg">
           <div className="text-[9px] font-bold text-amber-300 uppercase">残り手数</div>
           <div className="text-2xl font-black text-amber-400">{movesLeft}</div>
         </div>
 
-        <div className="col-span-2 flex items-center justify-around p-2 bg-slate-900/90 border border-slate-800 rounded-2xl">
+        <div className="col-span-2 flex items-center justify-around p-2 bg-slate-950/85 border border-amber-500/30 rounded-2xl backdrop-blur-md shadow-lg">
           {stage.targets.map((t) => {
             const current = targets[t.type]?.current || 0;
             const isDone = current >= t.required;
@@ -888,7 +893,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
       )}
 
       {/* パズル盤面 (7x7) */}
-      <div className={`relative p-2.5 bg-slate-900/90 rounded-3xl border-2 border-slate-800 shadow-2xl backdrop-blur-md touch-none ${isShaking ? "animate-board-shake" : ""}`}>
+      <div className={`relative p-2.5 bg-amber-950/85 rounded-3xl border-2 border-amber-600/50 shadow-[0_12px_36px_rgba(0,0,0,0.6)] backdrop-blur-md touch-none z-10 ${isShaking ? "animate-board-shake" : ""}`}>
         {/* レーザー光線オーバーレイ */}
         {activeLasers.map((laser) => {
           if (laser.direction === "h" && laser.r !== undefined) {
@@ -997,7 +1002,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
       </div>
 
       {/* 下部ひとこと説明 */}
-      <div className="text-center text-[11px] text-slate-400 my-2">
+      <div className="text-center text-[11px] text-amber-100 font-medium bg-slate-950/80 border border-amber-500/20 px-3 py-1 rounded-full backdrop-blur-md shadow-sm my-2 z-10">
         {stage.newGimmickIntro ? stage.newGimmickIntro.description : '指でスワイプして入れ替え！同じ素材を3つ揃えよう🪵'}
       </div>
 
