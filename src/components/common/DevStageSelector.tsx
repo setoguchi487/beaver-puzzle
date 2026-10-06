@@ -22,20 +22,7 @@ export const DevStageSelector: React.FC<DevStageSelectorProps> = ({
   onResetAll,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  // 初期タブ: 'all'（全1〜100ステージ一括表示）で全ステージが一目でわかるようにする
   const [activeTab, setActiveTab] = useState<string>('all');
-
-  // ESCキー押下で開発者モードを閉じる
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setIsOpen(false);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen]);
 
   // 木材を100,000個所持状態にする処理
   const setWoodTo100000 = () => {
@@ -49,11 +36,36 @@ export const DevStageSelector: React.FC<DevStageSelectorProps> = ({
     } catch {}
   };
 
-  // 開発者モードボタン押下時
-  const handleOpen = () => {
-    setWoodTo100000();
-    setIsOpen(true);
-  };
+  // 隠しコマンド（キーボードショートカット Ctrl+Shift+D / Cmd+Shift+D）およびカスタムイベント
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // ESCキーで閉じる
+      if (e.key === 'Escape' && isOpen) {
+        setIsOpen(false);
+        return;
+      }
+
+      // 隠しコマンド: Ctrl+Shift+D または Cmd+Shift+D
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'D' || e.key === 'd')) {
+        e.preventDefault();
+        setWoodTo100000();
+        setIsOpen((prev) => !prev);
+      }
+    };
+
+    const handleCustomOpen = () => {
+      setWoodTo100000();
+      setIsOpen(true);
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('open-beaver-dev-mode', handleCustomOpen);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('open-beaver-dev-mode', handleCustomOpen);
+    };
+  }, [isOpen]);
 
   // タブ定義（全100ステージ & チャプター別）
   const TABS = [
@@ -70,250 +82,216 @@ export const DevStageSelector: React.FC<DevStageSelectorProps> = ({
     stageButtons.push(s);
   }
 
+  // 隠しコマンド化：通常時はボタンを表示しない
+  if (!isOpen) {
+    return null;
+  }
+
   return (
     <>
-      {/* 開発者モード起動ボタン */}
+      {/* PC・大画面向け: 画面右下に固定配置されるフローティングバツボタン */}
       <button
-        onClick={handleOpen}
-        className="px-2.5 py-1 text-xs font-black bg-gradient-to-r from-amber-500/25 to-orange-500/25 hover:from-amber-500/35 hover:to-orange-500/35 text-amber-300 border border-amber-400/60 rounded-xl flex items-center space-x-1.5 shadow-sm active:scale-95 transition-all cursor-pointer backdrop-blur-xs"
-        title="開発者モードメニューを開く"
+        onClick={() => setIsOpen(false)}
+        className="fixed bottom-6 right-6 z-[60] bg-slate-900/95 hover:bg-rose-600 text-white border-2 border-amber-400 hover:border-rose-300 rounded-2xl px-4 py-3 shadow-2xl flex items-center space-x-2 transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95 group backdrop-blur-md ring-4 ring-black/40 animate-bounce-subtle"
+        title="開発者モードを終了 (✕)"
+        aria-label="開発者モードを終了"
       >
-        <Wrench className="w-3.5 h-3.5 text-amber-400 animate-pulse-slow" />
-        <span>開発者モード</span>
+        <div className="bg-rose-500 group-hover:bg-rose-400 text-white rounded-full p-1 group-hover:rotate-90 transition-transform">
+          <X className="w-5 h-5 stroke-[2.5]" />
+        </div>
+        <div className="text-left">
+          <span className="text-xs font-black text-amber-200 group-hover:text-white block leading-tight">
+            開発者モード終了
+          </span>
+          <span className="text-[9px] text-slate-300 block leading-tight font-medium">
+            ✕ 閉じる
+          </span>
+        </div>
       </button>
 
-      {/* 開発者モードモーダル & 右下バツボタン */}
-      {isOpen && (
-        <>
-          {/* PC・大画面向け: 画面右下に固定配置されるフローティングバツボタン */}
-          <button
-            onClick={() => setIsOpen(false)}
-            className="fixed bottom-6 right-6 z-[60] bg-slate-900/95 hover:bg-rose-600 text-white border-2 border-amber-400 hover:border-rose-300 rounded-2xl px-4 py-3 shadow-2xl flex items-center space-x-2 transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95 group backdrop-blur-md ring-4 ring-black/40 animate-bounce-subtle"
-            title="開発者モードを終了 (✕)"
-            aria-label="開発者モードを終了"
-          >
-            <div className="bg-rose-500 group-hover:bg-rose-400 text-white rounded-full p-1 group-hover:rotate-90 transition-transform">
-              <X className="w-5 h-5 stroke-[2.5]" />
+      {/* モーダル背景オーバーレイ */}
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in select-none"
+        onClick={() => setIsOpen(false)}
+      >
+        {/* モーダル本体カード */}
+        <div
+          className="bg-slate-900 border-2 border-amber-500/80 rounded-3xl p-5 max-w-lg w-full max-h-[90vh] overflow-y-auto space-y-4 shadow-2xl text-slate-100 ring-4 ring-amber-500/20"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* ヘッダー */}
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div className="flex items-center space-x-2">
+              <div className="p-2 bg-amber-500/20 rounded-xl border border-amber-500/40">
+                <Wrench className="w-5 h-5 text-amber-400" />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-amber-400 flex items-center space-x-1.5">
+                  <span>🛠️ 秘密の開発者モード</span>
+                  <span className="text-[10px] bg-amber-500/30 text-amber-300 px-1.5 py-0.5 rounded-full border border-amber-400/40">
+                    全100ステージ対応
+                  </span>
+                </h3>
+                <p className="text-[11px] text-slate-400 font-medium">
+                  現在の選択中: Stage {currentStageId} / {STAGES.length}
+                </p>
+              </div>
             </div>
-            <div className="text-left">
-              <span className="text-xs font-black text-amber-200 group-hover:text-white block leading-tight">
-                開発者モード終了
-              </span>
-              <span className="text-[9px] text-slate-300 block leading-tight font-medium">
-                ✕ 閉じる
-              </span>
-            </div>
-          </button>
-
-          {/* モーダル背景オーバーレイ（クリックで閉じる） */}
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in select-none"
-            onClick={() => setIsOpen(false)}
-          >
-            {/* モーダルカード本体 */}
-            <div
-              className="w-full max-w-lg bg-gradient-to-b from-slate-900 via-slate-925 to-slate-950 border-2 border-amber-500/60 rounded-3xl p-5 shadow-2xl text-white space-y-4 max-h-[92vh] overflow-y-auto no-scrollbar relative"
-              onClick={(e) => e.stopPropagation()}
+            <button
+              onClick={() => setIsOpen(false)}
+              className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all cursor-pointer"
+              title="閉じる"
             >
-              {/* ヘッダー */}
-              <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-                <div className="flex items-center space-x-2 text-amber-400">
-                  <Wrench className="w-5 h-5 text-amber-400" />
-                  <div>
-                    <h3 className="text-base font-black tracking-wide flex items-center space-x-1.5">
-                      <span>開発者モード 🛠️</span>
-                      <span className="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-full font-bold">
-                        全100ステージ対応
-                      </span>
-                    </h3>
-                    <span className="text-[10px] text-amber-200/70 font-medium block">
-                      1〜100ステージダイレクト選択 & デバッグチート
-                    </span>
-                  </div>
-                </div>
-                {/* ヘッダー右上のバツボタン */}
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="p-1.5 text-slate-400 hover:text-white rounded-full hover:bg-slate-800 transition-colors cursor-pointer"
-                  title="閉じる"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+              <X className="w-5 h-5" />
+            </button>
+          </div>
 
-              {/* ドロップダウンによる即時ステージジャンプ（全100ステージ） */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-black text-amber-200 flex items-center justify-between">
-                  <span>🎯 ステージダイレクト選択（全100ステージ収録）</span>
-                  <span className="text-[10px] text-slate-400 font-bold bg-slate-800 px-2 py-0.5 rounded-md">
-                    現在: Stage {currentStageId} / 100
-                  </span>
-                </label>
-                <select
-                  value={currentStageId}
-                  onChange={(e) => {
-                    const sId = Number(e.target.value);
-                    onSelectStage(sId);
-                    setIsOpen(false);
-                  }}
-                  className="w-full bg-slate-800/90 border border-amber-500/40 text-amber-100 text-xs font-bold rounded-xl px-3 py-2.5 focus:outline-hidden focus:ring-2 focus:ring-amber-400 cursor-pointer"
-                >
-                  {STAGES.map((st) => (
-                    <option key={st.id} value={st.id} className="bg-slate-900 text-white">
-                      {st.title} (最大{st.maxMoves}手)
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* ステージ番号グリッド選択（全100ステージ） */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-black text-slate-300 flex items-center space-x-1">
-                    <span>🗺️ ステージ番号ボタン選択</span>
-                    <span className="text-[10px] text-amber-400 font-normal">
-                      （{currentTabDef.name}: {currentTabDef.badge}）
-                    </span>
-                  </span>
-                  <span className="text-[10px] text-slate-400">
-                    表示中: {stageButtons.length}ステージ
-                  </span>
-                </div>
-
-                {/* チャプター・全表示タブ切り替えバー */}
-                <div className="grid grid-cols-5 gap-1">
-                  {TABS.map((tab) => {
-                    const isTabActive = activeTab === tab.id;
-                    return (
-                      <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`py-1.5 px-1 rounded-xl text-[10px] font-black transition-all flex flex-col items-center justify-center cursor-pointer ${
-                          isTabActive
-                            ? 'bg-amber-500 text-slate-950 shadow-md ring-1 ring-amber-300'
-                            : 'bg-slate-800/80 hover:bg-slate-750 text-slate-300 border border-slate-700/60'
-                        }`}
-                      >
-                        <span className="text-xs leading-none">{tab.icon}</span>
-                        <span className="truncate leading-tight mt-0.5">{tab.name}</span>
-                        <span className="text-[8px] opacity-80 leading-none scale-90">{tab.badge}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* 選択タブのステージボタングリッド（スクロール可能で全ステージ一括閲覧OK） */}
-                <div className="bg-slate-950/70 p-2 rounded-2xl border border-slate-800/80 max-h-56 overflow-y-auto no-scrollbar">
-                  <div className="grid grid-cols-5 sm:grid-cols-10 gap-1.5">
-                    {stageButtons.map((sNum) => {
-                      const isCurrent = currentStageId === sNum;
-                      return (
-                        <button
-                          key={sNum}
-                          onClick={() => {
-                            onSelectStage(sNum);
-                            setIsOpen(false);
-                          }}
-                          title={`Stage ${sNum} を開始`}
-                          className={`py-2 text-xs font-black rounded-xl transition-all cursor-pointer flex flex-col items-center justify-center ${
-                            isCurrent
-                              ? 'bg-gradient-to-b from-amber-400 to-amber-500 text-slate-950 ring-2 ring-white shadow-lg scale-105 font-black'
-                              : 'bg-slate-800/90 hover:bg-amber-500/20 hover:border-amber-400/50 hover:text-amber-200 text-slate-200 border border-slate-700/70 active:scale-95'
-                          }`}
-                        >
-                          <span>{sNum}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              {/* デバッグチート・資材・開拓操作 */}
-              <div className="pt-2 border-t border-slate-800 space-y-2.5">
-                <span className="text-[11px] font-black text-slate-300 block uppercase">
-                  🛠️ 開発者チート機能
+          {/* ステージ選択セクション */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-200 flex items-center space-x-1">
+                <span>🗺️ ステージ番号ボタン選択</span>
+                <span className="text-[10px] text-amber-400 font-normal">
+                  （{currentTabDef.name}: {currentTabDef.badge}）
                 </span>
+              </span>
+              <span className="text-[10px] text-slate-400">
+                表示中: {stageButtons.length}ステージ
+              </span>
+            </div>
 
-                {/* 木材100,000所持 */}
-                <button
-                  onClick={() => {
-                    setWoodTo100000();
-                    alert('木材を 100,000 個に設定しました！🪵✨');
-                  }}
-                  className="w-full py-2.5 px-3 bg-gradient-to-r from-amber-500/25 to-yellow-500/25 hover:from-amber-500/35 hover:to-yellow-500/35 border border-amber-400/60 text-amber-300 text-xs font-black rounded-xl flex items-center justify-center space-x-2 active:scale-98 transition-all cursor-pointer shadow-sm"
-                >
-                  <Coins className="w-4 h-4 text-amber-400" />
-                  <span>木材を 100,000 個所持にする 🪵</span>
-                </button>
-
-                <div className="grid grid-cols-2 gap-2">
-                  {/* エリア全開放 */}
+            {/* チャプター・全表示タブ切り替えバー */}
+            <div className="grid grid-cols-5 gap-1">
+              {TABS.map((tab) => {
+                const isTabActive = activeTab === tab.id;
+                return (
                   <button
-                    onClick={() => {
-                      onUnlockAllAreas();
-                      alert('すべてのエリアを全開放しました！✨');
-                    }}
-                    className="py-2.5 px-2 bg-purple-500/25 hover:bg-purple-500/35 border border-purple-400/60 text-purple-200 text-xs font-black rounded-xl flex items-center justify-center space-x-1.5 active:scale-98 transition-all cursor-pointer shadow-sm"
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`py-1.5 px-1 rounded-xl text-[10px] font-black transition-all flex flex-col items-center justify-center cursor-pointer ${
+                      isTabActive
+                        ? 'bg-amber-500 text-slate-950 shadow-md ring-1 ring-amber-300'
+                        : 'bg-slate-800/80 hover:bg-slate-750 text-slate-300 border border-slate-700/60'
+                    }`}
                   >
-                    <Sparkles className="w-4 h-4 text-purple-300" />
-                    <span>エリア全開放 ✨</span>
+                    <span className="text-xs leading-none">{tab.icon}</span>
+                    <span className="truncate leading-tight mt-0.5">{tab.name}</span>
+                    <span className="text-[8px] opacity-80 leading-none scale-90">{tab.badge}</span>
                   </button>
+                );
+              })}
+            </div>
 
-                  {/* エリア解放初期化 */}
-                  <button
-                    onClick={() => {
-                      if (window.confirm('エリアの解放状態とタスク進行を初期状態に戻しますか？')) {
-                        if (onResetAreas) {
-                          onResetAreas();
-                        } else if (onResetAll) {
-                          onResetAll();
-                        }
-                        alert('エリアの解放状態を初期化しました！🔄');
-                      }
-                    }}
-                    className="py-2.5 px-2 bg-blue-500/25 hover:bg-blue-500/35 border border-blue-400/60 text-blue-200 text-xs font-black rounded-xl flex items-center justify-center space-x-1.5 active:scale-98 transition-all cursor-pointer shadow-sm"
-                  >
-                    <RotateCcw className="w-4 h-4 text-blue-300" />
-                    <span>エリア解放初期化 🔄</span>
-                  </button>
-                </div>
-
-                {/* ゲーム完全初期化 */}
-                {onResetAll && (
-                  <button
-                    onClick={() => {
-                      if (window.confirm('ゲームデータ（木材・エリア・バッジ・仲間）を完全に最初からリセットしますか？')) {
-                        onResetAll();
+            {/* 選択タブのステージボタングリッド */}
+            <div className="bg-slate-950/70 p-2 rounded-2xl border border-slate-800/80 max-h-56 overflow-y-auto no-scrollbar">
+              <div className="grid grid-cols-5 sm:grid-cols-10 gap-1.5">
+                {stageButtons.map((sNum) => {
+                  const isCurrent = currentStageId === sNum;
+                  return (
+                    <button
+                      key={sNum}
+                      onClick={() => {
+                        onSelectStage(sNum);
                         setIsOpen(false);
-                      }
-                    }}
-                    className="w-full py-2 px-3 bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-300 text-[11px] font-bold rounded-xl flex items-center justify-center space-x-1.5 active:scale-98 transition-all cursor-pointer"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    <span>ゲームデータ完全リセット（最初に戻す）</span>
-                  </button>
-                )}
-              </div>
-
-              {/* モーダルカード内・右下の終了バツボタン */}
-              <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between">
-                <span className="text-[10px] text-slate-400">
-                  ※ ESCキー / 背景クリックでも終了可能
-                </span>
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="px-4 py-2 bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white border border-rose-400/80 rounded-xl text-xs font-black flex items-center space-x-1.5 transition-all active:scale-95 cursor-pointer shadow-md"
-                  title="開発者モードを終了"
-                >
-                  <X className="w-4 h-4 stroke-[2.5]" />
-                  <span>開発者モードを終了 (✕)</span>
-                </button>
+                      }}
+                      title={`Stage ${sNum} を開始`}
+                      className={`py-2 text-xs font-black rounded-xl transition-all cursor-pointer flex flex-col items-center justify-center ${
+                        isCurrent
+                          ? 'bg-gradient-to-b from-amber-400 to-amber-500 text-slate-950 ring-2 ring-white shadow-lg scale-105 font-black'
+                          : 'bg-slate-800/90 hover:bg-amber-500/20 hover:border-amber-400/50 hover:text-amber-200 text-slate-200 border border-slate-700/70 active:scale-95'
+                      }`}
+                    >
+                      <span>{sNum}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
-        </>
-      )}
+
+          {/* デバッグチート・資材・開拓操作 */}
+          <div className="pt-2 border-t border-slate-800 space-y-2.5">
+            <span className="text-[11px] font-black text-slate-300 block uppercase">
+              🛠️ 開発者チート機能
+            </span>
+
+            {/* 木材100,000所持 */}
+            <button
+              onClick={() => {
+                setWoodTo100000();
+                alert('木材を 100,000 個に設定しました！🪵✨');
+              }}
+              className="w-full py-2.5 px-3 bg-gradient-to-r from-amber-500/25 to-yellow-500/25 hover:from-amber-500/35 hover:to-yellow-500/35 border border-amber-400/60 text-amber-300 text-xs font-black rounded-xl flex items-center justify-center space-x-2 active:scale-98 transition-all cursor-pointer shadow-sm"
+            >
+              <Coins className="w-4 h-4 text-amber-400" />
+              <span>木材を 100,000 個所持にする 🪵</span>
+            </button>
+
+            <div className="grid grid-cols-2 gap-2">
+              {/* エリア全開放 */}
+              <button
+                onClick={() => {
+                  onUnlockAllAreas();
+                  alert('すべてのエリアを全開放しました！✨');
+                }}
+                className="py-2.5 px-2 bg-purple-500/25 hover:bg-purple-500/35 border border-purple-400/60 text-purple-200 text-xs font-black rounded-xl flex items-center justify-center space-x-1.5 active:scale-98 transition-all cursor-pointer shadow-sm"
+              >
+                <Sparkles className="w-4 h-4 text-purple-300" />
+                <span>エリア全開放 ✨</span>
+              </button>
+
+              {/* エリア解放初期化 */}
+              <button
+                onClick={() => {
+                  if (window.confirm('エリアの解放状態とタスク進行を初期状態に戻しますか？')) {
+                    if (onResetAreas) {
+                      onResetAreas();
+                    } else if (onResetAll) {
+                      onResetAll();
+                    }
+                    alert('エリアの解放状態を初期化しました！🔄');
+                  }
+                }}
+                className="py-2.5 px-2 bg-blue-500/25 hover:bg-blue-500/35 border border-blue-400/60 text-blue-200 text-xs font-black rounded-xl flex items-center justify-center space-x-1.5 active:scale-98 transition-all cursor-pointer shadow-sm"
+              >
+                <RotateCcw className="w-4 h-4 text-blue-300" />
+                <span>エリア解放初期化 🔄</span>
+              </button>
+            </div>
+
+            {/* ゲーム完全初期化 */}
+            {onResetAll && (
+              <button
+                onClick={() => {
+                  if (window.confirm('ゲームデータ（木材・エリア・バッジ・仲間）を完全に最初からリセットしますか？')) {
+                    onResetAll();
+                    setIsOpen(false);
+                  }
+                }}
+                className="w-full py-2 px-3 bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-300 text-[11px] font-bold rounded-xl flex items-center justify-center space-x-1.5 active:scale-98 transition-all cursor-pointer"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>ゲームデータ完全リセット（最初に戻す）</span>
+              </button>
+            )}
+          </div>
+
+          {/* モーダルカード内・右下の終了バツボタン */}
+          <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between">
+            <span className="text-[10px] text-slate-400">
+              ※ ESCキー / 背景クリックでも終了可能
+            </span>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="px-4 py-2 bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white border border-rose-400/80 rounded-xl text-xs font-black flex items-center space-x-1.5 transition-all active:scale-95 cursor-pointer shadow-md"
+              title="開発者モードを終了"
+            >
+              <X className="w-4 h-4 stroke-[2.5]" />
+              <span>開発者モードを終了 (✕)</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </>
   );
 };

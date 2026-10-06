@@ -695,6 +695,21 @@ class SoundEffectManager {
       osc.stop(this.ctx.currentTime + t + 0.05);
     });
   }
+  public playButtonClick() {
+    this.playDrop();
+  }
+
+  public playWoodPlank() {
+    this.playBuild();
+  }
+
+  public playBonusItem() {
+    this.playChestOpen();
+  }
+
+  public playAreaComplete() {
+    this.playStageClear();
+  }
 }
 
 export const sounds = new SoundEffectManager();

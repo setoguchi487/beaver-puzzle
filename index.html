@@ -2,11 +2,42 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦫</text></svg>" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>ふたりビーバーのダム開拓パズル 🦫🪵</title>
+    
+    <!-- ファビコン・アプリアイコン -->
+    <link rel="icon" type="image/png" sizes="64x64" href="/favicon-64.png" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦫</text></svg>" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    
+    <!-- PWA / モバイル最適化 -->
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="ビーバーパズル" />
+    
+    <!-- OGP / SNSシェアメタタグ -->
+    <meta name="description" content="相棒ビーバーと協力して荒れた渓流を大復興！木材を集めて15のエリアを開拓し、森の生き物たちと楽園をつくる本格マッチ3パズルゲーム！" />
+    <meta property="og:title" content="ふたりビーバーのダム開拓パズル 🦫🪵" />
+    <meta property="og:description" content="相棒ビーバーと協力して荒れた渓流を大復興！木材を集めて15のエリアを開拓し、森の生き物たちと楽園をつくる本格マッチ3パズルゲーム！" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/ogp-image.jpg" />
+    <meta property="og:site_name" content="ふたりビーバーのダム開拓パズル" />
+    <meta property="og:locale" content="ja_JP" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="ふたりビーバーのダム開拓パズル 🦫🪵" />
+    <meta name="twitter:description" content="相棒ビーバーと協力して荒れた渓流を大復興！木材を集めて15のエリアを開拓し、森の生き物たちと楽園をつくる本格マッチ3パズルゲーム！" />
+    <meta name="twitter:image" content="/ogp-image.jpg" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=M+PLUS+Rounded+1c:wght@500;700;800;900&display=swap" rel="stylesheet" />
   </head>
-  <body class="bg-slate-900 text-slate-100 min-h-screen">
+  <body class="bg-slate-900 text-slate-100 min-h-screen select-none antialiased">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

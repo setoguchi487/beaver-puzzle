@@ -4,6 +4,7 @@ import type { StarMilestone } from './data/starRoadMilestones';
 import type { DecorationItem } from './data/decorations';
 import { getDailyPuzzleStage, getDailyRewardInfo, markDailyClearedToday } from './utils/dailyPuzzle';
 import { STAGES, INITIAL_AREAS } from './data/masterData';
+import { TitleHomeScreen } from './components/home/TitleHomeScreen';
 import { FrontierMap } from './components/map/FrontierMap';
 import { Match3Board } from './components/puzzle/Match3Board';
 import { AreaDetailScreen } from './components/area/AreaDetailScreen';
@@ -13,7 +14,7 @@ import { GrandEndingModal } from './components/common/GrandEndingModal';
 const STORAGE_KEY = 'beaver_puzzle_state_v1';
 
 export const App: React.FC = () => {
-  const [screenMode, setScreenMode] = useState<'map' | 'area_detail' | 'puzzle'>('map');
+  const [screenMode, setScreenMode] = useState<'title' | 'map' | 'area_detail' | 'puzzle'>('title');
   const [selectedAreaIdForDetail, setSelectedAreaIdForDetail] = useState<string | null>(null);
   const [previousScreenMode, setPreviousScreenMode] = useState<'map' | 'area_detail'>('map');
   const [currentStageId, setCurrentStageId] = useState<number>(1);
@@ -156,7 +157,7 @@ export const App: React.FC = () => {
   const handleSelectStage = (stageId: number) => {
     setIsDailyPlaying(false);
     setCurrentStageId(stageId);
-    setPreviousScreenMode(screenMode === 'puzzle' ? 'map' : screenMode);
+    setPreviousScreenMode(screenMode === 'area_detail' ? 'area_detail' : 'map');
     setScreenMode('puzzle');
   };
 
@@ -381,6 +382,54 @@ export const App: React.FC = () => {
     }
   };
 
+  const handleReloadState = () => {
+    const savedWood = localStorage.getItem(STORAGE_KEY + '_wood');
+    setWoodPoints(savedWood ? Number(savedWood) : 60);
+
+    const savedAreas = localStorage.getItem(STORAGE_KEY + '_areas');
+    if (savedAreas) {
+      try {
+        const parsed: FrontierArea[] = JSON.parse(savedAreas);
+        setAreas(INITIAL_AREAS.map((def) => {
+          const found = parsed.find((p) => p.id === def.id);
+          if (!found) return def;
+          return {
+            ...def,
+            status: found.status,
+            tasks: def.tasks.map((taskDef) => {
+              const savedTask = found.tasks?.find((st) => st.id === taskDef.id);
+              return savedTask ? { ...taskDef, isCompleted: savedTask.isCompleted } : taskDef;
+            }),
+          };
+        }));
+      } catch {}
+    }
+
+    const savedBadges = localStorage.getItem(STORAGE_KEY + '_badges');
+    setBadges(savedBadges ? JSON.parse(savedBadges) : []);
+
+    const savedCreatures = localStorage.getItem(STORAGE_KEY + '_creatures');
+    setUnlockedCreatures(savedCreatures ? JSON.parse(savedCreatures) : []);
+
+    const savedStage = localStorage.getItem(STORAGE_KEY + '_unlocked_stage');
+    setUnlockedStageId(savedStage ? Number(savedStage) : 1);
+
+    const savedRecords = localStorage.getItem(STORAGE_KEY + '_stage_records');
+    setStageRecords(savedRecords ? JSON.parse(savedRecords) : {});
+
+    const savedBuddy = localStorage.getItem(STORAGE_KEY + '_buddy');
+    if (savedBuddy) setSelectedBuddyId(savedBuddy);
+
+    const savedMilestones = localStorage.getItem(STORAGE_KEY + '_star_milestones');
+    setClaimedStarMilestones(savedMilestones ? JSON.parse(savedMilestones) : []);
+
+    const savedOwnedDeco = localStorage.getItem(STORAGE_KEY + '_owned_decorations');
+    setOwnedDecorationIds(savedOwnedDeco ? JSON.parse(savedOwnedDeco) : ['deco_bench']);
+
+    const savedActiveDeco = localStorage.getItem(STORAGE_KEY + '_active_decorations');
+    setActivePlacements(savedActiveDeco ? JSON.parse(savedActiveDeco) : ['deco_bench']);
+  };
+
   const handleNavigateToAreaDetail = (areaId: string) => {
     setSelectedAreaIdForDetail(areaId);
     setScreenMode('area_detail');
@@ -391,9 +440,18 @@ export const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 font-sans antialiased">
+      {/* タイトル画面（起動時スタートホーム画面） */}
+      {screenMode === 'title' && (
+        <TitleHomeScreen
+          onStartGame={() => setScreenMode('map')}
+          onReloadState={handleReloadState}
+        />
+      )}
+
       {/* 画面切り替え */}
       {screenMode === 'map' && (
         <FrontierMap
+          onGoToHome={() => setScreenMode('title')}
           areas={areas}
           woodPoints={woodPoints}
           badgesCount={badges.length}

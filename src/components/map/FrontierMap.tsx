@@ -13,6 +13,7 @@ import type { StageRecord } from '../../types';
 import { Star } from 'lucide-react';
 import { sounds } from '../../utils/soundEffects';
 import {
+  Home,
   Lock,
   CheckCircle2,
   Heart,
@@ -28,6 +29,7 @@ import {
 } from 'lucide-react';
 
 interface FrontierMapProps {
+  onGoToHome?: () => void;
   areas: FrontierArea[];
   woodPoints: number;
   badgesCount: number;
@@ -60,6 +62,7 @@ interface FrontierMapProps {
 }
 
 export const FrontierMap: React.FC<FrontierMapProps> = ({
+  onGoToHome,
   areas,
   woodPoints,
   badgesCount,
@@ -141,7 +144,27 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
     setTimeout(() => setCreatureReaction(null), 2200);
   };
 
+  const [beaverTapCount, setBeaverTapCount] = useState<number>(0);
+  const lastBeaverTapTimeRef = useRef<number>(0);
+
   const handleBeaverTap = () => {
+    const now = Date.now();
+    let nextCount = 1;
+    if (now - lastBeaverTapTimeRef.current < 2000) {
+      nextCount = beaverTapCount + 1;
+    }
+    setBeaverTapCount(nextCount);
+    lastBeaverTapTimeRef.current = now;
+
+    if (nextCount >= 5) {
+      sounds.playBonusItem();
+      window.dispatchEvent(new CustomEvent('open-beaver-dev-mode'));
+      setBeaverDialogue('🛠️ 秘密の開発者モードを起動したよ！✨');
+      setTimeout(() => setBeaverDialogue(null), 3000);
+      setBeaverTapCount(0);
+      return;
+    }
+
     const dialogues = [
       '丸太を集めて、ふんわりとした雲の奥を開拓しよう！🦫✨',
       'エリアを1つ復活させるとバッジが手に入り、次の巨大な雲が晴れるよ！🏅',
@@ -191,8 +214,17 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
             </div>
           </div>
 
-          {/* 日替わり・クラフト・サウンド・Devセレクター */}
+          {/* ホーム・日替わり・クラフト・サウンド・Devセレクター */}
           <div className="flex items-center space-x-1.5">
+            {onGoToHome && (
+              <button
+                onClick={onGoToHome}
+                className="p-1.5 text-slate-300 hover:text-white rounded-lg bg-slate-800/80 border border-slate-700 active:scale-95 transition-all cursor-pointer"
+                title="タイトル画面へ戻る"
+              >
+                <Home className="w-3.5 h-3.5 text-amber-300" />
+              </button>
+            )}
             {/* 日替わりパズルボタン */}
             <button
               onClick={() => setIsDailyModalOpen(true)}
