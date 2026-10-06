@@ -133,7 +133,7 @@ export const DevStageSelector: React.FC<DevStageSelectorProps> = ({
                   className="py-2 px-3 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/40 text-purple-300 text-xs font-black rounded-xl flex items-center justify-center space-x-1"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>全霧を即座に晴らす</span>
+                  <span>全エリアを即座に開放</span>
                 </button>
               </div>
 
@@ -141,7 +141,7 @@ export const DevStageSelector: React.FC<DevStageSelectorProps> = ({
               {onResetAll && (
                 <button
                   onClick={() => {
-                    if (window.confirm("ゲームデータを完全に初期状態（最初から）に戻しますか？\n※未踏エリアが楕円の霧で覆われ、最初の浅瀬のみ出現した状態になります。")) {
+                    if (window.confirm("ゲームデータを完全に初期状態（最初から）に戻しますか？\n※未踏エリアが未開拓に戻り、最初の浅瀬のみ出現した状態になります。")) {
                       onResetAll();
                       setIsOpen(false);
                     }

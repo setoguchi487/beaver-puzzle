@@ -1,4 +1,4 @@
-import type { PuzzleStage, FrontierArea, GimmickType } from '../types';
+import type { PuzzleStage, FrontierArea, GimmickType, PieceType, SpecialType } from '../types';
 
 export const PIECE_CONFIG: Record<string, { label: string; icon: string; color: string; bg: string }> = {
   wood: { label: '丸太', icon: '🪵', color: 'text-amber-800', bg: 'bg-amber-100 border-amber-300' },
@@ -14,14 +14,21 @@ export const PIECE_CONFIG: Record<string, { label: string; icon: string; color: 
 export const generate100Stages = (): PuzzleStage[] => {
   const stages: PuzzleStage[] = [];
 
+  const ALL_PIECES: PieceType[] = ['wood', 'twig', 'water', 'acorn', 'stone', 'berry', 'mushroom'];
+
   for (let i = 1; i <= 100; i++) {
-    // 節目ステージの個別リッチ設計
+    // ==========================================
+    // 🌟 節目ステージ（精密手動設計）
+    // ==========================================
     if (i === 1) {
       stages.push({
         id: 1,
-        title: 'Stage 1: 小枝集めのレッスン',
+        title: 'Stage 1: 小枝集めのレッスン 🪵💧',
         description: 'まずは基本の丸太と水滴を集めよう！スワイプして3つ揃えてね。',
         maxMoves: 18,
+        boardRows: 7,
+        boardCols: 7,
+        allowedPieceTypes: ['wood', 'twig', 'water', 'acorn'],
         targets: [
           { type: 'wood', required: 10, current: 0 },
           { type: 'water', required: 8, current: 0 },
@@ -30,30 +37,31 @@ export const generate100Stages = (): PuzzleStage[] => {
         unfogAreaIds: ['stream_entry', 'small_dam'],
       });
     } else if (i === 2) {
-      // 🍓 6×6 コンパクト盤面＆新素材「野イチゴ」4色爽快モード！
       stages.push({
         id: 2,
         title: 'Stage 2: 完熟！野イチゴ摘み 🍓',
-        description: '6×6のコンパクト盤面に新素材【野イチゴ】が登場！4色限定だから連鎖が繋がりやすいよ！',
+        description: '新素材【野イチゴ】登場！コンパクトな6×6盤面で爽快4色コンボを決めよう！',
         maxMoves: 16,
         boardRows: 6,
         boardCols: 6,
-        allowedPieceTypes: ['wood', 'water', 'berry', 'acorn'],
+        allowedPieceTypes: ['berry', 'wood', 'water', 'twig'],
         targets: [
           { type: 'berry', required: 12, current: 0 },
-          { type: 'wood', required: 10, current: 0 },
+          { type: 'wood', required: 12, current: 0 },
         ],
         woodReward: 110,
         unfogAreaIds: ['small_dam'],
       });
     } else if (i === 3) {
-      // ⬆️ 浮力反転！水底からの浮上パズル
       stages.push({
         id: 3,
         title: 'Stage 3: 水底のふしぎな浮力 ⬆️💧',
-        description: '【重力反転ステージ】水底からの浮力で、ピースが下から上へプカプカ浮かび上がるぞ！',
-        maxMoves: 20,
+        description: '水流の力でドロップが下から上へ浮かび上がる！新感覚の浮力パズルを楽しもう！',
+        maxMoves: 18,
+        boardRows: 7,
+        boardCols: 7,
         gravityDirection: 'up',
+        allowedPieceTypes: ['water', 'wood', 'acorn', 'stone'],
         targets: [
           { type: 'water', required: 15, current: 0 },
           { type: 'stone', required: 10, current: 0 },
@@ -62,70 +70,69 @@ export const generate100Stages = (): PuzzleStage[] => {
         unfogAreaIds: ['small_dam'],
       });
     } else if (i === 4) {
-      // 🍄 8×8 ワイド盤面＆新素材「森のキノコ」
       stages.push({
         id: 4,
         title: 'Stage 4: 巨樹のふもとのキノコ狩り 🍄',
-        description: '広々8×8盤面に新素材【森のキノコ】が登場！広さを活かしてロケットや爆弾を作ろう！',
-        maxMoves: 22,
-        boardRows: 8,
-        boardCols: 8,
-        allowedPieceTypes: ['wood', 'mushroom', 'berry', 'acorn', 'twig'],
-        targets: [
-          { type: 'mushroom', required: 14, current: 0 },
-          { type: 'berry', required: 12, current: 0 },
-          { type: 'wood', required: 15, current: 0 },
-        ],
-        woodReward: 130,
-        unfogAreaIds: ['small_dam'],
-      });
-    } else if (i === 5) {
-      // 💎 ひし形穴あき変形盤面
-      stages.push({
-        id: 5,
-        title: 'Stage 5: ひし形渓谷のせせらぎ 💎',
-        description: '【変形盤面】四隅が欠けたひし形マップ！限られたルートで効率よく消そう！',
+        description: '新素材【森のキノコ】登場！紫色のキノコを集めて、美味しいスープを作ろう！',
         maxMoves: 18,
         boardRows: 7,
         boardCols: 7,
+        allowedPieceTypes: ['mushroom', 'acorn', 'twig', 'wood'],
+        targets: [
+          { type: 'mushroom', required: 14, current: 0 },
+          { type: 'acorn', required: 12, current: 0 },
+        ],
+        woodReward: 130,
+        unfogAreaIds: ['beaver_lodge'],
+      });
+    } else if (i === 5) {
+      stages.push({
+        id: 5,
+        title: 'Stage 5: ひし形渓谷のせせらぎ 💎',
+        description: '四隅が削られた変形ダイヤモンド盤面！角をうまく使って特殊ピースを作ろう！',
+        maxMoves: 20,
+        boardRows: 7,
+        boardCols: 7,
+        allowedPieceTypes: ['wood', 'water', 'berry', 'twig', 'stone'],
         disabledTiles: [
-          { r: 0, c: 0 }, { r: 0, c: 1 }, { r: 1, c: 0 },
-          { r: 0, c: 5 }, { r: 0, c: 6 }, { r: 1, c: 6 },
-          { r: 5, c: 0 }, { r: 6, c: 0 }, { r: 6, c: 1 },
-          { r: 5, c: 6 }, { r: 6, c: 5 }, { r: 6, c: 6 },
+          { r: 0, c: 0 }, { r: 0, c: 1 }, { r: 0, c: 5 }, { r: 0, c: 6 },
+          { r: 1, c: 0 }, { r: 1, c: 6 },
+          { r: 5, c: 0 }, { r: 5, c: 6 },
+          { r: 6, c: 0 }, { r: 6, c: 1 }, { r: 6, c: 5 }, { r: 6, c: 6 },
         ],
         targets: [
           { type: 'wood', required: 14, current: 0 },
-          { type: 'twig', required: 12, current: 0 },
+          { type: 'berry', required: 12, current: 0 },
         ],
         woodReward: 140,
         unfogAreaIds: ['beaver_lodge'],
       });
     } else if (i === 6) {
-      // 👑 9×9 巨大お祭りメガ盤面！全6色
       stages.push({
         id: 6,
         title: 'Stage 6: 豪快！9×9メガダム建設 👑',
-        description: '超巨大9×9盤面！全6色の素材が入り乱れ、ロケット・ボム・虹が飛び交う大連鎖お祭りパズル！',
+        description: '超広大な9×9盤面！素材数も6色に拡大。ロケットやボムを大量連鎖させよう！',
         maxMoves: 26,
         boardRows: 9,
         boardCols: 9,
         allowedPieceTypes: ['wood', 'water', 'twig', 'acorn', 'berry', 'mushroom'],
         targets: [
           { type: 'wood', required: 25, current: 0 },
-          { type: 'berry', required: 16, current: 0 },
-          { type: 'mushroom', required: 16, current: 0 },
+          { type: 'water', required: 20, current: 0 },
+          { type: 'mushroom', required: 15, current: 0 },
         ],
         woodReward: 150,
         unfogAreaIds: ['beaver_lodge'],
       });
     } else if (i === 7) {
-      // 🟫 新ギミック：泥んこタイル登場！
       stages.push({
         id: 7,
         title: 'Stage 7: 泥んこクリーン作戦！🟫',
         description: '新ギミック【泥んこ】登場！泥の上に敷かれたピースを3つ揃えて、キレイに洗い流そう！',
         maxMoves: 20,
+        boardRows: 7,
+        boardCols: 7,
+        allowedPieceTypes: ['wood', 'water', 'twig', 'berry', 'stone'],
         targets: [
           { type: 'mud', required: 12, current: 0 },
           { type: 'wood', required: 12, current: 0 },
@@ -154,12 +161,14 @@ export const generate100Stages = (): PuzzleStage[] => {
         ],
       });
     } else if (i === 8) {
-      // 📦 新ギミック：からくり宝箱登場！
       stages.push({
         id: 8,
         title: 'Stage 8: 木工のからくり宝箱！📦✨',
         description: '新ギミック【からくり宝箱】登場！隣でピースを消して木箱を開けると、中からロケットやボムが飛び出すよ！',
         maxMoves: 22,
+        boardRows: 7,
+        boardCols: 7,
+        allowedPieceTypes: ['water', 'wood', 'acorn', 'twig', 'mushroom'],
         targets: [
           { type: 'chest', required: 3, current: 0 },
           { type: 'water', required: 15, current: 0 },
@@ -179,13 +188,15 @@ export const generate100Stages = (): PuzzleStage[] => {
         ],
       });
     } else if (i === 9) {
-      // 🌿 新ギミック：増殖する侵食ツタ登場！
       stages.push({
         id: 9,
         title: 'Stage 9: 迫りくる侵食ツタ！🌿',
         description: '新ギミック【侵食ツタ】登場！1ターン中にツタを刈り取らないと、毎ターンじわじわ増殖するスリル！',
         maxMoves: 24,
+        boardRows: 7,
+        boardCols: 7,
         creepingVine: true,
+        allowedPieceTypes: ['acorn', 'twig', 'wood', 'berry', 'stone'],
         targets: [
           { type: 'vine', required: 8, current: 0 },
           { type: 'acorn', required: 15, current: 0 },
@@ -206,22 +217,22 @@ export const generate100Stages = (): PuzzleStage[] => {
         ],
       });
     } else if (i === 10) {
-      // 🗿 新ギミック：ダムの巨石 ＆ 泥んこ ＆ 宝箱の複合クライマックス！
       stages.push({
         id: 10,
         title: 'Stage 10: 巨石ダムの総力戦！🗿💥',
-        description: '新ギミック【ダムの巨石】登場！超硬い巨石と宝箱・泥んこが入り混じる大決戦！',
+        description: '新ギミック【ダムの巨石】登場！超硬い巨石と宝箱・泥んこが入り混じる第1章の集大成！',
         boardRows: 8,
         boardCols: 8,
         maxMoves: 28,
         creepingVine: true,
+        allowedPieceTypes: ['wood', 'water', 'stone', 'berry', 'mushroom'],
         targets: [
           { type: 'boulder', required: 2, current: 0 },
           { type: 'chest', required: 2, current: 0 },
           { type: 'mud', required: 8, current: 0 },
         ],
         woodReward: 250,
-        unfogAreaIds: ['beaver_lodge'],
+        unfogAreaIds: ['beaver_lodge', 'fishing_pier'],
         newGimmickIntro: {
           type: 'boulder' as GimmickType,
           title: '新ギミック：ダムの巨石 🗿',
@@ -247,190 +258,348 @@ export const generate100Stages = (): PuzzleStage[] => {
           { r: 6, c: 3, type: 'mud', hp: 1 },
         ],
       });
-    } else if (i === 20) {
-      // 🪨 川底の大岩解禁！
+    } else if (i === 25) {
+      // 🌟 第1章フィナーレ：釣り桟橋の巨大生簀（浮力反転×宝箱ラッシュ）
       stages.push({
-        id: 20,
-        title: 'Stage 20: 巨石の渓谷 🪨',
-        description: '新ギミック【川底の大岩】登場！動かせない頑丈な岩だ。隣でマッチさせるかロケット・ボムで粉砕しよう！',
-        maxMoves: 24,
-        targets: [
-          { type: 'rock', required: 5, current: 0 },
-          { type: 'water', required: 18, current: 0 },
-        ],
-        woodReward: 180,
-        unfogAreaIds: ['fishing_pier'],
-        newGimmickIntro: {
-          type: 'rock',
-          title: '新ギミック：川底の大岩 🪨',
-          description: 'スワップできないブロッカー！爆風や隣接マッチで吹き飛ばせ！',
-          icon: '🪨',
-        },
-        initialGimmicks: [
-          { r: 1, c: 3, type: 'rock', hp: 2 },
-          { r: 3, c: 1, type: 'rock', hp: 2 },
-          { r: 3, c: 5, type: 'rock', hp: 2 },
-          { r: 5, c: 3, type: 'rock', hp: 2 },
-          { r: 3, c: 3, type: 'rock', hp: 2 },
-        ],
-      });
-    } else if (i === 30) {
-      // 🌿 絡みつくツタ解禁！
-      stages.push({
-        id: 30,
-        title: 'Stage 30: 密林のツタ絡み 🌿',
-        description: '新ギミック【絡みつくツタ】登場！ツタで固定されたピースは動かせないが、同じ色で3つ揃えれば解けるぞ！',
-        maxMoves: 25,
-        targets: [
-          { type: 'vine', required: 8, current: 0 },
-          { type: 'wood', required: 20, current: 0 },
-        ],
-        woodReward: 200,
-        unfogAreaIds: ['watermill_zone'],
-        newGimmickIntro: {
-          type: 'vine',
-          title: '新ギミック：絡みつくツタ 🌿',
-          description: 'ピースが縛られて動かせない！同じ色を揃えてツタを断ち切ろう！',
-          icon: '🌿',
-        },
-        initialGimmicks: [
-          { r: 2, c: 1, type: 'vine', hp: 1 },
-          { r: 2, c: 5, type: 'vine', hp: 1 },
-          { r: 3, c: 2, type: 'vine', hp: 1 },
-          { r: 3, c: 4, type: 'vine', hp: 1 },
-          { r: 4, c: 1, type: 'vine', hp: 1 },
-          { r: 4, c: 5, type: 'vine', hp: 1 },
-          { r: 1, c: 3, type: 'vine', hp: 1 },
-          { r: 5, c: 3, type: 'vine', hp: 1 },
-        ],
-      });
-    } else if (i === 40) {
-      stages.push({
-        id: 40,
-        title: 'Stage 40: 氷と大岩の激流峡谷 🧊🪨',
-        description: '氷と大岩が入り乱れる大難所！ロケット丸太を大量に作って突破せよ！',
+        id: 25,
+        title: 'Stage 25: 釣り桟橋の宝箱ラッシュ！📦⬆️',
+        description: '浮力反転する水底で、からくり宝箱を開けまくれ！豪快な連鎖で第1章を締めくくろう！',
+        boardRows: 8,
+        boardCols: 8,
+        gravityDirection: 'up',
         maxMoves: 26,
+        allowedPieceTypes: ['water', 'stone', 'wood', 'berry'],
         targets: [
-          { type: 'ice', required: 6, current: 0 },
-          { type: 'rock', required: 4, current: 0 },
-          { type: 'wood', required: 22, current: 0 },
+          { type: 'chest', required: 4, current: 0 },
+          { type: 'water', required: 25, current: 0 },
         ],
-        woodReward: 220,
-        unfogAreaIds: ['flower_garden'],
+        woodReward: 260,
+        unfogAreaIds: ['watermill_zone'],
         initialGimmicks: [
-          { r: 2, c: 2, type: 'ice', hp: 2 },
-          { r: 2, c: 4, type: 'ice', hp: 2 },
-          { r: 3, c: 3, type: 'rock', hp: 2 },
-          { r: 4, c: 2, type: 'ice', hp: 2 },
-          { r: 4, c: 4, type: 'ice', hp: 2 },
-          { r: 1, c: 1, type: 'rock', hp: 1 },
-          { r: 1, c: 5, type: 'rock', hp: 1 },
-          { r: 5, c: 1, type: 'rock', hp: 1 },
-          { r: 5, c: 5, type: 'rock', hp: 1 },
+          { r: 1, c: 2, type: 'chest' as GimmickType, hp: 3, reward: 'rocket_h' } as any,
+          { r: 1, c: 5, type: 'chest' as GimmickType, hp: 3, reward: 'rocket_h' } as any,
+          { r: 6, c: 2, type: 'chest' as GimmickType, hp: 3, reward: 'bomb' } as any,
+          { r: 6, c: 5, type: 'chest' as GimmickType, hp: 3, reward: 'bomb' } as any,
         ],
       });
     } else if (i === 50) {
+      // 🌟 第2章フィナーレ：太鼓橋の激流大決戦（8x8、巨石＋侵食ツタ＋泥んこ）
       stages.push({
         id: 50,
-        title: 'Stage 50: 豪快！三大ギミック大決戦 🧊🪨🌿',
-        description: '氷・岩・ツタのフルコース！持てるパズルテクニックのすべてをぶつけろ！',
+        title: 'Stage 50: 朱塗り太鼓橋の激流大決戦！🌉👑',
+        description: '第2章クライマックス！激流の中にそびえる巨石を打ち砕き、広がるツタを食い止めろ！',
+        boardRows: 8,
+        boardCols: 8,
         maxMoves: 28,
+        creepingVine: true,
+        allowedPieceTypes: ['wood', 'water', 'berry', 'twig', 'stone'],
         targets: [
-          { type: 'ice', required: 8, current: 0 },
-          { type: 'rock', required: 5, current: 0 },
-          { type: 'vine', required: 6, current: 0 },
+          { type: 'boulder', required: 3, current: 0 },
+          { type: 'vine', required: 10, current: 0 },
+          { type: 'mud', required: 12, current: 0 },
         ],
-        woodReward: 250,
-        unfogAreaIds: ['emerald_lake'],
+        woodReward: 350,
+        unfogAreaIds: ['fruit_orchard'],
         initialGimmicks: [
-          { r: 1, c: 3, type: 'rock', hp: 2 },
-          { r: 5, c: 3, type: 'rock', hp: 2 },
-          { r: 2, c: 2, type: 'ice', hp: 2 },
-          { r: 2, c: 4, type: 'ice', hp: 2 },
-          { r: 4, c: 2, type: 'ice', hp: 2 },
-          { r: 4, c: 4, type: 'ice', hp: 2 },
-          { r: 3, c: 1, type: 'vine', hp: 1 },
-          { r: 3, c: 5, type: 'vine', hp: 1 },
+          { r: 2, c: 2, type: 'boulder' as GimmickType, hp: 3 },
+          { r: 3, c: 5, type: 'boulder' as GimmickType, hp: 3 },
+          { r: 5, c: 3, type: 'boulder' as GimmickType, hp: 3 },
+          { r: 0, c: 0, type: 'vine' as GimmickType, hp: 1 },
+          { r: 0, c: 7, type: 'vine' as GimmickType, hp: 1 },
+          { r: 7, c: 0, type: 'vine' as GimmickType, hp: 1 },
+          { r: 7, c: 7, type: 'vine' as GimmickType, hp: 1 },
+        ],
+        initialUnderlays: [
+          { r: 3, c: 3, type: 'mud', hp: 2 }, { r: 3, c: 4, type: 'mud', hp: 2 },
+          { r: 4, c: 3, type: 'mud', hp: 2 }, { r: 4, c: 4, type: 'mud', hp: 2 },
+          { r: 2, c: 3, type: 'mud', hp: 1 }, { r: 2, c: 4, type: 'mud', hp: 1 },
+          { r: 5, c: 3, type: 'mud', hp: 1 }, { r: 5, c: 4, type: 'mud', hp: 1 },
+          { r: 3, c: 2, type: 'mud', hp: 1 }, { r: 4, c: 2, type: 'mud', hp: 1 },
+          { r: 3, c: 5, type: 'mud', hp: 1 }, { r: 4, c: 5, type: 'mud', hp: 1 },
+        ],
+      });
+    } else if (i === 75) {
+      // 🌟 第3章フィナーレ：水晶湧水洞窟の神秘（9x9、浮力反転×全色ラッシュ）
+      stages.push({
+        id: 75,
+        title: 'Stage 75: 水晶洞窟の神秘なる湧水 💎⬆️',
+        description: '9×9超大盤面での浮力反転！水晶の奥に眠る宝箱を開放し、聖なる滝つぼへ進もう！',
+        boardRows: 9,
+        boardCols: 9,
+        gravityDirection: 'up',
+        maxMoves: 32,
+        allowedPieceTypes: ['water', 'stone', 'mushroom', 'berry', 'wood', 'twig'],
+        targets: [
+          { type: 'chest', required: 5, current: 0 },
+          { type: 'ice', required: 12, current: 0 },
+          { type: 'mushroom', required: 25, current: 0 },
+        ],
+        woodReward: 420,
+        unfogAreaIds: ['rainbow_falls'],
+        initialGimmicks: [
+          { r: 4, c: 4, type: 'chest' as GimmickType, hp: 3, reward: 'bomb' } as any,
+          { r: 2, c: 2, type: 'chest' as GimmickType, hp: 3, reward: 'rocket_h' } as any,
+          { r: 2, c: 6, type: 'chest' as GimmickType, hp: 3, reward: 'rocket_v' } as any,
+          { r: 6, c: 2, type: 'chest' as GimmickType, hp: 3, reward: 'rocket_v' } as any,
+          { r: 6, c: 6, type: 'chest' as GimmickType, hp: 3, reward: 'rocket_h' } as any,
+          { r: 1, c: 4, type: 'ice' as GimmickType, hp: 2 },
+          { r: 7, c: 4, type: 'ice' as GimmickType, hp: 2 },
+          { r: 4, c: 1, type: 'ice' as GimmickType, hp: 2 },
+          { r: 4, c: 7, type: 'ice' as GimmickType, hp: 2 },
         ],
       });
     } else if (i === 100) {
-      // Stage 100 伝説のボス
+      // 🌟 第4章最終ボス：桃源郷の伝説グランドダム完成！
       stages.push({
         id: 100,
-        title: 'Stage 100: 桃源郷の伝説グランドダム 👑🦫',
-        description: '100ステージ到達記念！大要塞ダムを築き上げ、森の主クマさん親子を迎える最高峰の試練！',
-        maxMoves: 35,
+        title: 'Stage 100: 桃源郷の伝説グランドダム 👑🦫✨',
+        description: '100ステージ到達記念！大要塞ダムを築き上げ、すべての仲間たちと桃源郷を完成させよう！',
+        boardRows: 9,
+        boardCols: 9,
+        maxMoves: 34,
+        creepingVine: true,
+        allowedPieceTypes: ['wood', 'water', 'berry', 'mushroom', 'acorn', 'stone'],
         targets: [
-          { type: 'ice', required: 10, current: 0 },
-          { type: 'rock', required: 8, current: 0 },
-          { type: 'vine', required: 8, current: 0 },
-          { type: 'wood', required: 30, current: 0 },
+          { type: 'boulder', required: 4, current: 0 },
+          { type: 'chest', required: 4, current: 0 },
+          { type: 'mud', required: 16, current: 0 },
+          { type: 'wood', required: 35, current: 0 },
         ],
-        woodReward: 300,
-        unfogAreaIds: ['emerald_lake'],
+        woodReward: 600,
+        unfogAreaIds: ['paradise_grand_dam'],
         initialGimmicks: [
-          { r: 0, c: 0, type: 'rock', hp: 2 },
-          { r: 0, c: 6, type: 'rock', hp: 2 },
-          { r: 6, c: 0, type: 'rock', hp: 2 },
-          { r: 6, c: 6, type: 'rock', hp: 2 },
-          { r: 1, c: 2, type: 'ice', hp: 2 },
-          { r: 1, c: 4, type: 'ice', hp: 2 },
-          { r: 2, c: 3, type: 'rock', hp: 2 },
-          { r: 3, c: 2, type: 'vine', hp: 1 },
-          { r: 3, c: 4, type: 'vine', hp: 1 },
-          { r: 4, c: 3, type: 'rock', hp: 2 },
-          { r: 5, c: 2, type: 'ice', hp: 2 },
-          { r: 5, c: 4, type: 'ice', hp: 2 },
+          { r: 3, c: 3, type: 'boulder' as GimmickType, hp: 3 },
+          { r: 3, c: 5, type: 'boulder' as GimmickType, hp: 3 },
+          { r: 5, c: 3, type: 'boulder' as GimmickType, hp: 3 },
+          { r: 5, c: 5, type: 'boulder' as GimmickType, hp: 3 },
+          { r: 2, c: 4, type: 'chest' as GimmickType, hp: 3, reward: 'bomb' } as any,
+          { r: 6, c: 4, type: 'chest' as GimmickType, hp: 3, reward: 'bomb' } as any,
+          { r: 4, c: 2, type: 'chest' as GimmickType, hp: 3, reward: 'rocket_h' } as any,
+          { r: 4, c: 6, type: 'chest' as GimmickType, hp: 3, reward: 'rocket_v' } as any,
+          { r: 0, c: 0, type: 'vine' as GimmickType, hp: 1 },
+          { r: 0, c: 8, type: 'vine' as GimmickType, hp: 1 },
+          { r: 8, c: 0, type: 'vine' as GimmickType, hp: 1 },
+          { r: 8, c: 8, type: 'vine' as GimmickType, hp: 1 },
+        ],
+        initialUnderlays: [
+          { r: 3, c: 4, type: 'mud', hp: 2 }, { r: 5, c: 4, type: 'mud', hp: 2 },
+          { r: 4, c: 3, type: 'mud', hp: 2 }, { r: 4, c: 5, type: 'mud', hp: 2 },
+          { r: 2, c: 2, type: 'mud', hp: 1 }, { r: 2, c: 6, type: 'mud', hp: 1 },
+          { r: 6, c: 2, type: 'mud', hp: 1 }, { r: 6, c: 6, type: 'mud', hp: 1 },
+          { r: 1, c: 4, type: 'mud', hp: 1 }, { r: 7, c: 4, type: 'mud', hp: 1 },
+          { r: 4, c: 1, type: 'mud', hp: 1 }, { r: 4, c: 7, type: 'mud', hp: 1 },
+          { r: 3, c: 1, type: 'mud', hp: 1 }, { r: 3, c: 7, type: 'mud', hp: 1 },
+          { r: 5, c: 1, type: 'mud', hp: 1 }, { r: 5, c: 7, type: 'mud', hp: 1 },
         ],
       });
-    } else {
-      // 通常ステージ（自動バリエーション生成）
-      const stageGimmickType: GimmickType =
-        i < 10 ? 'none' : i < 20 ? 'ice' : i < 30 ? 'rock' : 'vine';
+    }
 
-      const moves = Math.max(16, 26 - Math.floor(i / 10));
-      const targetWood = 10 + (i % 15) * 2;
-      const targetSub = 8 + (i % 12) * 2;
-      const reward = 100;
+    // ==========================================
+    // 🎲 通常ステージ（インテリジェント自動生成）
+    // ==========================================
+    else {
+      // 1. フェーズ・エリアに応じたテーマ設計
+      const phase = i <= 25 ? 1 : i <= 50 ? 2 : i <= 75 ? 3 : 4;
 
-      const stageGimmicks: { r: number; c: number; type: GimmickType; hp: number }[] = [];
-      if (stageGimmickType === 'ice') {
-        stageGimmicks.push({ r: 2, c: 2, type: 'ice', hp: 1 + (i % 2) });
-        stageGimmicks.push({ r: 4, c: 4, type: 'ice', hp: 1 + (i % 2) });
-        if (i > 14) stageGimmicks.push({ r: 3, c: 3, type: 'ice', hp: 2 });
-      } else if (stageGimmickType === 'rock') {
-        stageGimmicks.push({ r: 1, c: 3, type: 'rock', hp: 2 });
-        stageGimmicks.push({ r: 5, c: 3, type: 'rock', hp: 2 });
-      } else if (stageGimmickType === 'vine') {
-        stageGimmicks.push({ r: 3, c: 2, type: 'vine', hp: 1 });
-        stageGimmicks.push({ r: 3, c: 4, type: 'vine', hp: 1 });
+      // 2. 盤面サイズのバリエーション
+      let boardRows = 7;
+      let boardCols = 7;
+      if (phase === 1) {
+        boardRows = i % 6 === 2 ? 6 : 7;
+        boardCols = boardRows;
+      } else if (phase === 2) {
+        boardRows = i % 5 === 0 ? 8 : 7;
+        boardCols = boardRows;
+      } else if (phase === 3) {
+        boardRows = i % 4 === 0 ? 9 : i % 3 === 0 ? 8 : 7;
+        boardCols = boardRows;
+      } else {
+        boardRows = i % 3 === 0 ? 9 : 8;
+        boardCols = boardRows;
       }
+
+      // 3. 重力反転（浮力 ⬆️）：7ステージ周期で定期的に水底パズルを体験！
+      const gravityDirection: 'down' | 'up' = (i % 7 === 3 || i % 7 === 6) ? 'up' : 'down';
+
+      // 4. カラーパレットのローテーション（4色爽快 〜 5色標準 〜 6色高難度）
+      let pieceCount = 5;
+      if (phase === 1 && i % 4 === 1) pieceCount = 4; // 序盤の爽快4色
+      else if (phase >= 3 && i % 4 === 3) pieceCount = 6; // 後半の高難度6色
+
+      // 素材の組み合わせをステージ番号に応じてシャッフル選択
+      const paletteOffset = (i * 2) % ALL_PIECES.length;
+      const allowedPieceTypes: PieceType[] = [];
+      for (let p = 0; p < pieceCount; p++) {
+        allowedPieceTypes.push(ALL_PIECES[(paletteOffset + p) % ALL_PIECES.length]);
+      }
+      // 木材または水滴は常に1つ以上含める
+      if (!allowedPieceTypes.includes('wood') && !allowedPieceTypes.includes('water')) {
+        allowedPieceTypes[0] = 'wood';
+      }
+
+      // 5. 変形・穴あき盤面（i % 6 === 5 のときに四隅カットやダイヤモンド型）
+      let disabledTiles: { r: number; c: number }[] | undefined = undefined;
+      if (i % 6 === 5 && boardRows >= 7) {
+        disabledTiles = [
+          { r: 0, c: 0 }, { r: 0, c: boardCols - 1 },
+          { r: boardRows - 1, c: 0 }, { r: boardRows - 1, c: boardCols - 1 },
+        ];
+      }
+
+      // 6. ギミックのインテリジェント配備（氷・岩・ツタ・泥んこ・宝箱・巨石）
+      const stageGimmicks: { r: number; c: number; type: GimmickType; hp: number; reward?: SpecialType }[] = [];
+      const stageUnderlays: { r: number; c: number; type: 'mud'; hp: number }[] = [];
+      let creepingVine = false;
+
+      // ギミックテーマの選定
+      const gimmickMod = i % 6;
+      if (gimmickMod === 1) {
+        // 泥んこ敷き詰めパズル
+        const mudCount = 6 + (i % 6) * 2;
+        const startR = Math.max(1, Math.floor(boardRows / 2) - 1);
+        const startC = Math.max(1, Math.floor(boardCols / 2) - 1);
+        for (let r = 0; r < 3; r++) {
+          for (let c = 0; c < 3; c++) {
+            if (stageUnderlays.length < mudCount) {
+              stageUnderlays.push({
+                r: startR + r,
+                c: startC + c,
+                type: 'mud',
+                hp: phase >= 2 && (r + c) % 2 === 0 ? 2 : 1,
+              });
+            }
+          }
+        }
+      } else if (gimmickMod === 2) {
+        // からくり宝箱パズル
+        stageGimmicks.push({
+          r: Math.floor(boardRows / 2),
+          c: Math.floor(boardCols / 2) - 1,
+          type: 'chest',
+          hp: 3,
+          reward: i % 2 === 0 ? 'bomb' : 'rocket_h',
+        });
+        stageGimmicks.push({
+          r: Math.floor(boardRows / 2),
+          c: Math.floor(boardCols / 2) + 1,
+          type: 'chest',
+          hp: 3,
+          reward: 'rocket_v',
+        });
+        if (phase >= 3) {
+          stageGimmicks.push({
+            r: Math.floor(boardRows / 2) - 1,
+            c: Math.floor(boardCols / 2),
+            type: 'chest',
+            hp: 3,
+            reward: 'bomb',
+          });
+        }
+      } else if (gimmickMod === 3) {
+        // 侵食ツタサバイバル
+        creepingVine = true;
+        stageGimmicks.push({ r: 1, c: 1, type: 'vine', hp: 1 });
+        stageGimmicks.push({ r: boardRows - 2, c: boardCols - 2, type: 'vine', hp: 1 });
+        if (phase >= 2) {
+          stageGimmicks.push({ r: 1, c: boardCols - 2, type: 'vine', hp: 1 });
+        }
+      } else if (gimmickMod === 4) {
+        // 氷と大岩の河川
+        stageGimmicks.push({ r: 2, c: 2, type: 'ice', hp: phase >= 2 ? 2 : 1 });
+        stageGimmicks.push({ r: boardRows - 3, c: boardCols - 3, type: 'ice', hp: phase >= 2 ? 2 : 1 });
+        stageGimmicks.push({ r: Math.floor(boardRows / 2), c: Math.floor(boardCols / 2), type: 'rock', hp: 2 });
+      } else if (gimmickMod === 5) {
+        // ダムの巨石 or 複合ギミック
+        if (phase >= 2) {
+          stageGimmicks.push({ r: Math.floor(boardRows / 2), c: Math.floor(boardCols / 2), type: 'boulder', hp: 3 });
+        } else {
+          stageGimmicks.push({ r: 2, c: 3, type: 'rock', hp: 2 });
+          stageGimmicks.push({ r: 4, c: 3, type: 'rock', hp: 2 });
+        }
+        // 泥んこも併設
+        stageUnderlays.push({ r: 2, c: 2, type: 'mud', hp: 1 });
+        stageUnderlays.push({ r: 2, c: 4, type: 'mud', hp: 1 });
+        stageUnderlays.push({ r: 4, c: 2, type: 'mud', hp: 1 });
+        stageUnderlays.push({ r: 4, c: 4, type: 'mud', hp: 1 });
+      }
+
+      // 7. 目標（targets）の多彩な決定
+      const mainPiece = allowedPieceTypes[0];
+      const subPiece = allowedPieceTypes[1] || 'water';
+      const mainReq = 12 + (i % 10) * 2;
+      const subReq = 10 + (i % 8) * 2;
+
+      const stageTargets: { type: string; required: number; current: number }[] = [
+        { type: mainPiece, required: mainReq, current: 0 },
+      ];
+
+      // ギミックがあればギミックを第2目標に、なければ素材
+      if (stageUnderlays.length > 0) {
+        stageTargets.push({ type: 'mud', required: stageUnderlays.length, current: 0 });
+      } else if (stageGimmicks.some((g) => g.type === 'chest')) {
+        stageTargets.push({
+          type: 'chest',
+          required: stageGimmicks.filter((g) => g.type === 'chest').length,
+          current: 0,
+        });
+      } else if (stageGimmicks.some((g) => g.type === 'boulder')) {
+        stageTargets.push({
+          type: 'boulder',
+          required: stageGimmicks.filter((g) => g.type === 'boulder').length,
+          current: 0,
+        });
+      } else if (stageGimmicks.some((g) => g.type === 'ice')) {
+        stageTargets.push({
+          type: 'ice',
+          required: stageGimmicks.filter((g) => g.type === 'ice').length,
+          current: 0,
+        });
+      } else if (stageGimmicks.some((g) => g.type === 'vine')) {
+        stageTargets.push({
+          type: 'vine',
+          required: Math.max(6, stageGimmicks.filter((g) => g.type === 'vine').length * 2),
+          current: 0,
+        });
+      } else {
+        stageTargets.push({ type: subPiece, required: subReq, current: 0 });
+      }
+
+      // フェーズ3以降は第3目標も追加
+      if (phase >= 3 && stageTargets.length < 3 && allowedPieceTypes.length >= 3) {
+        stageTargets.push({ type: allowedPieceTypes[2], required: 12 + (i % 5) * 2, current: 0 });
+      }
+
+      // 8. 手数（maxMoves）の精密チューニング（16〜30手）
+      const baseMoves = 18 + (phase * 2);
+      const movesMod = (i % 5) - 2; // -2 〜 +2
+      const maxMoves = Math.max(16, Math.min(32, baseMoves + movesMod + (boardRows >= 8 ? 2 : 0)));
+
+      // 9. タイトルと演出文
+      const titles = [
+        'せせらぎの小枝集め', '陽だまりの木の実摘み', '澄んだ渓流の治水',
+        '水底に眠る湧水', '木漏れ日のキャンプ地', '荒れた川底の土木工事',
+        '緑豊かな水車広場', '花咲くせせらぎの道', '岩波砕ける難所',
+        '原生林の奥地開拓', '果樹園の実りと収穫', '静寂のエメラルド湖',
+        '風渡る高原のダム', '古代の石造堰堤', '虹かける大瀑布'
+      ];
+      const titleName = titles[(i - 1) % titles.length];
 
       stages.push({
         id: i,
-        title: `Stage ${i}: ${
-          i < 10
-            ? 'せせらぎの小枝集め'
-            : i < 20
-            ? '凍った川底の開拓'
-            : i < 30
-            ? '巨石を越える冒険'
-            : i < 40
-            ? 'ツタ絡まる原生林'
-            : '大自然のフロンティア'
-        }`,
-        description: '指定素材を集めて木材を獲得し、新たなエリアを開拓しよう！',
-        maxMoves: moves,
-        targets: [
-          { type: 'wood', required: targetWood, current: 0 },
-          { type: 'water', required: targetSub, current: 0 },
-          ...(stageGimmickType !== 'none'
-            ? [{ type: stageGimmickType, required: stageGimmicks.length, current: 0 }]
-            : []),
-        ],
-        woodReward: reward,
+        title: `Stage ${i}: ${titleName} ${gravityDirection === 'up' ? '⬆️' : ''}`,
+        description: `${gravityDirection === 'up' ? '【浮力反転】ドロップが下から上へ浮かぶ！' : ''}指定素材を集めて、開拓地を復興させよう！`,
+        maxMoves,
+        boardRows,
+        boardCols,
+        gravityDirection,
+        allowedPieceTypes,
+        disabledTiles,
+        creepingVine,
+        targets: stageTargets,
+        woodReward: 100 + Math.floor(i * 3.5),
         unfogAreaIds: [],
-        initialGimmicks: stageGimmicks,
+        initialGimmicks: stageGimmicks.length > 0 ? stageGimmicks : undefined,
+        initialUnderlays: stageUnderlays.length > 0 ? stageUnderlays : undefined,
       });
     }
   }

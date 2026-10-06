@@ -480,7 +480,7 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                       </div>
                       <p className="text-[10px] text-slate-400 line-clamp-1 mt-0.5">
                         {isLocked
-                          ? `バッジあと${Math.max(1, area.requiredBadges - badgesCount)}個で霧が晴れる`
+                          ? `バッジあと${Math.max(1, area.requiredBadges - badgesCount)}個で新エリア開放`
                           : isCompleted
                           ? area.description
                           : (area.ruinedDescription || area.description)}

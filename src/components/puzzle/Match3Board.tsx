@@ -517,13 +517,77 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     touchStartRef.current = null;
   };
 
+  // 所持木材ポイントの参照・消費ヘルパー（アイテムクラフトや復活に使用）
+  const getStoredWood = (): number => {
+    try {
+      const saved = localStorage.getItem('beaver_puzzle_state_v1_wood');
+      return saved ? Number(saved) : 60;
+    } catch {
+      return 60;
+    }
+  };
+
+  const spendWood = (cost: number): boolean => {
+    const current = getStoredWood();
+    if (current < cost) return false;
+    const next = current - cost;
+    try {
+      localStorage.setItem('beaver_puzzle_state_v1_wood', String(next));
+    } catch {}
+    if (onAddWood) onAddWood(-cost);
+    return true;
+  };
+
+  // ゲームオーバー時に手数を+5回復して延長再開
+  const handleContinueWithClock = () => {
+    if (boosters.clock > 0) {
+      useBoosterCount('clock');
+    } else {
+      const ok = spendWood(50);
+      if (!ok) {
+        setComboToast('木材が足りません（必要: 50ウッド）🪵');
+        setTimeout(() => setComboToast(null), 1500);
+        return;
+      }
+    }
+    sounds.playClock();
+    setMovesLeft(5);
+    setGameResult('playing');
+    setComboToast('+5手延長！ゲーム再開！⏱️');
+    setTimeout(() => setComboToast(null), 1500);
+  };
+
   // お助けアイテムボタン押下ハンドラ
   const handleBoosterClick = (type: BoosterItemType) => {
     if (isAnimating || gameResult !== 'playing' || !introDismissed) return;
 
+    // 残数0のとき：木材50で即時クラフト補充可能！
+    if (boosters[type] <= 0) {
+      const currentWood = getStoredWood();
+      const itemName = type === 'hammer' ? '🔨木づち' : type === 'saw' ? '🪚ノコギリ' : type === 'tail' ? '🦫しっぽビンタ' : '⏱️ぜんまい時計';
+      if (currentWood >= 50) {
+        if (window.confirm(`${itemName}の残数が0です。\n木材 50 ウッドを消費して1個クラフトしますか？（所持: ${currentWood}ウッド）`)) {
+          spendWood(50);
+          setBoosters((prev) => {
+            const next = { ...prev, [type]: prev[type] + 1 };
+            try {
+              localStorage.setItem('beaver_puzzle_boosters', JSON.stringify(next));
+            } catch {}
+            return next;
+          });
+          sounds.playStageClear();
+          setComboToast(`${itemName}をクラフトしました！🪵✨`);
+          setTimeout(() => setComboToast(null), 1500);
+        }
+      } else {
+        setComboToast(`${itemName}が0個です（木材50でクラフト可）`);
+        setTimeout(() => setComboToast(null), 1500);
+      }
+      return;
+    }
+
     // ⏱️ ぜんまい時計：即時発動で手数を+5回復！
     if (type === 'clock') {
-      if (boosters.clock <= 0) return;
       useBoosterCount('clock');
       sounds.playClock();
       setMovesLeft((prev) => prev + 5);
@@ -533,7 +597,6 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     }
 
     // 照準系アイテム（木づち・ノコギリ・しっぽビンタ）
-    if (boosters[type] <= 0) return;
 
     if (activeBooster === type) {
       // 再タップでキャンセル
@@ -2325,8 +2388,19 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
               手数が足りなくなりました…
             </h3>
             <p className="text-xs text-slate-400">
-              あと少し！もう一度チャレンジして木材を手に入れよう！
+              あと少し！ぜんまい時計で手数を増やして続行するか、再挑戦しよう！
             </p>
+
+            {/* ⏱️ 時計で延長復活ボタン */}
+            <button
+              onClick={handleContinueWithClock}
+              className="w-full py-3 bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-600 hover:from-cyan-400 hover:to-blue-500 text-white font-black text-xs rounded-2xl shadow-lg shadow-cyan-500/25 active:scale-98 transition-transform flex items-center justify-center space-x-2 cursor-pointer border border-cyan-400/50"
+            >
+              <span>⏱️ 手数を +5 回復して再開！</span>
+              <span className="text-[10px] bg-slate-950/60 px-2 py-0.5 rounded-full text-cyan-200">
+                {boosters.clock > 0 ? '所持時計 1個消費' : '50 ウッド消費'}
+              </span>
+            </button>
 
             <div className="flex space-x-2">
               <button

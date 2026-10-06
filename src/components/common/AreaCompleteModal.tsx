@@ -63,6 +63,20 @@ export const AreaCompleteModal: React.FC<AreaCompleteModalProps> = ({
           </div>
         </div>
 
+        {/* 🎁 エリア復興お助けアイテムボーナス */}
+        <div className="p-3 bg-amber-950/40 border border-amber-500/40 rounded-2xl flex items-center justify-between px-4">
+          <div className="flex items-center space-x-2">
+            <span className="text-2xl">🎁</span>
+            <div className="text-left">
+              <div className="text-[10px] text-amber-300 font-bold uppercase">復興記念ボーナス</div>
+              <div className="text-xs font-black text-white">お助けアイテム全種 +1個</div>
+            </div>
+          </div>
+          <div className="flex items-center space-x-1.5 text-base bg-slate-900/80 px-2 py-1 rounded-xl border border-amber-500/30">
+            <span>🔨</span><span>🪚</span><span>🦫</span><span>⏱️</span>
+          </div>
+        </div>
+
         {/* 住み着いた生き物 */}
         <div className="p-3 bg-emerald-950/40 border border-emerald-500/30 rounded-2xl flex items-center justify-center space-x-3">
           <span className="text-4xl animate-bounce-subtle">{area.creature.icon}</span>
