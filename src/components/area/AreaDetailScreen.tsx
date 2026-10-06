@@ -1,4 +1,5 @@
 import { getAssetUrl } from '../../utils/assetPath';
+import { preloadImage, preloadImages } from '../../utils/imagePreloader';
 import React, { useState, useEffect, useRef } from 'react';
 import type { FrontierArea, Creature } from '../../types';
 import { DevStageSelector } from '../common/DevStageSelector';
@@ -111,24 +112,38 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
 
   const prevImageRef = useRef(currentImage);
 
-  // currentImageが更新されたら波紋アニメーションを開始
+  // このエリアの全段階（0〜5）の画像を先読みしてメモリに保持
+  useEffect(() => {
+    if (area.detailImages) {
+      preloadImages(area.detailImages.map((img) => getAssetUrl(img)));
+    }
+    preloadImages([getAssetUrl('/assets/watermill.jpg'), getAssetUrl('/assets/river_map.jpg')]);
+  }, [area.id, area.detailImages]);
+
+  // currentImageが更新されたら波紋アニメーションを開始（画像の準備完了と同期）
   useEffect(() => {
     if (prevImageRef.current !== currentImage) {
       const oldImg = prevImageRef.current;
       const newImg = currentImage;
       prevImageRef.current = currentImage;
 
-      setBaseImage(oldImg);
-      setRippleImage(newImg);
-      setIsRippling(true);
+      // 画像の完全ロード後に波紋を開始してチラつきやズレを完全防止
+      let timer: any = null;
+      preloadImage(newImg).then(() => {
+        setBaseImage(oldImg);
+        setRippleImage(newImg);
+        setIsRippling(true);
 
-      const timer = setTimeout(() => {
-        setBaseImage(newImg);
-        setRippleImage(null);
-        setIsRippling(false);
-      }, 1100);
+        timer = setTimeout(() => {
+          setBaseImage(newImg);
+          setRippleImage(null);
+          setIsRippling(false);
+        }, 1100);
+      });
 
-      return () => clearTimeout(timer);
+      return () => {
+        if (timer) clearTimeout(timer);
+      };
     }
   }, [currentImage]);
 

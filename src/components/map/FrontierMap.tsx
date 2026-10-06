@@ -13,6 +13,7 @@ import type { StageRecord } from '../../types';
 import { Star } from 'lucide-react';
 import { sounds } from '../../utils/soundEffects';
 import { getAssetUrl } from '../../utils/assetPath';
+import { preloadImages } from '../../utils/imagePreloader';
 import {
   Home,
   Lock,
@@ -110,6 +111,16 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
   const activePinRef = useRef<HTMLDivElement>(null);
 
   // マップ表示時に環境音（せせらぎ & 小鳥）を開始
+  // 開拓中・解放済みエリアの画像をバックグラウンドで先行読み込み（切り替え高速化）
+  useEffect(() => {
+    const unlockedAreas = areas.filter((a) => a.status !== 'locked_fog');
+    unlockedAreas.forEach((a) => {
+      if (a.detailImages) {
+        preloadImages(a.detailImages.map((img) => getAssetUrl(img)));
+      }
+    });
+  }, [areas]);
+
   useEffect(() => {
     sounds.startAmbient();
     return () => {
