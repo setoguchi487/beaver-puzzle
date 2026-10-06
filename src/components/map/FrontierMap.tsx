@@ -33,7 +33,9 @@ interface FrontierMapProps {
   currentStageId: number;
   onSelectStage: (stageId: number) => void;
   onAddWood: (amount: number) => void;
+  onSetWood?: (amount: number) => void;
   onUnlockAllAreas: () => void;
+  onResetAreas?: () => void;
   onResetAll?: () => void;
   onNavigateToAreaDetail?: (areaId: string) => void;
 }
@@ -51,7 +53,9 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
   currentStageId,
   onSelectStage,
   onAddWood,
+  onSetWood,
   onUnlockAllAreas,
+  onResetAreas,
   onResetAll,
   onNavigateToAreaDetail,
 }) => {
@@ -173,7 +177,9 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
               currentStageId={currentStageId}
               onSelectStage={onSelectStage}
               onAddWood={onAddWood}
+              onSetWood={onSetWood}
               onUnlockAllAreas={onUnlockAllAreas}
+              onResetAreas={onResetAreas}
               onResetAll={onResetAll}
             />
           </div>

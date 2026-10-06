@@ -27,7 +27,9 @@ interface AreaDetailScreenProps {
   currentStageId: number;
   onSelectStage: (stageId: number) => void;
   onAddWood: (amount: number) => void;
+  onSetWood?: (amount: number) => void;
   onUnlockAllAreas: () => void;
+  onResetAreas?: () => void;
   onResetAll?: () => void;
 }
 
@@ -41,7 +43,9 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
   currentStageId,
   onSelectStage,
   onAddWood,
+  onSetWood,
   onUnlockAllAreas,
+  onResetAreas,
   onResetAll,
 }) => {
   const [selectedCreature, setSelectedCreature] = useState<Creature | null>(null);
@@ -227,7 +231,9 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
             currentStageId={currentStageId}
             onSelectStage={onSelectStage}
             onAddWood={onAddWood}
+            onSetWood={onSetWood}
             onUnlockAllAreas={onUnlockAllAreas}
+            onResetAreas={onResetAreas}
             onResetAll={onResetAll}
           />
         </div>

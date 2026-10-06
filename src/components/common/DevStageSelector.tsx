@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { STAGES } from '../../data/masterData';
-import { Wrench, X, Play, Plus, Sparkles, RotateCcw } from 'lucide-react';
+import { Wrench, X, Sparkles, RotateCcw, Coins } from 'lucide-react';
 
 interface DevStageSelectorProps {
   currentStageId: number;
   onSelectStage: (stageId: number) => void;
-  onAddWood: (amount: number) => void;
+  onAddWood?: (amount: number) => void;
+  onSetWood?: (amount: number) => void;
   onUnlockAllAreas: () => void;
+  onResetAreas?: () => void;
   onResetAll?: () => void;
 }
 
@@ -14,142 +16,223 @@ export const DevStageSelector: React.FC<DevStageSelectorProps> = ({
   currentStageId,
   onSelectStage,
   onAddWood,
+  onSetWood,
   onUnlockAllAreas,
+  onResetAreas,
   onResetAll,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<number>(() => {
+    if (currentStageId <= 25) return 1;
+    if (currentStageId <= 50) return 2;
+    if (currentStageId <= 75) return 3;
+    return 4;
+  });
 
-  // 主な節目ステージ
-  const MILESTONE_STAGES = [
-    { id: 1, label: 'Stage 1 (基本せせらぎ)', icon: '🌱' },
-    { id: 10, label: 'Stage 10 (🧊 氷ブロック解禁)', icon: '🧊' },
-    { id: 20, label: 'Stage 20 (🪨 川底の大岩解禁)', icon: '🪨' },
-    { id: 30, label: 'Stage 30 (🌿 絡みつくツタ解禁)', icon: '🌿' },
-    { id: 40, label: 'Stage 40 (🧊🪨 氷と岩の峡谷)', icon: '🧊🪨' },
-    { id: 50, label: 'Stage 50 (三大ギミック大決戦)', icon: '⚔️' },
-    { id: 100, label: 'Stage 100 (👑 伝説グランドダム)', icon: '👑' },
+  // 木材を100,000個所持状態にする処理
+  const setWoodTo100000 = () => {
+    if (onSetWood) {
+      onSetWood(100000);
+    } else if (onAddWood) {
+      onAddWood(100000);
+    }
+    try {
+      localStorage.setItem('beaver_puzzle_state_v1_wood', '100000');
+    } catch {}
+  };
+
+  // 開発者モードボタン押下時
+  const handleOpen = () => {
+    // 開発者モードを開いた時点で木材を100,000個所持状態にする
+    setWoodTo100000();
+    setIsOpen(true);
+  };
+
+  // チャプターごとのステージ範囲
+  const CHAPTERS = [
+    { id: 1, name: '第1章: 小川・巣作り', range: [1, 25], icon: '🌱' },
+    { id: 2, name: '第2章: 激流・水車小屋', range: [26, 50], icon: '🌊' },
+    { id: 3, name: '第3章: 果樹園・秘境渓谷', range: [51, 75], icon: '🍎' },
+    { id: 4, name: '第4章: 桃源郷グランドダム', range: [76, 100], icon: '👑' },
   ];
+
+  const currentChapter = CHAPTERS.find((c) => c.id === activeTab) || CHAPTERS[0];
+  const stageButtons: number[] = [];
+  for (let s = currentChapter.range[0]; s <= currentChapter.range[1]; s++) {
+    stageButtons.push(s);
+  }
 
   return (
     <>
-      {/* 開発者用トリガーボタン (画面右上に控えめに設置) */}
+      {/* 開発者モード起動ボタン */}
       <button
-        onClick={() => setIsOpen(true)}
-        className="text-[10px] font-mono font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 px-2 py-1 rounded-lg flex items-center space-x-1 shadow-2xs active:scale-95 transition-all"
-        title="開発者デバッグメニュー"
+        onClick={handleOpen}
+        className="px-2.5 py-1 text-xs font-black bg-gradient-to-r from-amber-500/25 to-orange-500/25 hover:from-amber-500/35 hover:to-orange-500/35 text-amber-300 border border-amber-400/60 rounded-xl flex items-center space-x-1.5 shadow-sm active:scale-95 transition-all cursor-pointer backdrop-blur-xs"
+        title="開発者モードメニューを開く"
       >
-        <Wrench className="w-3 h-3" />
-        <span>Dev: St.{currentStageId}</span>
+        <Wrench className="w-3.5 h-3.5 text-amber-400 animate-pulse-slow" />
+        <span>開発者モード</span>
       </button>
 
-      {/* デバッグモーダル */}
+      {/* 開発者モードモーダル */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in select-none">
-          <div className="w-full max-w-sm bg-slate-900 border-2 border-amber-500/60 rounded-3xl p-5 shadow-2xl text-white space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-              <div className="flex items-center space-x-1.5 text-amber-400">
-                <Wrench className="w-4 h-4" />
-                <h3 className="text-sm font-black tracking-wide">
-                  開発者用ステージセレクター 🛠️
-                </h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in select-none">
+          <div className="w-full max-w-md bg-gradient-to-b from-slate-900 via-slate-925 to-slate-950 border-2 border-amber-500/60 rounded-3xl p-5 shadow-2xl text-white space-y-4 max-h-[90vh] overflow-y-auto no-scrollbar">
+            {/* ヘッダー */}
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+              <div className="flex items-center space-x-2 text-amber-400">
+                <Wrench className="w-5 h-5 text-amber-400" />
+                <div>
+                  <h3 className="text-base font-black tracking-wide">
+                    開発者モード 🛠️
+                  </h3>
+                  <span className="text-[10px] text-amber-200/70 font-medium block">
+                    ステージ選択 & 開拓デバッグチート
+                  </span>
+                </div>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1 text-slate-400 hover:text-white rounded-full hover:bg-slate-800"
+                className="p-1.5 text-slate-400 hover:text-white rounded-full hover:bg-slate-800 transition-colors cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* 節目ステージ選択 */}
-            <div>
-              <span className="text-[10px] font-bold text-slate-400 block mb-1.5 uppercase">
-                節目ステージ（新ギミック試験用）
-              </span>
-              <div className="space-y-1.5">
-                {MILESTONE_STAGES.map((s) => (
-                  <button
-                    key={s.id}
-                    onClick={() => {
-                      onSelectStage(s.id);
-                      setIsOpen(false);
-                    }}
-                    className={`w-full p-2.5 rounded-xl border text-left text-xs font-black flex items-center justify-between transition-all ${
-                      currentStageId === s.id
-                        ? 'bg-amber-500/20 border-amber-400 text-amber-300 ring-1 ring-amber-400'
-                        : 'bg-slate-800 hover:bg-slate-750 border-slate-700 text-slate-200'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-2">
-                      <span className="text-base">{s.icon}</span>
-                      <span>{s.label}</span>
-                    </div>
-                    <Play className="w-3.5 h-3.5 text-amber-400 fill-current" />
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* 任意ステージ番号ジャンプ */}
-            <div className="pt-2 border-t border-slate-800">
-              <span className="text-[10px] font-bold text-slate-400 block mb-1.5">
-                任意のステージ（1〜100）へジャンプ
-              </span>
-              <div className="grid grid-cols-5 gap-1 max-h-32 overflow-y-auto no-scrollbar p-1 bg-slate-950/60 rounded-xl border border-slate-800">
+            {/* ドロップダウンによる即時ステージジャンプ */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-black text-amber-200 flex items-center justify-between">
+                <span>🎯 ステージダイレクト選択（全100ステージ）</span>
+                <span className="text-[10px] text-slate-400">現在: Stage {currentStageId}</span>
+              </label>
+              <select
+                value={currentStageId}
+                onChange={(e) => {
+                  const sId = Number(e.target.value);
+                  onSelectStage(sId);
+                  setIsOpen(false);
+                }}
+                className="w-full bg-slate-800/90 border border-amber-500/40 text-amber-100 text-xs font-bold rounded-xl px-3 py-2.5 focus:outline-hidden focus:ring-2 focus:ring-amber-400 cursor-pointer"
+              >
                 {STAGES.map((st) => (
+                  <option key={st.id} value={st.id} className="bg-slate-900 text-white">
+                    {st.title} (最大{st.maxMoves}手)
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* チャプタータブ（1〜100） */}
+            <div className="space-y-2">
+              <span className="text-[11px] font-black text-slate-300 block">
+                🗺️ ステージ番号グリッド選択（1〜100）
+              </span>
+              <div className="grid grid-cols-2 gap-1.5">
+                {CHAPTERS.map((ch) => (
                   <button
-                    key={st.id}
-                    onClick={() => {
-                      onSelectStage(st.id);
-                      setIsOpen(false);
-                    }}
-                    className={`py-1 text-[11px] font-black rounded-lg transition-colors ${
-                      currentStageId === st.id
-                        ? 'bg-amber-500 text-amber-950'
-                        : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                    key={ch.id}
+                    onClick={() => setActiveTab(ch.id)}
+                    className={`py-1.5 px-2 rounded-xl text-[11px] font-black transition-all flex items-center justify-center space-x-1 cursor-pointer ${
+                      activeTab === ch.id
+                        ? 'bg-amber-500 text-slate-950 shadow-md font-black ring-1 ring-amber-300'
+                        : 'bg-slate-800/80 hover:bg-slate-750 text-slate-300 border border-slate-700/60'
                     }`}
                   >
-                    {st.id}
+                    <span>{ch.icon}</span>
+                    <span className="truncate">{ch.name}</span>
                   </button>
                 ))}
               </div>
+
+              {/* 選択チャプター内の25ステージボタングリッド */}
+              <div className="bg-slate-950/70 p-2 rounded-2xl border border-slate-800/80">
+                <div className="grid grid-cols-5 gap-1.5">
+                  {stageButtons.map((sNum) => {
+                    const isCurrent = currentStageId === sNum;
+                    return (
+                      <button
+                        key={sNum}
+                        onClick={() => {
+                          onSelectStage(sNum);
+                          setIsOpen(false);
+                        }}
+                        className={`py-2 text-xs font-black rounded-xl transition-all cursor-pointer ${
+                          isCurrent
+                            ? 'bg-gradient-to-b from-amber-400 to-amber-500 text-slate-950 ring-2 ring-white shadow-lg scale-105'
+                            : 'bg-slate-800/90 hover:bg-amber-500/20 hover:border-amber-400/50 hover:text-amber-200 text-slate-200 border border-slate-700/70 active:scale-95'
+                        }`}
+                      >
+                        {sNum}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
 
-            {/* 開拓用デバッグチート */}
-            <div className="pt-2 border-t border-slate-800 space-y-2">
-              <span className="text-[10px] font-bold text-slate-400 block uppercase">
-                テスト用資材・開拓チート
+            {/* デバッグチート・資材・開拓操作 */}
+            <div className="pt-2 border-t border-slate-800 space-y-2.5">
+              <span className="text-[11px] font-black text-slate-300 block uppercase">
+                🛠️ 開発者チート機能
               </span>
+
+              {/* 木材100,000所持 */}
+              <button
+                onClick={() => {
+                  setWoodTo100000();
+                  alert('木材を 100,000 個に設定しました！🪵✨');
+                }}
+                className="w-full py-2.5 px-3 bg-gradient-to-r from-amber-500/25 to-yellow-500/25 hover:from-amber-500/35 hover:to-yellow-500/35 border border-amber-400/60 text-amber-300 text-xs font-black rounded-xl flex items-center justify-center space-x-2 active:scale-98 transition-all cursor-pointer shadow-sm"
+              >
+                <Coins className="w-4 h-4 text-amber-400" />
+                <span>木材を 100,000 個所持にする 🪵</span>
+              </button>
+
               <div className="grid grid-cols-2 gap-2">
+                {/* エリア全開放 */}
                 <button
-                  onClick={() => onAddWood(500)}
-                  className="py-2 px-3 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-xs font-black rounded-xl flex items-center justify-center space-x-1"
+                  onClick={() => {
+                    onUnlockAllAreas();
+                    alert('すべてのエリアを全開放しました！✨');
+                  }}
+                  className="py-2.5 px-2 bg-purple-500/25 hover:bg-purple-500/35 border border-purple-400/60 text-purple-200 text-xs font-black rounded-xl flex items-center justify-center space-x-1.5 active:scale-98 transition-all cursor-pointer shadow-sm"
                 >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>木材 +500</span>
+                  <Sparkles className="w-4 h-4 text-purple-300" />
+                  <span>エリア全開放 ✨</span>
                 </button>
+
+                {/* エリア解放初期化 */}
                 <button
-                  onClick={onUnlockAllAreas}
-                  className="py-2 px-3 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/40 text-purple-300 text-xs font-black rounded-xl flex items-center justify-center space-x-1"
+                  onClick={() => {
+                    if (window.confirm('エリアの解放状態とタスク進行を初期状態に戻しますか？')) {
+                      if (onResetAreas) {
+                        onResetAreas();
+                      } else if (onResetAll) {
+                        onResetAll();
+                      }
+                      alert('エリアの解放状態を初期化しました！🔄');
+                    }
+                  }}
+                  className="py-2.5 px-2 bg-blue-500/25 hover:bg-blue-500/35 border border-blue-400/60 text-blue-200 text-xs font-black rounded-xl flex items-center justify-center space-x-1.5 active:scale-98 transition-all cursor-pointer shadow-sm"
                 >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>全エリアを即座に開放</span>
+                  <RotateCcw className="w-4 h-4 text-blue-300" />
+                  <span>エリア解放初期化 🔄</span>
                 </button>
               </div>
 
-              {/* 初期リセットボタン */}
+              {/* ゲーム完全初期化 */}
               {onResetAll && (
                 <button
                   onClick={() => {
-                    if (window.confirm("ゲームデータを完全に初期状態（最初から）に戻しますか？\n※未踏エリアが未開拓に戻り、最初の浅瀬のみ出現した状態になります。")) {
+                    if (window.confirm('ゲームデータ（木材・エリア・バッジ・仲間）を完全に最初からリセットしますか？')) {
                       onResetAll();
                       setIsOpen(false);
                     }
                   }}
-                  className="w-full py-2.5 px-3 bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/50 text-rose-300 text-xs font-black rounded-xl flex items-center justify-center space-x-1.5 active:scale-95 transition-all cursor-pointer"
+                  className="w-full py-2 px-3 bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-300 text-[11px] font-bold rounded-xl flex items-center justify-center space-x-1.5 active:scale-98 transition-all cursor-pointer"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
-                  <span>初期状態にリセット（最初に戻す）🔄</span>
+                  <span>ゲームデータ完全リセット（最初に戻す）</span>
                 </button>
               )}
             </div>

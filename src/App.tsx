@@ -87,6 +87,17 @@ export const App: React.FC = () => {
     setWoodPoints((prev) => prev + amount);
   };
 
+  const handleSetWood = (amount: number) => {
+    setWoodPoints(amount);
+  };
+
+  const handleResetAreas = () => {
+    setAreas(INITIAL_AREAS);
+    setBadges([]);
+    setUnlockedCreatures([]);
+    setSelectedAreaIdForDetail(null);
+  };
+
   const handleUnlockAllAreas = () => {
     setAreas((prev) =>
       prev.map((a) => ({
@@ -196,7 +207,9 @@ export const App: React.FC = () => {
           onCompleteArea={handleCompleteArea}
           onSelectStage={handleSelectStage}
           onAddWood={handleAddWood}
+          onSetWood={handleSetWood}
           onUnlockAllAreas={handleUnlockAllAreas}
+          onResetAreas={handleResetAreas}
           onResetAll={handleResetAll}
           onNavigateToAreaDetail={handleNavigateToAreaDetail}
         />
@@ -216,7 +229,9 @@ export const App: React.FC = () => {
           currentStageId={currentStageId}
           onSelectStage={handleSelectStage}
           onAddWood={handleAddWood}
+          onSetWood={handleSetWood}
           onUnlockAllAreas={handleUnlockAllAreas}
+          onResetAreas={handleResetAreas}
           onResetAll={handleResetAll}
         />
       )}
@@ -229,7 +244,9 @@ export const App: React.FC = () => {
           currentStageId={currentStageId}
           onSelectStage={handleSelectStage}
           onAddWood={handleAddWood}
+          onSetWood={handleSetWood}
           onUnlockAllAreas={handleUnlockAllAreas}
+          onResetAreas={handleResetAreas}
           onResetAll={handleResetAll}
         />
       )}

@@ -23,7 +23,9 @@ interface Match3BoardProps {
   currentStageId?: number;
   onSelectStage?: (stageId: number) => void;
   onAddWood?: (amount: number) => void;
+  onSetWood?: (amount: number) => void;
   onUnlockAllAreas?: () => void;
+  onResetAreas?: () => void;
   onResetAll?: () => void;
 }
 
@@ -69,7 +71,9 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
   currentStageId,
   onSelectStage,
   onAddWood,
+  onSetWood,
   onUnlockAllAreas,
+  onResetAreas,
   onResetAll,
 }) => {
   const numRows = stage.boardRows || DEFAULT_BOARD_SIZE;
@@ -1899,7 +1903,9 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
                 currentStageId={currentStageId || stage.id}
                 onSelectStage={onSelectStage}
                 onAddWood={onAddWood}
+                onSetWood={onSetWood}
                 onUnlockAllAreas={onUnlockAllAreas}
+                onResetAreas={onResetAreas}
                 onResetAll={onResetAll}
               />
             )}
