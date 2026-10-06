@@ -1677,13 +1677,13 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
                 <div className="text-xs font-black text-amber-300">+{stage.woodReward} ウッド</div>
               </div>
               <div className="text-center">
-                <span className="text-2xl">🌫️➡️✨</span>
-                <div className="text-xs font-black text-cyan-300">新しい霧が晴れた！</div>
+                <span className="text-2xl">🦫✨</span>
+                <div className="text-xs font-black text-cyan-300">次のエリアを開拓！</div>
               </div>
             </div>
 
             <p className="text-xs text-slate-300 leading-relaxed">
-              手に入れた木材を使って、霧が晴れたエリアを開拓しよう！
+              手に入れた木材や素材を使って、新たな開拓地を復興しよう！
             </p>
 
             <button

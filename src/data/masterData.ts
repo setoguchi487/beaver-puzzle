@@ -227,7 +227,7 @@ export const generate100Stages = (): PuzzleStage[] => {
             ? 'ツタ絡まる原生林'
             : '大自然のフロンティア'
         }`,
-        description: '指定素材を集めて木材を獲得し、霧を晴らそう！',
+        description: '指定素材を集めて木材を獲得し、新たなエリアを開拓しよう！',
         maxMoves: moves,
         targets: [
           { type: 'wood', required: targetWood, current: 0 },

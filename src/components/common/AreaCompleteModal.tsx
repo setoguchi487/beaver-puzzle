@@ -74,7 +74,7 @@ export const AreaCompleteModal: React.FC<AreaCompleteModalProps> = ({
         </div>
 
         <p className="text-xs text-slate-300 bg-slate-800/80 p-2.5 rounded-xl border border-slate-700">
-          ✨ バッジの力で、さらに奥地を覆う霧がサーッと晴れました！
+          ✨ バッジの力で、さらに奥地にある新たな開拓エリアへ進めるようになりました！
         </p>
 
         <button
