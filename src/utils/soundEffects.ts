@@ -233,6 +233,95 @@ class SoundEffectManager {
     osc.stop(this.ctx.currentTime + 0.12);
   }
 
+  // 木づち音（ゴツンッ！）
+  public playHammer() {
+    if (this.isMuted) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(320, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(80, this.ctx.currentTime + 0.12);
+
+    gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.12);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.12);
+  }
+
+  // ノコギリ音（ズバッ！）
+  public playSaw() {
+    if (this.isMuted) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(450, this.ctx.currentTime);
+    osc.frequency.linearRampToValueAtTime(150, this.ctx.currentTime + 0.18);
+
+    gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.18);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.18);
+  }
+
+  // しっぽビンタ音（バチンッ！）
+  public playTailSlap() {
+    if (this.isMuted) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.2);
+
+    gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.2);
+  }
+
+  // ぜんまい時計音（時を戻すキラキラ音！）
+  public playClock() {
+    if (this.isMuted) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const notes = [523.25, 659.25, 783.99, 1046.5]; // C E G C
+    notes.forEach((freq, idx) => {
+      const osc = this.ctx!.createOscillator();
+      const gain = this.ctx!.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, this.ctx!.currentTime + idx * 0.05);
+
+      gain.gain.setValueAtTime(0.12, this.ctx!.currentTime + idx * 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx!.currentTime + idx * 0.05 + 0.15);
+
+      osc.connect(gain);
+      gain.connect(this.ctx!.destination);
+      osc.start(this.ctx!.currentTime + idx * 0.05);
+      osc.stop(this.ctx!.currentTime + idx * 0.05 + 0.15);
+    });
+  }
+
   // 爆弾爆発音（ドカーン！）
   public playBomb(mega: boolean = false) {
     if (this.isMuted) return;

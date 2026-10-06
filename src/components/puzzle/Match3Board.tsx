@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import type { PieceType, SpecialType, PuzzleStage, TileGimmick } from '../../types';
+import type { PieceType, SpecialType, PuzzleStage, TileGimmick, BoosterItemType, PlayerBoosters } from '../../types';
 import { PIECE_CONFIG } from '../../data/masterData';
 import { sounds } from '../../utils/soundEffects';
 import confetti from 'canvas-confetti';
@@ -28,6 +28,31 @@ interface Match3BoardProps {
 
 const DEFAULT_BOARD_SIZE = 7;
 const DEFAULT_PIECE_TYPES: PieceType[] = ['wood', 'twig', 'water', 'acorn', 'stone'];
+
+const DEFAULT_BOOSTERS: PlayerBoosters = {
+  hammer: 3,
+  saw: 2,
+  tail: 2,
+  clock: 3,
+};
+
+const loadBoosters = (): PlayerBoosters => {
+  try {
+    const saved = localStorage.getItem('beaver_puzzle_boosters');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return {
+        hammer: typeof parsed.hammer === 'number' ? parsed.hammer : DEFAULT_BOOSTERS.hammer,
+        saw: typeof parsed.saw === 'number' ? parsed.saw : DEFAULT_BOOSTERS.saw,
+        tail: typeof parsed.tail === 'number' ? parsed.tail : DEFAULT_BOOSTERS.tail,
+        clock: typeof parsed.clock === 'number' ? parsed.clock : DEFAULT_BOOSTERS.clock,
+      };
+    }
+  } catch (e) {
+    console.error('Failed to load boosters:', e);
+  }
+  return { ...DEFAULT_BOOSTERS };
+};
 
 interface SpecialCreation {
   r: number;
@@ -71,6 +96,20 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
   const [isAnimating, setIsAnimating] = useState(false);
   const [gameResult, setGameResult] = useState<'playing' | 'cleared' | 'failed'>('playing');
   const [comboToast, setComboToast] = useState<string | null>(null);
+  const [boosters, setBoosters] = useState<PlayerBoosters>(loadBoosters);
+  const [activeBooster, setActiveBooster] = useState<BoosterItemType | null>(null);
+
+  const useBoosterCount = (type: BoosterItemType) => {
+    setBoosters((prev) => {
+      const next = { ...prev, [type]: Math.max(0, prev[type] - 1) };
+      try {
+        localStorage.setItem('beaver_puzzle_boosters', JSON.stringify(next));
+      } catch (e) {
+        console.error('Failed to save boosters:', e);
+      }
+      return next;
+    });
+  };
   const [isShuffling, setIsShuffling] = useState(false);
 
   // 特殊ピースエフェクト用ステート
@@ -467,9 +506,170 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     touchStartRef.current = null;
   };
 
+  // お助けアイテムボタン押下ハンドラ
+  const handleBoosterClick = (type: BoosterItemType) => {
+    if (isAnimating || gameResult !== 'playing' || !introDismissed) return;
+
+    // ⏱️ ぜんまい時計：即時発動で手数を+5回復！
+    if (type === 'clock') {
+      if (boosters.clock <= 0) return;
+      useBoosterCount('clock');
+      sounds.playClock();
+      setMovesLeft((prev) => prev + 5);
+      setComboToast('手数を +5 回復！⏱️');
+      setTimeout(() => setComboToast(null), 1500);
+      return;
+    }
+
+    // 照準系アイテム（木づち・ノコギリ・しっぽビンタ）
+    if (boosters[type] <= 0) return;
+
+    if (activeBooster === type) {
+      // 再タップでキャンセル
+      setActiveBooster(null);
+    } else {
+      setActiveBooster(type);
+      setSelectedPos(null);
+      sounds.playSwipe();
+    }
+  };
+
+  // 照準系お助けアイテムの発動処理（手数は消費しない！）
+  const executeBooster = async (booster: BoosterItemType, targetR: number, targetC: number) => {
+    setIsAnimating(true);
+    useBoosterCount(booster);
+
+    const collectedCounts: { [key: string]: number } = {};
+    const newBoard: Tile[][] = board.map((row) => row.map((tile) => ({ ...tile })));
+
+    if (booster === 'hammer') {
+      // 🔨 木づち：狙った1マスを叩き割る！
+      sounds.playHammer();
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 250);
+
+      const tile = newBoard[targetR][targetC];
+      if (tile.gimmick) {
+        if (tile.gimmick.type === 'rock') {
+          collectedCounts['rock'] = (collectedCounts['rock'] || 0) + 1;
+          sounds.playRockBreak();
+        } else if (tile.gimmick.type === 'ice') {
+          collectedCounts['ice'] = (collectedCounts['ice'] || 0) + 1;
+          sounds.playIceBreak();
+        } else if (tile.gimmick.type === 'vine') {
+          collectedCounts['vine'] = (collectedCounts['vine'] || 0) + 1;
+          sounds.playVineCut();
+        }
+        tile.gimmick = undefined;
+      }
+      if (tile.id !== '') {
+        collectedCounts[tile.type] = (collectedCounts[tile.type] || 0) + 1;
+        newBoard[targetR][targetC] = { id: '', type: 'wood', special: 'none' };
+      }
+    } else if (booster === 'saw') {
+      // 🪚 ノコギリ：選択した横1列を一刀両断！
+      sounds.playSaw();
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 350);
+
+      const laserId = Date.now();
+      setActiveLasers([{ id: laserId, r: targetR, direction: 'h' }]);
+      setTimeout(() => setActiveLasers([]), 650);
+
+      for (let c = 0; c < numCols; c++) {
+        const tile = newBoard[targetR][c];
+        if (tile.disabled) continue;
+        if (tile.gimmick) {
+          if (tile.gimmick.type === 'rock') {
+            collectedCounts['rock'] = (collectedCounts['rock'] || 0) + 1;
+            sounds.playRockBreak();
+          } else if (tile.gimmick.type === 'ice') {
+            collectedCounts['ice'] = (collectedCounts['ice'] || 0) + 1;
+            sounds.playIceBreak();
+          } else if (tile.gimmick.type === 'vine') {
+            collectedCounts['vine'] = (collectedCounts['vine'] || 0) + 1;
+            sounds.playVineCut();
+          }
+          tile.gimmick = undefined;
+        }
+        if (tile.id !== '') {
+          collectedCounts[tile.type] = (collectedCounts[tile.type] || 0) + 1;
+          newBoard[targetR][c] = { id: '', type: 'wood', special: 'none' };
+        }
+      }
+    } else if (booster === 'tail') {
+      // 🦫 しっぽビンタ：周囲3×3マスを一撃粉砕！
+      sounds.playTailSlap();
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 450);
+
+      try {
+        confetti({
+          particleCount: 35,
+          spread: 75,
+          origin: { y: 0.6 },
+          colors: ['#854d0e', '#ca8a04', '#eab308', '#ffffff'],
+        });
+      } catch {}
+
+      for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+          const r = targetR + dr;
+          const c = targetC + dc;
+          if (r >= 0 && r < numRows && c >= 0 && c < numCols) {
+            const tile = newBoard[r][c];
+            if (tile.disabled) continue;
+            if (tile.gimmick) {
+              if (tile.gimmick.type === 'rock') {
+                collectedCounts['rock'] = (collectedCounts['rock'] || 0) + 1;
+                sounds.playRockBreak();
+              } else if (tile.gimmick.type === 'ice') {
+                collectedCounts['ice'] = (collectedCounts['ice'] || 0) + 1;
+                sounds.playIceBreak();
+              } else if (tile.gimmick.type === 'vine') {
+                collectedCounts['vine'] = (collectedCounts['vine'] || 0) + 1;
+                sounds.playVineCut();
+              }
+              tile.gimmick = undefined;
+            }
+            if (tile.id !== '') {
+              collectedCounts[tile.type] = (collectedCounts[tile.type] || 0) + 1;
+              newBoard[r][c] = { id: '', type: 'wood', special: 'none' };
+            }
+          }
+        }
+      }
+    }
+
+    addCollectedTargets(collectedCounts);
+    await new Promise((res) => setTimeout(res, 400));
+
+    const settledBoard = await dropBoardWithGravity(newBoard);
+
+    await new Promise((res) => setTimeout(res, 100));
+    const nextResult = findMatchesAndSpecials(settledBoard);
+    if (nextResult.matches.length > 0) {
+      await processMatches(settledBoard, nextResult.matches, 1, nextResult.specialsToCreate);
+    }
+
+    // アイテム使用時は手数を消費せず、クリア状態のみチェック
+    checkGameStatus(movesLeft);
+    setIsAnimating(false);
+  };
+
   const handleTileClick = async (r: number, c: number) => {
     if (isAnimating || gameResult !== 'playing' || !introDismissed) return;
     const tile = board[r][c];
+    if (tile.disabled) return;
+
+    // ★お助けアイテム照準発動モード
+    if (activeBooster) {
+      const booster = activeBooster;
+      setActiveBooster(null);
+      await executeBooster(booster, r, c);
+      return;
+    }
+
     if (tile.gimmick?.type === 'vine' || tile.gimmick?.type === 'rock') return;
 
     // A. 未選択時：タイルを選択（ロケットや虹もタップ即時発動せず、入れ替え待機）
@@ -1652,7 +1852,9 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
                         } as React.CSSProperties)
                       : {}),
                   }}
-                  className={`${cellSizeClass} rounded-xl flex items-center justify-center font-bold cursor-pointer select-none transform active:scale-95 relative overflow-hidden ${
+                  className={`${cellSizeClass} rounded-xl flex items-center justify-center font-bold ${
+                    activeBooster ? 'cursor-crosshair ring-1 ring-amber-300/40 hover:ring-2 hover:ring-amber-300 hover:brightness-125' : 'cursor-pointer'
+                  } select-none transform active:scale-95 relative overflow-hidden ${
                     isDropping ? '' : 'transition-all duration-150'
                   } ${
                     isClearing
@@ -1736,6 +1938,103 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
           )}
         </div>
       </div>
+
+        {/* お助けアイテム照準中インジケーター */}
+        {activeBooster && (
+          <div className="w-full flex items-center justify-between bg-amber-500/20 border border-amber-400/60 px-3 py-1.5 rounded-2xl text-amber-200 text-xs shadow-lg shadow-amber-500/10 backdrop-blur-md animate-pulse">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">
+                {activeBooster === 'hammer' ? '🔨' : activeBooster === 'saw' ? '🪚' : '🦫'}
+              </span>
+              <span className="font-black text-amber-200 text-xs">
+                {activeBooster === 'hammer'
+                  ? '木づち：壊したいマスをタップ！'
+                  : activeBooster === 'saw'
+                  ? 'ノコギリ：消したい行をタップ！'
+                  : 'しっぽビンタ：中心マスをタップ！'}
+              </span>
+            </div>
+            <button
+              onClick={() => setActiveBooster(null)}
+              className="px-2.5 py-1 bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl text-[11px] font-black transition-colors border border-slate-700 active:scale-95 shadow-xs"
+            >
+              キャンセル ✕
+            </button>
+          </div>
+        )}
+
+        {/* お助けアイテムトレイ */}
+        <div className="w-full bg-slate-950/85 border border-amber-500/30 rounded-2xl p-2 backdrop-blur-md shadow-xl flex items-center justify-around gap-2">
+          {/* 🔨 木づち */}
+          <button
+            onClick={() => handleBoosterClick('hammer')}
+            disabled={boosters.hammer <= 0 || isAnimating || gameResult !== 'playing'}
+            title="選択した1マスを叩き割る（手数は減りません）"
+            className={`relative flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all ${
+              activeBooster === 'hammer'
+                ? 'bg-amber-500/30 border-2 border-amber-400 scale-105 shadow-[0_0_14px_rgba(251,191,36,0.6)] animate-pulse'
+                : 'bg-slate-900/90 border border-slate-700/80 hover:border-amber-400/50 hover:bg-slate-850'
+            } ${boosters.hammer <= 0 ? 'opacity-35 grayscale cursor-not-allowed' : 'active:scale-95 cursor-pointer'}`}
+          >
+            <span className="text-2xl drop-shadow-sm select-none">🔨</span>
+            <span className="text-[10px] font-black text-amber-100 mt-0.5">木づち</span>
+            <span className="absolute -top-1.5 -right-1 min-w-[19px] h-[19px] bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-[10px] rounded-full flex items-center justify-center px-1 shadow-sm border border-amber-300">
+              {boosters.hammer}
+            </span>
+          </button>
+
+          {/* 🪚 ノコギリ */}
+          <button
+            onClick={() => handleBoosterClick('saw')}
+            disabled={boosters.saw <= 0 || isAnimating || gameResult !== 'playing'}
+            title="選択した横1列を一刀両断（手数は減りません）"
+            className={`relative flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all ${
+              activeBooster === 'saw'
+                ? 'bg-amber-500/30 border-2 border-amber-400 scale-105 shadow-[0_0_14px_rgba(251,191,36,0.6)] animate-pulse'
+                : 'bg-slate-900/90 border border-slate-700/80 hover:border-amber-400/50 hover:bg-slate-850'
+            } ${boosters.saw <= 0 ? 'opacity-35 grayscale cursor-not-allowed' : 'active:scale-95 cursor-pointer'}`}
+          >
+            <span className="text-2xl drop-shadow-sm select-none">🪚</span>
+            <span className="text-[10px] font-black text-amber-100 mt-0.5">ノコギリ</span>
+            <span className="absolute -top-1.5 -right-1 min-w-[19px] h-[19px] bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-[10px] rounded-full flex items-center justify-center px-1 shadow-sm border border-amber-300">
+              {boosters.saw}
+            </span>
+          </button>
+
+          {/* 🦫 しっぽビンタ */}
+          <button
+            onClick={() => handleBoosterClick('tail')}
+            disabled={boosters.tail <= 0 || isAnimating || gameResult !== 'playing'}
+            title="周囲3×3マスを一撃粉砕（手数は減りません）"
+            className={`relative flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all ${
+              activeBooster === 'tail'
+                ? 'bg-amber-500/30 border-2 border-amber-400 scale-105 shadow-[0_0_14px_rgba(251,191,36,0.6)] animate-pulse'
+                : 'bg-slate-900/90 border border-slate-700/80 hover:border-amber-400/50 hover:bg-slate-850'
+            } ${boosters.tail <= 0 ? 'opacity-35 grayscale cursor-not-allowed' : 'active:scale-95 cursor-pointer'}`}
+          >
+            <span className="text-2xl drop-shadow-sm select-none">🦫</span>
+            <span className="text-[10px] font-black text-amber-100 mt-0.5">しっぽ</span>
+            <span className="absolute -top-1.5 -right-1 min-w-[19px] h-[19px] bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-[10px] rounded-full flex items-center justify-center px-1 shadow-sm border border-amber-300">
+              {boosters.tail}
+            </span>
+          </button>
+
+          {/* ⏱️ ぜんまい時計 */}
+          <button
+            onClick={() => handleBoosterClick('clock')}
+            disabled={boosters.clock <= 0 || isAnimating || gameResult !== 'playing'}
+            title="手数をその場で+5回復（タップ即時発動）"
+            className={`relative flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all bg-slate-900/90 border border-slate-700/80 hover:border-cyan-400/50 hover:bg-slate-850 ${
+              boosters.clock <= 0 ? 'opacity-35 grayscale cursor-not-allowed' : 'active:scale-95 cursor-pointer'
+            }`}
+          >
+            <span className="text-2xl drop-shadow-sm select-none">⏱️</span>
+            <span className="text-[10px] font-black text-cyan-200 mt-0.5">+5手</span>
+            <span className="absolute -top-1.5 -right-1 min-w-[19px] h-[19px] bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-black text-[10px] rounded-full flex items-center justify-center px-1 shadow-sm border border-cyan-200">
+              {boosters.clock}
+            </span>
+          </button>
+        </div>
 
         {/* 下部ひとこと説明 */}
         <div className="text-center text-[11px] text-amber-100 font-medium bg-slate-950/80 border border-amber-500/20 px-3 py-1 rounded-full backdrop-blur-md shadow-sm">

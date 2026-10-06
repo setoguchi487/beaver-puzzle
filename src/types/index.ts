@@ -4,6 +4,15 @@ export type SpecialType = 'none' | 'rocket_h' | 'rocket_v' | 'bomb' | 'rainbow';
 
 export type GimmickType = 'none' | 'ice' | 'rock' | 'vine';
 
+export type BoosterItemType = 'hammer' | 'saw' | 'tail' | 'clock';
+
+export interface PlayerBoosters {
+  hammer: number;
+  saw: number;
+  tail: number;
+  clock: number;
+}
+
 export interface TileGimmick {
   type: GimmickType;
   hp: number; // 残り耐久力 (例: 氷は2または1、岩は2または1)
