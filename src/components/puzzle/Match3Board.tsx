@@ -37,10 +37,10 @@ const DEFAULT_BOARD_SIZE = 7;
 const DEFAULT_PIECE_TYPES: PieceType[] = ['wood', 'twig', 'water', 'acorn', 'stone'];
 
 const DEFAULT_BOOSTERS: PlayerBoosters = {
-  hammer: 3,
+  hammer: 2,
   saw: 2,
   tail: 2,
-  clock: 3,
+  clock: 2,
 };
 
 const loadBoosters = (): PlayerBoosters => {

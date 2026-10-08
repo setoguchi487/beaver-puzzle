@@ -137,6 +137,7 @@ export const App: React.FC = () => {
     localStorage.removeItem(STORAGE_KEY + "_star_milestones");
     localStorage.removeItem(STORAGE_KEY + "_owned_decorations");
     localStorage.removeItem(STORAGE_KEY + "_active_decorations");
+    localStorage.removeItem("beaver_puzzle_boosters");
 
     setOwnedDecorationIds(['deco_bench']);
     setActivePlacements(['deco_bench']);
@@ -222,7 +223,7 @@ export const App: React.FC = () => {
         const savedBoosters = localStorage.getItem('beaver_puzzle_boosters');
         let currentBoosters: PlayerBoosters = savedBoosters
           ? JSON.parse(savedBoosters)
-          : { hammer: 3, saw: 2, tail: 2, clock: 3 };
+          : { hammer: 2, saw: 2, tail: 2, clock: 2 };
 
         currentBoosters = {
           hammer: currentBoosters.hammer + (milestone.boosters.hammer || 0),
@@ -268,7 +269,7 @@ export const App: React.FC = () => {
           const savedBoosters = localStorage.getItem('beaver_puzzle_boosters');
           let currentBoosters: PlayerBoosters = savedBoosters
             ? JSON.parse(savedBoosters)
-            : { hammer: 3, saw: 2, tail: 2, clock: 3 };
+            : { hammer: 2, saw: 2, tail: 2, clock: 2 };
 
           currentBoosters = {
             hammer: currentBoosters.hammer + (dailyReward.boosters.hammer || 0),
@@ -359,7 +360,7 @@ export const App: React.FC = () => {
       const savedBoosters = localStorage.getItem('beaver_puzzle_boosters');
       const parsed = savedBoosters
         ? JSON.parse(savedBoosters)
-        : { hammer: 3, saw: 2, tail: 2, clock: 3 };
+        : { hammer: 2, saw: 2, tail: 2, clock: 2 };
       parsed.hammer = (parsed.hammer || 0) + 1;
       parsed.saw = (parsed.saw || 0) + 1;
       parsed.tail = (parsed.tail || 0) + 1;
