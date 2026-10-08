@@ -7,7 +7,7 @@ import { SacredTreeModal } from '../common/SacredTreeModal';
 import { AreaFeaturesHubModal } from '../common/AreaFeaturesHubModal';
 import { LuckyWheelModal } from '../common/LuckyWheelModal';
 import { WorkshopShopModal } from '../common/WorkshopShopModal';
-import { canClaimWatermillWood, claimWatermillWood } from '../../utils/areaUnlocks';
+import { AREA_FEATURE_CONFIG, isAreaFeatureUnlocked, canClaimWatermillWood, claimWatermillWood } from '../../utils/areaUnlocks';
 import { getRandomCreatureDialogue } from "../../data/creatureDialogues";
 import React, { useState, useEffect, useRef } from 'react';
 import type { FrontierArea, Creature } from '../../types';
@@ -345,94 +345,75 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
 
         {/* 資源カウンター & 表示切り替えタブ */}
         <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-800/80">
-          <div className="flex items-center space-x-3 text-xs font-black">
+          <div className="flex items-center space-x-1.5 text-xs font-black">
             {/* 木材ポイント */}
-            <div className="flex items-center space-x-1.5 bg-amber-950/40 border border-amber-500/30 px-2.5 py-1 rounded-xl shadow-xs">
-              <span className="text-base leading-none">🪵</span>
-              <span className="text-amber-300 font-mono text-sm">{woodPoints}</span>
+            <div className="flex items-center space-x-1 bg-amber-950/40 border border-amber-500/30 px-2 py-1 rounded-xl shadow-xs">
+              <span className="text-sm leading-none">🪵</span>
+              <span className="text-amber-300 font-mono text-xs">{woodPoints}</span>
             </div>
 
             {/* 獲得星数カウンター（タップでステージ選択を開く） */}
             <button
               onClick={() => setIsStageSelectOpen(true)}
-              className="flex items-center space-x-1.5 bg-yellow-950/45 hover:bg-yellow-900/60 border border-yellow-500/45 hover:border-yellow-400 px-2.5 py-1 rounded-xl cursor-pointer active:scale-95 transition-all shadow-xs"
+              className="flex items-center space-x-1 bg-yellow-950/45 hover:bg-yellow-900/60 border border-yellow-500/45 hover:border-yellow-400 px-2 py-1 rounded-xl cursor-pointer active:scale-95 transition-all shadow-xs"
               title="獲得スター数（タップでステージ選択へ）"
             >
-              <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-300" />
+              <Star className="w-3 h-3 fill-yellow-400 text-yellow-300" />
               <span className="text-yellow-300 font-mono text-xs font-black">{totalStars}</span>
-              <span className="text-[10px] text-yellow-500/80 font-bold">/300</span>
             </button>
 
-            {/* 仲間・勲章図鑑ボタン（メダル・生き物・図鑑を集約） */}
+            {/* 仲間・勲章図鑑ボタン */}
             <button
               onClick={() => setIsBookModalOpen(true)}
-              className="flex items-center space-x-1.5 bg-gradient-to-r from-emerald-950/60 to-teal-950/60 hover:from-emerald-900/70 hover:to-teal-900/70 border border-emerald-500/45 hover:border-emerald-400 px-2.5 py-1 rounded-xl cursor-pointer active:scale-95 transition-all shadow-xs"
+              className="flex items-center space-x-1 bg-gradient-to-r from-emerald-950/60 to-teal-950/60 hover:from-emerald-900/70 border border-emerald-500/45 px-2 py-1 rounded-xl cursor-pointer active:scale-95 transition-all shadow-xs"
               title="仲間と勲章の図鑑を開く"
             >
               <span className="text-xs">🐾🏅</span>
               <span className="text-emerald-300 font-mono text-xs font-black">
                 {creaturesCount}/{areas.length}
               </span>
-              <span className="text-[10px] text-emerald-400 font-bold hidden sm:inline">図鑑</span>
             </button>
-
-            {/* 木工ショップボタン */}
-            <button
-              onClick={() => setIsShopOpen(true)}
-              className="flex items-center space-x-1.5 bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 border border-amber-400/50 px-2.5 py-1 rounded-xl cursor-pointer active:scale-95 transition-all shadow-xs"
-              title="森の木工クラフトショップを開く"
-            >
-              <span className="text-xs">🔨🦔</span>
-              <span className="text-[10px] text-amber-300 font-black">ショップ</span>
-            </button>
-
-            {/* 水車ラッキールーレットボタン */}
-            <button
-              onClick={() => setIsWheelOpen(true)}
-              className="flex items-center space-x-1.5 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-500/30 hover:to-blue-500/30 border border-cyan-400/50 px-2.5 py-1 rounded-xl cursor-pointer active:scale-95 transition-all shadow-xs"
-              title="水流仕掛けのラッキールーレットを開く"
-            >
-              <span className="text-xs">🎡🌊</span>
-              <span className="text-[10px] text-cyan-300 font-black">ルーレット</span>
-            </button>
-
-            {/* 水車の木材ストック樽ボーナス受け取り */}
-            {!watermillBonusClaimed && canClaimWatermillWood(areas) && (
-              <button
-                onClick={handleClaimWatermill}
-                className="flex items-center space-x-1 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 px-2.5 py-1 rounded-xl cursor-pointer active:scale-95 transition-all shadow-md animate-bounce-subtle font-black text-[10px]"
-                title="水車小屋の木材ストック樽を受け取る！"
-              >
-                <span>🪵🦉</span>
-                <span>木材+200</span>
-              </button>
-            )}
           </div>
 
-          {/* ビュー切り替え */}
-          <div className="flex items-center bg-slate-950 p-0.5 rounded-xl border border-slate-800">
+          {/* 右側: 施設一覧ハブ ＆ 表示切替 */}
+          <div className="flex items-center space-x-1.5">
+            {/* エリア施設一覧ハブボタン（目立つ金/紫バッジ） */}
             <button
-              onClick={() => setViewMode('panorama')}
-              className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-[10px] font-black transition-all ${
-                viewMode === 'panorama'
-                  ? 'bg-amber-500 text-amber-950 shadow-xs'
-                  : 'text-slate-400 hover:text-white'
-              }`}
+              onClick={() => setIsHubModalOpen(true)}
+              className="flex items-center space-x-1 bg-gradient-to-r from-amber-500/25 via-purple-500/25 to-pink-500/25 hover:from-amber-500/35 hover:to-pink-500/35 border border-amber-400/50 px-2.5 py-1 rounded-xl cursor-pointer active:scale-95 transition-all shadow-xs"
+              title="エリア制覇施設一覧を開く"
             >
-              <MapIcon className="w-3 h-3" />
-              <span>箱庭マップ</span>
+              <span className="text-xs">🏰✨</span>
+              <span className="text-[10px] text-amber-200 font-black">施設一覧</span>
             </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-[10px] font-black transition-all ${
-                viewMode === 'list'
-                  ? 'bg-amber-500 text-amber-950 shadow-xs'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <List className="w-3 h-3" />
-              <span>一覧</span>
-            </button>
+
+            {/* ビュー切り替え */}
+            <div className="flex items-center bg-slate-950 p-0.5 rounded-xl border border-slate-800">
+              <button
+                onClick={() => setViewMode('panorama')}
+                className={`flex items-center space-x-0.5 px-2 py-1 rounded-lg text-[10px] font-black transition-all ${
+                  viewMode === 'panorama'
+                    ? 'bg-amber-500 text-amber-950 shadow-xs'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+                title="箱庭マップ"
+              >
+                <MapIcon className="w-3 h-3" />
+                <span className="hidden xs:inline">マップ</span>
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`flex items-center space-x-0.5 px-2 py-1 rounded-lg text-[10px] font-black transition-all ${
+                  viewMode === 'list'
+                    ? 'bg-amber-500 text-amber-950 shadow-xs'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+                title="一覧"
+              >
+                <List className="w-3 h-3" />
+                <span className="hidden xs:inline">一覧</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -595,6 +576,52 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                           <span>{area.name}</span>
                         </span>
                       </div>
+
+                      {/* エリア専用アンロック施設ボタン（完全復興時にマップ上のエリアピン周辺にポップアップ出現！） */}
+                      {isAreaFeatureUnlocked(area.id, areas) && AREA_FEATURE_CONFIG[area.id] && (
+                        <div
+                          style={{ top: `${coords.y - 4}%`, left: `${coords.x + 6}%` }}
+                          className="absolute -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-auto"
+                        >
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              sounds.buttonClick();
+                              handleOpenFeature(area.id);
+                            }}
+                            className="flex items-center space-x-1 px-2 py-0.5 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 hover:brightness-110 text-slate-950 rounded-full shadow-[0_0_12px_rgba(251,191,36,0.7)] border-2 border-white cursor-pointer active:scale-95 transition-transform animate-bounce-subtle"
+                            title={`${AREA_FEATURE_CONFIG[area.id].featureName}を開く`}
+                          >
+                            <span className="text-xs leading-none">
+                              {AREA_FEATURE_CONFIG[area.id].icon.split('')[0]}
+                            </span>
+                            <span className="text-[8.5px] font-black tracking-tight whitespace-nowrap">
+                              {AREA_FEATURE_CONFIG[area.id].featureName.replace('森の', '').replace('マイルーム＆', '').replace('満天の', '')}
+                            </span>
+                          </button>
+                        </div>
+                      )}
+
+                      {/* 水車小屋の木材ストック樽ボーナス受け取り（水車エリア専用） */}
+                      {area.id === 'watermill_zone' && !watermillBonusClaimed && canClaimWatermillWood(areas) && (
+                        <div
+                          style={{ top: `${coords.y + 4}%`, left: `${coords.x - 6}%` }}
+                          className="absolute -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-auto"
+                        >
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              sounds.buttonClick();
+                              handleClaimWatermill();
+                            }}
+                            className="flex items-center space-x-1 px-2 py-0.5 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 rounded-full shadow-lg border-2 border-white cursor-pointer active:scale-95 transition-all animate-bounce font-black text-[8.5px]"
+                            title="毎朝の木材ストック樽を受け取る！"
+                          >
+                            <span>🪵🦉</span>
+                            <span>木材+200</span>
+                          </button>
+                        </div>
+                      )}
                     </>
                   )}
                 </React.Fragment>
@@ -694,7 +721,23 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                     </div>
                   </div>
 
-                  <ChevronRight className="w-4 h-4 text-slate-500" />
+                  <div className="shrink-0 flex items-center space-x-1.5 ml-2">
+                    {isCompleted && isAreaFeatureUnlocked(area.id, areas) && AREA_FEATURE_CONFIG[area.id] && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          sounds.buttonClick();
+                          handleOpenFeature(area.id);
+                        }}
+                        className="px-2 py-1 bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 font-black text-[10px] rounded-xl flex items-center space-x-1 shadow-sm active:scale-95 transition-all cursor-pointer"
+                        title={`${AREA_FEATURE_CONFIG[area.id].featureName}を開く`}
+                      >
+                        <span>{AREA_FEATURE_CONFIG[area.id].icon.split('')[0]}</span>
+                        <span>{AREA_FEATURE_CONFIG[area.id].featureName.replace('森の', '').replace('マイルーム＆', '').replace('満天の', '')}</span>
+                      </button>
+                    )}
+                    <ChevronRight className="w-4 h-4 text-slate-500" />
+                  </div>
                 </div>
               </div>
             );
@@ -857,6 +900,21 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                     </div>
                   </div>
 
+                  {/* エリア専用施設がオープンしている場合は直接起動可能 */}
+                  {isAreaFeatureUnlocked(selectedArea.id, areas) && AREA_FEATURE_CONFIG[selectedArea.id] && (
+                    <button
+                      onClick={() => {
+                        sounds.buttonClick();
+                        handleOpenFeature(selectedArea.id);
+                        setSelectedArea(null);
+                      }}
+                      className="w-full py-3 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 hover:brightness-110 text-slate-950 font-black text-sm rounded-2xl shadow-lg flex items-center justify-center space-x-1.5 active:scale-98 transition-all cursor-pointer"
+                    >
+                      <span>{AREA_FEATURE_CONFIG[selectedArea.id].icon.split('')[0]}</span>
+                      <span>{AREA_FEATURE_CONFIG[selectedArea.id].featureName} を利用する</span>
+                    </button>
+                  )}
+
                   {/* エリアに進むボタン */}
                   {onNavigateToAreaDetail && (
                     <button
@@ -864,10 +922,10 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                         onNavigateToAreaDetail(selectedArea.id);
                         setSelectedArea(null);
                       }}
-                      className="w-full py-3.5 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:brightness-110 text-amber-950 font-black text-base rounded-2xl shadow-xl flex items-center justify-center space-x-2 active:scale-98 transition-all cursor-pointer"
+                      className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:brightness-110 text-slate-950 font-black text-sm rounded-2xl shadow-xl flex items-center justify-center space-x-2 active:scale-98 transition-all cursor-pointer"
                     >
                       <Hammer className="w-4 h-4" />
-                      <span>エリア{selectedArea.id}に進む</span>
+                      <span>エリア{selectedArea.id}の開拓画面へ進む</span>
                     </button>
                   )}
                 </div>
