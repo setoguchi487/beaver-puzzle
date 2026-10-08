@@ -110,7 +110,11 @@ export const DecorationModal: React.FC<DecorationModalProps> = ({
                     className="p-2 bg-gradient-to-b from-emerald-950/40 to-slate-900 border border-emerald-500/40 rounded-xl flex items-center justify-between shadow-xs"
                   >
                     <div className="flex items-center space-x-1.5 min-w-0">
-                      <span className="text-xl">{placedItem.icon}</span>
+                      {placedItem.image ? (
+                        <img src={placedItem.image} alt={placedItem.name} className="w-6 h-6 rounded-md object-cover border border-emerald-400/40 shrink-0" />
+                      ) : (
+                        <span className="text-xl shrink-0">{placedItem.icon}</span>
+                      )}
                       <span className="text-[10px] font-black text-emerald-200 truncate">
                         {placedItem.name}
                       </span>
@@ -139,6 +143,30 @@ export const DecorationModal: React.FC<DecorationModalProps> = ({
           </div>
         </div>
 
+        {/* 選択中デコレーションの写真プレビュー */}
+        {selectedItem && (
+          <div className="p-3 bg-gradient-to-r from-slate-900 via-amber-950/20 to-slate-900 border border-amber-500/30 rounded-2xl flex items-center space-x-3 shadow-md animate-fade-in">
+            <div className="w-16 h-16 rounded-xl overflow-hidden border border-amber-400/50 shadow-sm shrink-0 bg-slate-950">
+              {selectedItem.image ? (
+                <img src={selectedItem.image} alt={selectedItem.name} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-3xl">{selectedItem.icon}</div>
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center space-x-1.5">
+                <span className="text-xs font-black text-amber-200 truncate">{selectedItem.name}</span>
+                <span className="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded-md font-bold shrink-0">
+                  {selectedItem.category === 'furniture' ? '家具' : selectedItem.category === 'light' ? '照明' : selectedItem.category === 'nature' ? '自然' : '記念碑'}
+                </span>
+              </div>
+              <p className="text-[10px] text-slate-300 mt-0.5 line-clamp-2 leading-relaxed">
+                {selectedItem.description}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* デコレーションカタログ一覧 */}
         <div className="flex-1 overflow-y-auto no-scrollbar space-y-2 pr-0.5 min-h-[220px]">
           {DECORATIONS.map((item) => {
@@ -157,8 +185,12 @@ export const DecorationModal: React.FC<DecorationModalProps> = ({
                 }`}
               >
                 <div className="flex items-center space-x-3 min-w-0">
-                  <div className="w-11 h-11 rounded-xl bg-slate-800/90 border border-slate-700 flex items-center justify-center text-2xl shadow-xs shrink-0">
-                    {item.icon}
+                  <div className="w-12 h-12 rounded-xl bg-slate-800/90 border border-slate-700 overflow-hidden flex items-center justify-center text-2xl shadow-xs shrink-0 relative">
+                    {item.image ? (
+                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                    ) : (
+                      item.icon
+                    )}
                   </div>
 
                   <div className="min-w-0">

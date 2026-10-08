@@ -17,7 +17,7 @@ import { StageSelectModal } from '../common/StageSelectModal';
 import { StarRoadModal } from '../common/StarRoadModal';
 import { DailyPuzzleModal } from '../common/DailyPuzzleModal';
 import { DecorationModal } from '../common/DecorationModal';
-import { type DecorationItem } from '../../data/decorations';
+import { DECORATIONS, type DecorationItem } from '../../data/decorations';
 import { Calendar } from 'lucide-react';
 import type { StarMilestone } from '../../data/starRoadMilestones';
 import type { StageRecord } from '../../types';
@@ -625,6 +625,40 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                     </>
                   )}
                 </React.Fragment>
+              );
+            })}
+
+            {/* ========================================================
+                広場に配置された木工デコレーション家具（最大3個）
+                ======================================================== */}
+            {activePlacements.map((placedId, idx) => {
+              const decoItem = DECORATIONS.find((d) => d.id === placedId);
+              if (!decoItem) return null;
+              const decoCoords = [
+                { x: 34, y: 88 },
+                { x: 50, y: 89 },
+                { x: 66, y: 88 },
+              ][idx] || { x: 50, y: 88 };
+
+              return (
+                <div
+                  key={placedId}
+                  style={{ top: `${decoCoords.y}%`, left: `${decoCoords.x}%` }}
+                  onClick={() => setIsDecoModalOpen(true)}
+                  className="absolute -translate-x-1/2 -translate-y-1/2 z-25 flex flex-col items-center cursor-pointer pointer-events-auto group animate-fade-in"
+                  title={`${decoItem.name}（タップでクラフト工房へ）`}
+                >
+                  <div className="w-10 h-10 rounded-2xl overflow-hidden border-2 border-white/90 shadow-lg group-hover:scale-110 active:scale-95 transition-transform bg-slate-900/90">
+                    {decoItem.image ? (
+                      <img src={decoItem.image} alt={decoItem.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="w-full h-full flex items-center justify-center text-xl">{decoItem.icon}</span>
+                    )}
+                  </div>
+                  <span className="mt-0.5 px-1.5 py-0.2 bg-slate-950/85 backdrop-blur-xs text-[7.5px] font-black text-amber-200 rounded-md border border-amber-500/40 whitespace-nowrap shadow-sm">
+                    {decoItem.name}
+                  </span>
+                </div>
               );
             })}
 

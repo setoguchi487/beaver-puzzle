@@ -2382,7 +2382,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
                       : 'bg-slate-950/40 border-slate-800 opacity-40 cursor-not-allowed'
                   }`}
                 >
-                  <span className="text-2xl drop-shadow-sm">🚀</span>
+                  <img src={getAssetUrl("/assets/piece_rocket.png")} alt="初期ロケット" className="w-8 h-8 object-contain drop-shadow-sm" />
                   <span className="text-[10px] font-bold text-slate-200 mt-0.5">初期ロケット</span>
                   <span className="text-[9px] font-black text-amber-300 bg-slate-950/80 px-1.5 py-0.2 rounded-full mt-1 border border-slate-700">
                     所持: {preBoosters.startRocket}
@@ -2406,7 +2406,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
                       : 'bg-slate-950/40 border-slate-800 opacity-40 cursor-not-allowed'
                   }`}
                 >
-                  <span className="text-2xl drop-shadow-sm">💣</span>
+                  <img src={getAssetUrl("/assets/piece_bomb.png")} alt="初期爆弾" className="w-8 h-8 object-contain drop-shadow-sm" />
                   <span className="text-[10px] font-bold text-slate-200 mt-0.5">初期爆弾</span>
                   <span className="text-[9px] font-black text-amber-300 bg-slate-950/80 px-1.5 py-0.2 rounded-full mt-1 border border-slate-700">
                     所持: {preBoosters.startBomb}
@@ -2430,7 +2430,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
                       : 'bg-slate-950/40 border-slate-800 opacity-40 cursor-not-allowed'
                   }`}
                 >
-                  <span className="text-2xl drop-shadow-sm">⏱️</span>
+                  <img src={getAssetUrl("/assets/booster_extra_moves.png")} alt="手数+3手" className="w-8 h-8 object-contain drop-shadow-sm" />
                   <span className="text-[10px] font-bold text-slate-200 mt-0.5">手数 +3手</span>
                   <span className="text-[9px] font-black text-cyan-300 bg-slate-950/80 px-1.5 py-0.2 rounded-full mt-1 border border-slate-700">
                     所持: {preBoosters.extraMoves}
@@ -3039,7 +3039,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
                 : 'bg-slate-900/90 border border-slate-700/80 hover:border-amber-400/50 hover:bg-slate-850'
             } ${boosters.tail <= 0 ? 'opacity-35 grayscale cursor-not-allowed' : 'active:scale-95 cursor-pointer'}`}
           >
-            <span className="text-2xl drop-shadow-sm select-none">🦫</span>
+            <img src={getAssetUrl("/assets/booster_tail.png")} alt="しっぽ" className="w-7 h-7 object-contain drop-shadow-sm select-none" />
             <span className="text-[10px] font-black text-amber-100 mt-0.5">しっぽ</span>
             <span className="absolute -top-1.5 -right-1 min-w-[19px] h-[19px] bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-[10px] rounded-full flex items-center justify-center px-1 shadow-sm border border-amber-300">
               {boosters.tail}
@@ -3055,7 +3055,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
               boosters.clock <= 0 ? 'opacity-35 grayscale cursor-not-allowed' : 'active:scale-95 cursor-pointer'
             }`}
           >
-            <span className="text-2xl drop-shadow-sm select-none">⏱️</span>
+            <img src={getAssetUrl("/assets/booster_clock.png")} alt="+5手時計" className="w-7 h-7 object-contain drop-shadow-sm select-none" />
             <span className="text-[10px] font-black text-cyan-200 mt-0.5">+5手</span>
             <span className="absolute -top-1.5 -right-1 min-w-[19px] h-[19px] bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-black text-[10px] rounded-full flex items-center justify-center px-1 shadow-sm border border-cyan-200">
               {boosters.clock}
