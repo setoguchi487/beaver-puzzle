@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { STAGES } from '../../data/masterData';
-import { Wrench, X, Sparkles, RotateCcw, Coins } from 'lucide-react';
+import { Wrench, X, Sparkles, RotateCcw, Coins, Package } from 'lucide-react';
 
 interface DevStageSelectorProps {
   currentStageId: number;
@@ -34,6 +34,22 @@ export const DevStageSelector: React.FC<DevStageSelectorProps> = ({
     try {
       localStorage.setItem('beaver_puzzle_state_v1_wood', '100000');
     } catch {}
+  };
+
+  // お助けアイテムの所持数を一括設定する処理
+  const setBoostersCount = (count: number) => {
+    const newBoosters = {
+      hammer: count,
+      saw: count,
+      tail: count,
+      clock: count,
+    };
+    try {
+      localStorage.setItem('beaver_puzzle_boosters', JSON.stringify(newBoosters));
+      window.dispatchEvent(new CustomEvent('beaver-boosters-updated', { detail: newBoosters }));
+    } catch (e) {
+      console.error('Failed to set boosters:', e);
+    }
   };
 
   // 隠しコマンド（キーボードショートカット Ctrl+Shift+D / Cmd+Shift+D）およびカスタムイベント
@@ -227,6 +243,31 @@ export const DevStageSelector: React.FC<DevStageSelectorProps> = ({
               <span>木材を 100,000 個所持にする 🪵</span>
             </button>
 
+            {/* お助けアイテム操作 */}
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => {
+                  setBoostersCount(2);
+                  alert('お助けアイテムを初期値（各2個）にリセットしました！🎒✨ (木づち2/のこぎり2/しっぽ2/時計2)');
+                }}
+                className="py-2.5 px-2 bg-emerald-500/25 hover:bg-emerald-500/35 border border-emerald-400/60 text-emerald-200 text-xs font-black rounded-xl flex items-center justify-center space-x-1.5 active:scale-98 transition-all cursor-pointer shadow-sm"
+              >
+                <Package className="w-4 h-4 text-emerald-300" />
+                <span>アイテム各2個リセット 🎒</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setBoostersCount(99);
+                  alert('お助けアイテムを全種 99個 に補充しました！🚀✨ (各99個)');
+                }}
+                className="py-2.5 px-2 bg-indigo-500/25 hover:bg-indigo-500/35 border border-indigo-400/60 text-indigo-200 text-xs font-black rounded-xl flex items-center justify-center space-x-1.5 active:scale-98 transition-all cursor-pointer shadow-sm"
+              >
+                <Sparkles className="w-4 h-4 text-indigo-300" />
+                <span>アイテム各99個補充 🚀</span>
+              </button>
+            </div>
+
             <div className="grid grid-cols-2 gap-2">
               {/* エリア全開放 */}
               <button
@@ -263,8 +304,10 @@ export const DevStageSelector: React.FC<DevStageSelectorProps> = ({
             {onResetAll && (
               <button
                 onClick={() => {
-                  if (window.confirm('ゲームデータ（木材・エリア・バッジ・仲間）を完全に最初からリセットしますか？')) {
+                  if (window.confirm('ゲームデータ（木材・エリア・バッジ・仲間・アイテム）を完全に最初からリセットしますか？')) {
+                    setBoostersCount(2);
                     onResetAll();
+                    alert('ゲームデータを完全に最初（アイテム各2個・木材60・ステージ1）へリセットしました！🔄');
                     setIsOpen(false);
                   }
                 }}

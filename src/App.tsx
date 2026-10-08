@@ -137,7 +137,9 @@ export const App: React.FC = () => {
     localStorage.removeItem(STORAGE_KEY + "_star_milestones");
     localStorage.removeItem(STORAGE_KEY + "_owned_decorations");
     localStorage.removeItem(STORAGE_KEY + "_active_decorations");
-    localStorage.removeItem("beaver_puzzle_boosters");
+    const defaultBoosters = { hammer: 2, saw: 2, tail: 2, clock: 2 };
+    localStorage.setItem('beaver_puzzle_boosters', JSON.stringify(defaultBoosters));
+    window.dispatchEvent(new CustomEvent('beaver-boosters-updated', { detail: defaultBoosters }));
 
     setOwnedDecorationIds(['deco_bench']);
     setActivePlacements(['deco_bench']);

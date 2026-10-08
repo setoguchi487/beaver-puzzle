@@ -163,6 +163,30 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
   const [boosters, setBoosters] = useState<PlayerBoosters>(loadBoosters);
   const [activeBooster, setActiveBooster] = useState<BoosterItemType | null>(null);
 
+  // 開発者モードや外部変更イベントによるアイテム同期
+  useEffect(() => {
+    const handleBoostersUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent<PlayerBoosters>;
+      if (customEvent.detail) {
+        setBoosters(customEvent.detail);
+      } else {
+        setBoosters(loadBoosters());
+      }
+    };
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'beaver_puzzle_boosters') {
+        setBoosters(loadBoosters());
+      }
+    };
+
+    window.addEventListener('beaver-boosters-updated', handleBoostersUpdate);
+    window.addEventListener('storage', handleStorage);
+    return () => {
+      window.removeEventListener('beaver-boosters-updated', handleBoostersUpdate);
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, []);
+
   const useBoosterCount = (type: BoosterItemType) => {
     setBoosters((prev) => {
       const next = { ...prev, [type]: Math.max(0, prev[type] - 1) };
