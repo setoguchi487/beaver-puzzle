@@ -497,8 +497,10 @@ export const generate100Stages = (): PuzzleStage[] => {
           });
         }
       } else if (gimmickMod === 3) {
-        // 侵食ツタサバイバル
-        creepingVine = true;
+        // ★ツタギミック（i >= 16 の後半ステージから動く「侵食ツタ」が初登場！）
+        if (i >= 16) {
+          creepingVine = true;
+        }
         stageGimmicks.push({ r: 1, c: 1, type: 'vine', hp: 1 });
         stageGimmicks.push({ r: boardRows - 2, c: boardCols - 2, type: 'vine', hp: 1 });
         if (phase >= 2) {
@@ -585,6 +587,16 @@ export const generate100Stages = (): PuzzleStage[] => {
       ];
       const titleName = titles[(i - 1) % titles.length];
 
+      let newGimmickIntro: { type: GimmickType; icon: string; title: string; description: string } | undefined = undefined;
+      if (i === 16) {
+        newGimmickIntro = {
+          type: 'vine',
+          icon: '🌿⚠️',
+          title: '浸食するツタ！',
+          description: '毎ターン消さないと周囲のマスへじわじわ広がります！広がる前にマッチさせて刈り取ろう！',
+        };
+      }
+
       stages.push({
         id: i,
         title: `Stage ${i}: ${titleName} ${gravityDirection === 'up' ? '⬆️' : ''}`,
@@ -596,6 +608,7 @@ export const generate100Stages = (): PuzzleStage[] => {
         allowedPieceTypes,
         disabledTiles,
         creepingVine,
+        newGimmickIntro,
         targets: stageTargets,
         woodReward: 100 + Math.floor(i * 3.5),
         unfogAreaIds: [],

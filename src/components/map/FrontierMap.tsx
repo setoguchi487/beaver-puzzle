@@ -1,3 +1,6 @@
+import { WorkshopShopModal } from '../common/WorkshopShopModal';
+import { canClaimWatermillWood, claimWatermillWood } from '../../utils/areaUnlocks';
+import { getRandomCreatureDialogue } from "../../data/creatureDialogues";
 import React, { useState, useEffect, useRef } from 'react';
 import type { FrontierArea, Creature } from '../../types';
 import { DevStageSelector } from '../common/DevStageSelector';
@@ -99,11 +102,15 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
   const [selectedArea, setSelectedArea] = useState<FrontierArea | null>(null);
   const [selectedCreature, setSelectedCreature] = useState<Creature | null>(null);
   const [creatureReaction, setCreatureReaction] = useState<string | null>(null);
+  const [tappedMapCreatureId, setTappedMapCreatureId] = useState<string | null>(null);
+  const [mapBubbleDialogue, setMapBubbleDialogue] = useState<{ id: string; text: string } | null>(null);
   const [beaverDialogue, setBeaverDialogue] = useState<string | null>(null);
   const [isBookModalOpen, setIsBookModalOpen] = useState<boolean>(false);
   const [isStageSelectOpen, setIsStageSelectOpen] = useState<boolean>(false);
   const [isStarRoadOpen, setIsStarRoadOpen] = useState<boolean>(false);
   const [isDailyModalOpen, setIsDailyModalOpen] = useState<boolean>(false);
+  const [isShopOpen, setIsShopOpen] = useState<boolean>(false);
+  const [watermillBonusClaimed, setWatermillBonusClaimed] = useState<boolean>(false);
   const [isDecoModalOpen, setIsDecoModalOpen] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState(sounds.getMuted());
 
@@ -146,14 +153,13 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
   void onCompleteArea;
 
   const handleCreatureTap = (c: Creature) => {
-    setSelectedCreature(c);
-    const reactions = [
-      'ピィッ！♪', 'クエックエッ✨', 'るんるん❤️', 'カリカリ…🌰',
-      'パタパタ〜🌿', 'グルル〜♪', 'ホーホー🦉✨', 'キィキィ〜！🐒',
-      'クワッ！🦢', 'ガサゴソ🦝', 'コンコン🦊✨', 'ガオーッ！🐻'
-    ];
-    setCreatureReaction(reactions[Math.floor(Math.random() * reactions.length)]);
-    setTimeout(() => setCreatureReaction(null), 2200);
+    sounds.playSwipe();
+    setTappedMapCreatureId(c.id);
+    const text = getRandomCreatureDialogue(c.id);
+    setMapBubbleDialogue({ id: c.id, text });
+    setCreatureReaction(text);
+    setTimeout(() => setTappedMapCreatureId(null), 500);
+    setTimeout(() => setMapBubbleDialogue((prev) => (prev?.id === c.id ? null : prev)), 3800);
   };
 
   const [beaverTapCount, setBeaverTapCount] = useState<number>(0);
@@ -186,6 +192,13 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
     ];
     setBeaverDialogue(dialogues[Math.floor(Math.random() * dialogues.length)]);
     setTimeout(() => setBeaverDialogue(null), 3000);
+  };
+
+  const handleClaimWatermill = () => {
+    const bonus = claimWatermillWood();
+    onAddWood(bonus);
+    setWatermillBonusClaimed(true);
+    sounds.playStageClear();
   };
 
   const handleToggleMute = () => {
@@ -315,6 +328,28 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
               </span>
               <span className="text-[10px] text-emerald-400 font-bold hidden sm:inline">図鑑</span>
             </button>
+
+            {/* 木工ショップボタン */}
+            <button
+              onClick={() => setIsShopOpen(true)}
+              className="flex items-center space-x-1.5 bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 border border-amber-400/50 px-2.5 py-1 rounded-xl cursor-pointer active:scale-95 transition-all shadow-xs"
+              title="森の木工クラフトショップを開く"
+            >
+              <span className="text-xs">🔨🦔</span>
+              <span className="text-[10px] text-amber-300 font-black">ショップ</span>
+            </button>
+
+            {/* 水車の木材ストック樽ボーナス受け取り */}
+            {!watermillBonusClaimed && canClaimWatermillWood(areas) && (
+              <button
+                onClick={handleClaimWatermill}
+                className="flex items-center space-x-1 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 px-2.5 py-1 rounded-xl cursor-pointer active:scale-95 transition-all shadow-md animate-bounce-subtle font-black text-[10px]"
+                title="水車小屋の木材ストック樽を受け取る！"
+              >
+                <span>🪵🦉</span>
+                <span>木材+200</span>
+              </button>
+            )}
           </div>
 
           {/* ビュー切り替え */}
@@ -517,17 +552,30 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
               const creature = area.creature;
               const coords = area.mapCoords || { x: 50, y: 50 };
 
+              const isTapped = tappedMapCreatureId === creature.id;
+              const hasBubble = mapBubbleDialogue?.id === creature.id;
+
               return (
                 <div
                   key={creature.id}
-                  onClick={() => handleCreatureTap(creature)}
                   style={{ top: `${coords.y + 4}%`, left: `${coords.x + 8}%` }}
-                  className="absolute z-15 cursor-pointer animate-creature-hop"
-                  title={creature.name}
+                  className="absolute z-20 flex flex-col items-center pointer-events-auto"
                 >
-                  <span className="text-2xl filter drop-shadow-md inline-block">
-                    {creature.icon}
-                  </span>
+                  {hasBubble && (
+                    <div className="absolute bottom-full mb-1.5 z-40 max-w-[200px] px-2.5 py-1.5 bg-slate-900/95 border-2 border-emerald-400 text-white rounded-xl shadow-2xl text-[10px] font-black text-center leading-tight animate-balloon-pop whitespace-normal">
+                      {mapBubbleDialogue.text}
+                      <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 border-r-2 border-b-2 border-emerald-400 rotate-45" />
+                    </div>
+                  )}
+                  <div
+                    onClick={() => handleCreatureTap(creature)}
+                    className={`cursor-pointer ${isTapped ? 'animate-creature-jump' : 'animate-creature-hop'}`}
+                    title={creature.name}
+                  >
+                    <span className="text-2xl filter drop-shadow-md inline-block">
+                      {creature.icon}
+                    </span>
+                  </div>
                 </div>
               );
             })}
@@ -878,6 +926,15 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
           onClose={() => setIsDecoModalOpen(false)}
         />
       )}
+
+      {/* 森の木工クラフトショップモーダル */}
+      <WorkshopShopModal
+        isOpen={isShopOpen}
+        onClose={() => setIsShopOpen(false)}
+        areas={areas}
+        woodPoints={woodPoints}
+        onSpendWood={(cost) => onAddWood(-cost)}
+      />
 
       {/* 生き物図鑑＆開拓バッジモーダル（相棒選択対応） */}
       {isBookModalOpen && (

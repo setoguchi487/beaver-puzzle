@@ -1,3 +1,4 @@
+import { getRandomCreatureDialogue } from "../../data/creatureDialogues";
 import { getAssetUrl } from '../../utils/assetPath';
 import { preloadImage, preloadImages } from '../../utils/imagePreloader';
 import React, { useState, useEffect, useRef } from 'react';
@@ -52,6 +53,8 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
 }) => {
   const [selectedCreature, setSelectedCreature] = useState<Creature | null>(null);
   const [creatureReaction, setCreatureReaction] = useState<string | null>(null);
+  const [tappedCreatureId, setTappedCreatureId] = useState<string | null>(null);
+  const [bubbleDialogue, setBubbleDialogue] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(sounds.getMuted());
 
   const completedCount = area.tasks.filter((t) => t.isCompleted).length;
@@ -210,10 +213,13 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
   };
 
   const handleCreatureTap = (c: Creature) => {
-    setSelectedCreature(c);
-    const reactions = ['ピィッ！♪', 'クエックエッ✨', 'るんるん❤️', 'カリカリ…🌰', 'パタパタ〜🌿'];
-    setCreatureReaction(reactions[Math.floor(Math.random() * reactions.length)]);
-    setTimeout(() => setCreatureReaction(null), 2000);
+    sounds.playSwipe();
+    setTappedCreatureId(c.id);
+    const text = getRandomCreatureDialogue(c.id);
+    setBubbleDialogue(text);
+    setCreatureReaction(text);
+    setTimeout(() => setTappedCreatureId(null), 500);
+    setTimeout(() => setBubbleDialogue(null), 3800);
   };
 
   const handleToggleMute = () => {
@@ -351,16 +357,24 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
           )}
         </div>
 
-        {/* 完全復活時のカルガモ・生き物アニメーション */}
+        {/* 完全復活時のカルガモ・生き物アニメーション ＆ タップ吹き出し */}
         {isAllCompleted && (
-          <div
-            onClick={() => handleCreatureTap(area.creature)}
-            className="absolute bottom-6 left-1/2 -translate-x-1/2 z-25 cursor-pointer animate-duck-swim"
-            title={area.creature.name}
-          >
-            <span className="text-3xl filter drop-shadow-lg inline-block">
-              {area.creature.icon}
-            </span>
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-25 flex flex-col items-center pointer-events-auto">
+            {bubbleDialogue && (
+              <div className="mb-2 max-w-[240px] px-3 py-1.5 bg-slate-900/95 border-2 border-emerald-400 text-white rounded-2xl shadow-2xl text-[11px] font-black text-center leading-tight animate-balloon-pop relative drop-shadow-lg">
+                {bubbleDialogue}
+                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-slate-900 border-r-2 border-b-2 border-emerald-400 rotate-45" />
+              </div>
+            )}
+            <div
+              onClick={() => handleCreatureTap(area.creature)}
+              className={`cursor-pointer ${tappedCreatureId === area.creature.id ? 'animate-creature-jump' : 'animate-duck-swim'}`}
+              title={area.creature.name}
+            >
+              <span className="text-3xl sm:text-4xl filter drop-shadow-lg inline-block">
+                {area.creature.icon}
+              </span>
+            </div>
           </div>
         )}
       </div>
