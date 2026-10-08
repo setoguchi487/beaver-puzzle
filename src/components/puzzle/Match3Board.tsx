@@ -207,7 +207,29 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     c?: number;
     direction: 'h' | 'v';
   }
+  interface ActiveShockwave {
+    id: number;
+    r: number;
+    c: number;
+  }
   const [activeLasers, setActiveLasers] = useState<ActiveLaser[]>([]);
+  const [activeShockwaves, setActiveShockwaves] = useState<ActiveShockwave[]>([]);
+
+  const triggerLaserEffect = (r?: number, c?: number, direction: 'h' | 'v' = 'h') => {
+    const laserId = Date.now() + Math.random();
+    setActiveLasers((prev) => [...prev, { id: laserId, r, c, direction }]);
+    setTimeout(() => {
+      setActiveLasers((prev) => prev.filter((l) => l.id !== laserId));
+    }, 650);
+  };
+
+  const triggerBombEffect = (r: number, c: number) => {
+    const shockwaveId = Date.now() + Math.random();
+    setActiveShockwaves((prev) => [...prev, { id: shockwaveId, r, c }]);
+    setTimeout(() => {
+      setActiveShockwaves((prev) => prev.filter((s) => s.id !== shockwaveId));
+    }, 550);
+  };
   const [rainbowTargets, setRainbowTargets] = useState<{ r: number; c: number }[]>([]);
   const [isShaking, setIsShaking] = useState(false);
   const [isMuted, setIsMuted] = useState(sounds.getMuted());
@@ -1239,7 +1261,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     await new Promise((res) => setTimeout(res, 220));
     setClearingTileIds(new Set());
 
-    const newBoard = b.map((row) => [...row]);
+    let newBoard = b.map((row) => row.map((tile) => ({ ...tile })));
     const collectedCounts: { [key: string]: number } = {};
 
     matches.forEach(({ r, c }) => {
@@ -1338,79 +1360,20 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     // ターゲット加算 & 即時クリア判定
     addCollectedTargets(collectedCounts);
 
-    // ★ロケット起爆判定：同色3マッチ以上に含まれるロケットを発射！
-    const rocketDetonations = matches.filter(
-      ({ r, c }) => b[r][c].special === 'rocket_h' || b[r][c].special === 'rocket_v'
-    );
+    // ★特殊ピース（ロケット・爆弾）の起爆 ＆ 誘爆連鎖！
+    const initialSpecials = matches
+      .filter(
+        ({ r, c }) =>
+          b[r][c].special === 'rocket_h' ||
+          b[r][c].special === 'rocket_v' ||
+          b[r][c].special === 'bomb'
+      )
+      .map(({ r, c }) => ({ r, c, special: b[r][c].special }));
 
-    if (rocketDetonations.length > 0) {
-      sounds.playRocket();
-      setIsShaking(true);
-      setTimeout(() => setIsShaking(false), 350);
-
-      const detLasers: ActiveLaser[] = rocketDetonations.map((d, i) => ({
-        id: Date.now() + i,
-        r: b[d.r][d.c].special === 'rocket_h' ? d.r : undefined,
-        c: b[d.r][d.c].special === 'rocket_v' ? d.c : undefined,
-        direction: b[d.r][d.c].special === 'rocket_h' ? ('h' as const) : ('v' as const),
-      }));
-      setActiveLasers(detLasers);
-      setTimeout(() => setActiveLasers([]), 650);
-
-      rocketDetonations.forEach(({ r, c }) => {
-        const specialType = b[r][c].special;
-        if (specialType === 'rocket_h') {
-          // 横ロケット：横一列を貫通消去
-          for (let col = 0; col < numCols; col++) {
-            const t = newBoard[r][col];
-            if (t.id !== '') {
-              collectedCounts[t.type] = (collectedCounts[t.type] || 0) + 1;
-              if (t.gimmick) {
-                collectedCounts[t.gimmick.type] = (collectedCounts[t.gimmick.type] || 0) + 1;
-                t.gimmick = undefined;
-              }
-              newBoard[r][col] = { id: '', type: 'wood', special: 'none' };
-            }
-          }
-        } else if (specialType === 'rocket_v') {
-          // 縦ロケット：縦一列を貫通消去
-          for (let row = 0; row < numRows; row++) {
-            const t = newBoard[row][c];
-            if (t.id !== '') {
-              collectedCounts[t.type] = (collectedCounts[t.type] || 0) + 1;
-              if (t.gimmick) {
-                collectedCounts[t.gimmick.type] = (collectedCounts[t.gimmick.type] || 0) + 1;
-                t.gimmick = undefined;
-              }
-              newBoard[row][c] = { id: '', type: 'wood', special: 'none' };
-            }
-          }
-        }
-      });
+    if (initialSpecials.length > 0) {
+      newBoard = await detonateSpecialsWithChainReaction(newBoard, initialSpecials, collectedCounts);
       addCollectedTargets(collectedCounts);
-      await new Promise((res) => setTimeout(res, 250));
-    }
-
-    // ★爆弾起爆判定：同色3マッチ以上に含まれる爆弾を作動！（周囲2マス破壊）
-    const bombDetonations = matches.filter(({ r, c }) => b[r][c].special === 'bomb');
-    if (bombDetonations.length > 0) {
-      sounds.playBomb(false);
-      setIsShaking(true);
-      setTimeout(() => setIsShaking(false), 400);
-
-      bombDetonations.forEach(({ r, c }) => {
-        for (let dr = -2; dr <= 2; dr++) {
-          for (let dc = -2; dc <= 2; dc++) {
-            const nr = r + dr;
-            const nc = c + dc;
-            if (nr >= 0 && nr < numRows && nc >= 0 && nc < numCols) {
-              destroyTileAt(newBoard, nr, nc, collectedCounts);
-            }
-          }
-        }
-      });
-      addCollectedTargets(collectedCounts);
-      await new Promise((res) => setTimeout(res, 250));
+      await new Promise((res) => setTimeout(res, 200));
     }
 
     // マッチした通常マスを空マス化
@@ -1494,50 +1457,112 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     }
   };
 
-  // ロケット起爆（横、縦、または十字にビームを発射して消去）
+  // ★連鎖起爆エンジン（ロケットや爆弾の爆風・ビームが他のロケットや爆弾に触れた時、連鎖して起爆！）
+  const detonateSpecialsWithChainReaction = async (
+    targetBoard: Tile[][],
+    initialSpecials: { r: number; c: number; special: SpecialType }[],
+    collectedCounts: { [key: string]: number }
+  ): Promise<Tile[][]> => {
+    let b = targetBoard.map((row) => row.map((t) => ({ ...t })));
+    const queue: { r: number; c: number; special: SpecialType }[] = [...initialSpecials];
+    const queuedSet = new Set<string>(initialSpecials.map((s) => `${s.r},${s.c}`));
+    const detonatedSet = new Set<string>();
+
+    while (queue.length > 0) {
+      const item = queue.shift()!;
+      const key = `${item.r},${item.c}`;
+      if (detonatedSet.has(key)) continue;
+      detonatedSet.add(key);
+
+      const { r, c, special } = item;
+      const hitCoords: { r: number; c: number }[] = [];
+
+      if (special === "rocket_h") {
+        sounds.playRocket();
+        triggerLaserEffect(r, undefined, "h");
+        setIsShaking(true);
+        setTimeout(() => setIsShaking(false), 300);
+        for (let col = 0; col < numCols; col++) {
+          hitCoords.push({ r, c: col });
+        }
+      } else if (special === "rocket_v") {
+        sounds.playRocket();
+        triggerLaserEffect(undefined, c, "v");
+        setIsShaking(true);
+        setTimeout(() => setIsShaking(false), 300);
+        for (let row = 0; row < numRows; row++) {
+          hitCoords.push({ r: row, c });
+        }
+      } else if (special === "bomb") {
+        sounds.playBomb(false);
+        triggerBombEffect(r, c);
+        try {
+          confetti({
+            particleCount: 25,
+            spread: 75,
+            origin: { x: (c + 0.5) / numCols, y: 0.35 + ((r + 0.5) / numRows) * 0.35 },
+            colors: ["#f59e0b", "#fbbf24", "#ef4444", "#ffffff"],
+          });
+        } catch {}
+        setIsShaking(true);
+        setTimeout(() => setIsShaking(false), 450);
+        for (let dr = -2; dr <= 2; dr++) {
+          for (let dc = -2; dc <= 2; dc++) {
+            const nr = r + dr;
+            const nc = c + dc;
+            if (nr >= 0 && nr < numRows && nc >= 0 && nc < numCols) {
+              hitCoords.push({ r: nr, c: nc });
+            }
+          }
+        }
+      }
+
+      for (const coord of hitCoords) {
+        const targetTile = b[coord.r][coord.c];
+        const targetKey = `${coord.r},${coord.c}`;
+
+        if (
+          !queuedSet.has(targetKey) &&
+          (targetTile.special === "rocket_h" ||
+           targetTile.special === "rocket_v" ||
+           targetTile.special === "bomb")
+        ) {
+          queuedSet.add(targetKey);
+          queue.push({ r: coord.r, c: coord.c, special: targetTile.special });
+        }
+
+        destroyTileAt(b, coord.r, coord.c, collectedCounts);
+        b[coord.r][coord.c] = { id: "", type: "wood", special: "none" };
+      }
+
+      if (queue.length > 0) {
+        setBoard(b.map((row) => [...row]));
+        await new Promise((res) => setTimeout(res, 200));
+      }
+    }
+
+    return b;
+  };
+
+  // ロケット起爆（横、縦、または十字にビームを発射して消去、誘爆連鎖対応）
   const executeRocketClear = async (
     b: Tile[][],
     hitR: number,
     hitC: number,
-    mode: 'h' | 'v' | 'cross' = 'cross'
+    mode: "h" | "v" | "cross" = "cross"
   ) => {
-    sounds.playRocket();
-
-    setIsShaking(true);
-    setTimeout(() => setIsShaking(false), 450);
-
-    const lasers: ActiveLaser[] = [];
-    if (mode === 'h' || mode === 'cross') {
-      lasers.push({ id: Date.now(), r: hitR, direction: 'h' });
+    const specialsToTrigger: { r: number; c: number; special: SpecialType }[] = [];
+    if (mode === "h" || mode === "cross") {
+      specialsToTrigger.push({ r: hitR, c: hitC, special: "rocket_h" });
     }
-    if (mode === 'v' || mode === 'cross') {
-      lasers.push({ id: Date.now() + 1, c: hitC, direction: 'v' });
+    if (mode === "v" || mode === "cross") {
+      specialsToTrigger.push({ r: hitR, c: hitC, special: "rocket_v" });
     }
-    setActiveLasers(lasers);
-    setTimeout(() => setActiveLasers([]), 750);
 
     const collectedCounts: { [key: string]: number } = {};
-    const newBoard: Tile[][] = b.map((row) => row.map((tile) => ({ ...tile })));
-
-    const targetsToClear = new Set<string>();
-    if (mode === 'h' || mode === 'cross') {
-      for (let c = 0; c < numCols; c++) {
-        targetsToClear.add(`${hitR},${c}`);
-      }
-    }
-    if (mode === 'v' || mode === 'cross') {
-      for (let r = 0; r < numRows; r++) {
-        targetsToClear.add(`${r},${hitC}`);
-      }
-    }
-
-    targetsToClear.forEach((coord) => {
-      const [r, c] = coord.split(',').map(Number);
-      destroyTileAt(newBoard, r, c, collectedCounts);
-    });
-
+    const newBoard = await detonateSpecialsWithChainReaction(b, specialsToTrigger, collectedCounts);
     addCollectedTargets(collectedCounts);
-    await new Promise((res) => setTimeout(res, 550));
+    await new Promise((res) => setTimeout(res, 450));
 
     const settledBoard = await dropBoardWithGravity(newBoard);
 
@@ -1579,7 +1604,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     setTimeout(() => setActiveLasers([]), 800);
 
     const collectedCounts: { [key: string]: number } = {};
-    const newBoard: Tile[][] = b.map((row) => row.map((t) => ({ ...t })));
+    let newBoard: Tile[][] = b.map((row) => row.map((t) => ({ ...t })));
     const targetsToClear = new Set<string>();
 
     // 横3列の全マス
@@ -1597,13 +1622,25 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
       }
     }
 
+    const secondarySpecials: { r: number; c: number; special: SpecialType }[] = [];
     targetsToClear.forEach((coord) => {
       const [r, c] = coord.split(',').map(Number);
+      const t = newBoard[r][c];
+      if (t.special === 'rocket_h' || t.special === 'rocket_v' || t.special === 'bomb') {
+        secondarySpecials.push({ r, c, special: t.special });
+      }
       destroyTileAt(newBoard, r, c, collectedCounts);
+      newBoard[r][c] = { id: '', type: 'wood', special: 'none' };
     });
 
     addCollectedTargets(collectedCounts);
-    await new Promise((res) => setTimeout(res, 600));
+    await new Promise((res) => setTimeout(res, 450));
+
+    // メガ十字レーザーに巻き込まれた他の特殊ピースも連鎖起爆！
+    if (secondarySpecials.length > 0) {
+      newBoard = await detonateSpecialsWithChainReaction(newBoard, secondarySpecials, collectedCounts);
+      addCollectedTargets(collectedCounts);
+    }
 
     const settledBoard = await dropBoardWithGravity(newBoard);
 
@@ -1635,8 +1672,9 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     } catch {}
 
     const collectedCounts: { [key: string]: number } = {};
-    const newBoard: Tile[][] = b.map((row) => row.map((t) => ({ ...t })));
+    let newBoard: Tile[][] = b.map((row) => row.map((t) => ({ ...t })));
 
+    const secondarySpecials: { r: number; c: number; special: SpecialType }[] = [];
     // 周囲3マス（盤面7×7全体を網羅）
     for (let dr = -3; dr <= 3; dr++) {
       for (let dc = -3; dc <= 3; dc++) {
@@ -1645,6 +1683,9 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
         if (r >= 0 && r < numRows && c >= 0 && c < numCols) {
           const tile = newBoard[r][c];
           if (tile.id !== '') {
+            if (tile.special === 'rocket_h' || tile.special === 'rocket_v' || tile.special === 'bomb') {
+              secondarySpecials.push({ r, c, special: tile.special });
+            }
             if (tile.gimmick?.type === 'rock') {
               tile.gimmick = undefined;
               collectedCounts['rock'] = (collectedCounts['rock'] || 0) + 1;
@@ -1666,7 +1707,13 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     }
 
     addCollectedTargets(collectedCounts);
-    await new Promise((res) => setTimeout(res, 600));
+    await new Promise((res) => setTimeout(res, 450));
+
+    // メガ爆弾に巻き込まれた他の特殊ピースも連鎖起爆！
+    if (secondarySpecials.length > 0) {
+      newBoard = await detonateSpecialsWithChainReaction(newBoard, secondarySpecials, collectedCounts);
+      addCollectedTargets(collectedCounts);
+    }
 
     const settledBoard = await dropBoardWithGravity(newBoard);
 
@@ -1699,7 +1746,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
       });
     } catch {}
 
-    const newBoard: Tile[][] = b.map((row) => row.map((t) => ({ ...t })));
+    let newBoard: Tile[][] = b.map((row) => row.map((t) => ({ ...t })));
     const bombList: { r: number; c: number }[] = [];
 
     // 起爆位置
@@ -1785,7 +1832,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
       });
     } catch {}
 
-    const newBoard: Tile[][] = b.map((row) => row.map((t) => ({ ...t })));
+    let newBoard: Tile[][] = b.map((row) => row.map((t) => ({ ...t })));
     const rocketList: { r: number; c: number; dir: 'h' | 'v' }[] = [];
 
     // 起爆位置
@@ -2112,7 +2159,20 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
         className={`relative p-2.5 bg-amber-950/85 rounded-3xl border-2 border-amber-600/50 shadow-[0_12px_36px_rgba(0,0,0,0.6)] backdrop-blur-md touch-none z-10 overflow-hidden ${isShaking ? "animate-board-shake" : ""}`}>
-        {/* レーザー光線オーバーレイ */}
+        {/* 爆弾ショックウェーブリング演出 */}
+        {activeShockwaves.map((sw) => {
+          const topPercent = ((sw.r + 0.5) / numRows) * 100;
+          const leftPercent = ((sw.c + 0.5) / numCols) * 100;
+          return (
+            <div
+              key={`shockwave-${sw.id}`}
+              style={{ top: `${topPercent}%`, left: `${leftPercent}%` }}
+              className="absolute w-28 h-28 rounded-full border-4 border-amber-400 bg-orange-500/25 animate-shockwave z-30 pointer-events-none"
+            />
+          );
+        })}
+
+        {/* レーザー光線 ＆ ロケット疾走演出 */}
         {activeLasers.map((laser) => {
           if (laser.direction === "h" && laser.r !== undefined) {
             const topPercent = ((laser.r + 0.5) / numRows) * 100;
@@ -2120,9 +2180,23 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
               <div
                 key={`laser-${laser.id}`}
                 style={{ top: `${topPercent}%` }}
-                className="absolute left-1 right-1 -translate-y-1/2 h-5 bg-gradient-to-r from-amber-500 via-yellow-200 to-amber-500 rounded-full blur-[1px] shadow-[0_0_24px_rgba(251,191,36,0.95)] animate-laser-h z-30 pointer-events-none"
+                className="absolute left-1 right-1 -translate-y-1/2 h-6 flex items-center justify-center z-30 pointer-events-none overflow-hidden"
               >
-                <div className="w-full h-full bg-white/90 rounded-full blur-[0.5px]" />
+                {/* 閃光ビーム本体 */}
+                <div className="w-full h-4 bg-gradient-to-r from-amber-500 via-yellow-100 to-amber-500 rounded-full blur-[1px] shadow-[0_0_24px_rgba(251,191,36,0.95)] animate-laser-h">
+                  <div className="w-full h-full bg-white/95 rounded-full blur-[0.5px]" />
+                </div>
+                {/* 左右へ疾走するロケットスプライト */}
+                <img
+                  src={getAssetUrl("/assets/piece_rocket.png")}
+                  alt="ロケット"
+                  className="absolute w-8 h-8 object-contain rotate-90 animate-rocket-dash-h-right drop-shadow-[0_0_10px_rgba(251,191,36,1)]"
+                />
+                <img
+                  src={getAssetUrl("/assets/piece_rocket.png")}
+                  alt="ロケット"
+                  className="absolute w-8 h-8 object-contain -rotate-90 animate-rocket-dash-h-left drop-shadow-[0_0_10px_rgba(251,191,36,1)]"
+                />
               </div>
             );
           }
@@ -2132,9 +2206,22 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
               <div
                 key={`laser-${laser.id}`}
                 style={{ left: `${leftPercent}%` }}
-                className="absolute top-1 bottom-1 -translate-x-1/2 w-5 bg-gradient-to-b from-amber-500 via-yellow-200 to-amber-500 rounded-full blur-[1px] shadow-[0_0_24px_rgba(251,191,36,0.95)] animate-laser-v z-30 pointer-events-none"
+                className="absolute top-1 bottom-1 -translate-x-1/2 w-6 flex items-center justify-center z-30 pointer-events-none overflow-hidden"
               >
-                <div className="w-full h-full bg-white/90 rounded-full blur-[0.5px]" />
+                <div className="w-4 h-full bg-gradient-to-b from-amber-500 via-yellow-100 to-amber-500 rounded-full blur-[1px] shadow-[0_0_24px_rgba(251,191,36,0.95)] animate-laser-v">
+                  <div className="w-full h-full bg-white/95 rounded-full blur-[0.5px]" />
+                </div>
+                {/* 上下へ疾走するロケットスプライト */}
+                <img
+                  src={getAssetUrl("/assets/piece_rocket.png")}
+                  alt="ロケット"
+                  className="absolute w-8 h-8 object-contain rotate-180 animate-rocket-dash-v-down drop-shadow-[0_0_10px_rgba(251,191,36,1)]"
+                />
+                <img
+                  src={getAssetUrl("/assets/piece_rocket.png")}
+                  alt="ロケット"
+                  className="absolute w-8 h-8 object-contain rotate-0 animate-rocket-dash-v-up drop-shadow-[0_0_10px_rgba(251,191,36,1)]"
+                />
               </div>
             );
           }
