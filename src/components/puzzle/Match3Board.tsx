@@ -2064,9 +2064,14 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
                 t.type === 'boulder' ? '巨石' :
                 PIECE_CONFIG[t.type]?.label || '素材';
 
+              const targetImg = PIECE_CONFIG[t.type]?.image;
               return (
                 <div key={t.type} className="flex items-center space-x-1">
-                  <span className="text-lg drop-shadow-sm">{icon}</span>
+                  {targetImg ? (
+                    <img src={targetImg} alt={label} className="w-5 h-5 object-contain drop-shadow-sm" />
+                  ) : (
+                    <span className="text-lg drop-shadow-sm">{icon}</span>
+                  )}
                   <div className="text-left leading-tight">
                     <span className="text-[9px] text-amber-200/70 font-bold block">{label}</span>
                     <span className={`text-[11px] font-black ${isDone ? "text-emerald-400" : "text-white"}`}>
@@ -2227,44 +2232,54 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
                   }`}
                 >
                   {/* メインピース */}
-                  {gimmick?.type === 'rock' ? (
+                  {gimmick?.type === "rock" ? (
                     <span className="text-2xl drop-shadow-md">🪨</span>
-                  ) : tile.special === 'rainbow' ? (
-                    <div className="relative flex items-center justify-center">
-                      <span className="animate-spin-slow text-2xl filter drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">🌈</span>
+                  ) : tile.special === "rainbow" ? (
+                    <div className="relative flex items-center justify-center w-full h-full p-1">
+                      <img
+                        src={getAssetUrl("/assets/piece_rainbow.png")}
+                        alt="虹オーブ"
+                        className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(255,255,255,0.85)] animate-spin-slow"
+                      />
                     </div>
                   ) : isRocket ? (
-                    <div className="relative flex items-center justify-center w-full h-full">
-                      <span
-                        className={`text-2xl filter drop-shadow-md animate-pulse-slow transition-transform ${
-                          tile.special === 'rocket_h' ? 'rotate-90' : 'rotate-0'
-                        }`}
-                      >
-                        🚀
-                      </span>
+                    <div className="relative flex items-center justify-center w-full h-full p-1">
+                      <img
+                        src={getAssetUrl("/assets/piece_rocket.png")}
+                        alt="ロケット"
+                        className={`w-full h-full object-contain filter drop-shadow-md animate-pulse-slow transition-transform ${tile.special === "rocket_h" ? "rotate-90" : "rotate-0"}`}
+                      />
                       {/* 向きバッジ（横 ↔ / 縦 ↕） */}
                       <span className="absolute top-0.5 left-0.5 text-[9px] font-black bg-slate-950/85 border border-slate-700/80 rounded px-0.5 py-0 leading-none text-amber-300">
-                        {tile.special === 'rocket_h' ? '↔' : '↕'}
+                        {tile.special === "rocket_h" ? "↔" : "↕"}
                       </span>
-                      {/* 属性素材バッジ（🪵, 💧, 🌿, 🌰, 🪨） */}
+                      {/* 属性素材バッジ */}
                       <span className="absolute bottom-0 right-0 text-[10px] bg-slate-950/90 border border-slate-700/80 rounded-full px-0.5 py-0 shadow-xs leading-none">
                         {rocketTheme.icon}
                       </span>
                     </div>
                   ) : isBomb ? (
-                    <div className="relative flex items-center justify-center w-full h-full">
-                      <span className="text-2xl filter drop-shadow-md animate-pulse">
-                        💣
-                      </span>
+                    <div className="relative flex items-center justify-center w-full h-full p-1">
+                      <img
+                        src={getAssetUrl("/assets/piece_bomb.png")}
+                        alt="樽爆弾"
+                        className="w-full h-full object-contain filter drop-shadow-md animate-pulse"
+                      />
                       {/* 周囲2マス破壊バッジ */}
                       <span className="absolute top-0.5 left-0.5 text-[9px] font-black bg-slate-950/85 border border-slate-700/80 rounded px-0.5 py-0 leading-none text-rose-400">
                         💥
                       </span>
-                      {/* 属性素材バッジ（🪵, 💧, 🌿, 🌰, 🪨） */}
+                      {/* 属性素材バッジ */}
                       <span className="absolute bottom-0 right-0 text-[10px] bg-slate-950/90 border border-slate-700/80 rounded-full px-0.5 py-0 shadow-xs leading-none">
                         {rocketTheme.icon}
                       </span>
                     </div>
+                  ) : config.image ? (
+                    <img
+                      src={config.image}
+                      alt={config.label}
+                      className="w-full h-full object-contain p-1 filter drop-shadow-sm select-none pointer-events-none transform transition-transform hover:scale-105"
+                    />
                   ) : (
                     <span className="drop-shadow-sm select-none">{config.icon}</span>
                   )}
@@ -2382,7 +2397,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
                 : 'bg-slate-900/90 border border-slate-700/80 hover:border-amber-400/50 hover:bg-slate-850'
             } ${boosters.hammer <= 0 ? 'opacity-35 grayscale cursor-not-allowed' : 'active:scale-95 cursor-pointer'}`}
           >
-            <span className="text-2xl drop-shadow-sm select-none">🔨</span>
+            <img src={getAssetUrl("/assets/booster_hammer.png")} alt="木づち" className="w-7 h-7 object-contain drop-shadow-sm select-none" />
             <span className="text-[10px] font-black text-amber-100 mt-0.5">木づち</span>
             <span className="absolute -top-1.5 -right-1 min-w-[19px] h-[19px] bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-[10px] rounded-full flex items-center justify-center px-1 shadow-sm border border-amber-300">
               {boosters.hammer}
@@ -2400,7 +2415,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
                 : 'bg-slate-900/90 border border-slate-700/80 hover:border-amber-400/50 hover:bg-slate-850'
             } ${boosters.saw <= 0 ? 'opacity-35 grayscale cursor-not-allowed' : 'active:scale-95 cursor-pointer'}`}
           >
-            <span className="text-2xl drop-shadow-sm select-none">🪚</span>
+            <img src={getAssetUrl("/assets/booster_saw.png")} alt="ノコギリ" className="w-7 h-7 object-contain drop-shadow-sm select-none" />
             <span className="text-[10px] font-black text-amber-100 mt-0.5">ノコギリ</span>
             <span className="absolute -top-1.5 -right-1 min-w-[19px] h-[19px] bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-[10px] rounded-full flex items-center justify-center px-1 shadow-sm border border-amber-300">
               {boosters.saw}

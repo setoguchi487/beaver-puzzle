@@ -1,14 +1,14 @@
 import { getAssetUrl } from '../utils/assetPath';
 import type { PuzzleStage, FrontierArea, GimmickType, PieceType, SpecialType } from '../types';
 
-export const PIECE_CONFIG: Record<string, { label: string; icon: string; color: string; bg: string }> = {
-  wood: { label: '丸太', icon: '🪵', color: 'text-amber-800', bg: 'bg-amber-100 border-amber-300' },
-  twig: { label: '小枝', icon: '🌿', color: 'text-emerald-700', bg: 'bg-emerald-100 border-emerald-300' },
-  water: { label: '水滴', icon: '💧', color: 'text-cyan-600', bg: 'bg-cyan-100 border-cyan-300' },
-  acorn: { label: 'どんぐり', icon: '🌰', color: 'text-orange-800', bg: 'bg-orange-100 border-orange-300' },
-  stone: { label: '小石', icon: '🪨', color: 'text-slate-600', bg: 'bg-slate-100 border-slate-300' },
-  berry: { label: '野イチゴ', icon: '🍓', color: 'text-rose-600', bg: 'bg-rose-100 border-rose-300' },
-  mushroom: { label: 'キノコ', icon: '🍄', color: 'text-purple-600', bg: 'bg-purple-100 border-purple-300' },
+export const PIECE_CONFIG: Record<string, { label: string; icon: string; color: string; bg: string; image?: string }> = {
+  wood: { label: '丸太', icon: '🪵', color: 'text-amber-800', bg: 'bg-amber-100 border-amber-300', image: getAssetUrl('/assets/piece_wood.png') },
+  twig: { label: '小枝', icon: '🌿', color: 'text-emerald-700', bg: 'bg-emerald-100 border-emerald-300', image: getAssetUrl('/assets/piece_twig.png') },
+  water: { label: '水滴', icon: '💧', color: 'text-cyan-600', bg: 'bg-cyan-100 border-cyan-300', image: getAssetUrl('/assets/piece_water.png') },
+  acorn: { label: 'どんぐり', icon: '🌰', color: 'text-orange-800', bg: 'bg-orange-100 border-orange-300', image: getAssetUrl('/assets/piece_acorn.png') },
+  stone: { label: '小石', icon: '🪨', color: 'text-slate-600', bg: 'bg-slate-100 border-slate-300', image: getAssetUrl('/assets/piece_stone.png') },
+  berry: { label: '野イチゴ', icon: '🍓', color: 'text-rose-600', bg: 'bg-rose-100 border-rose-300', image: getAssetUrl('/assets/piece_berry.png') },
+  mushroom: { label: 'キノコ', icon: '🍄', color: 'text-purple-600', bg: 'bg-purple-100 border-purple-300', image: getAssetUrl('/assets/piece_mushroom.png') },
 };
 
 // 1〜100ステージの生成関数（節目ステージを手動で精密設計し、間を自動補間）
