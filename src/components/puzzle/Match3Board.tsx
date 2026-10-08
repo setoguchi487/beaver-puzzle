@@ -43,6 +43,44 @@ const DEFAULT_BOOSTERS: PlayerBoosters = {
   clock: 2,
 };
 
+export interface PreBoosters {
+  startRocket: number;
+  startBomb: number;
+  extraMoves: number;
+}
+
+const DEFAULT_PRE_BOOSTERS: PreBoosters = {
+  startRocket: 2,
+  startBomb: 2,
+  extraMoves: 2,
+};
+
+const loadPreBoosters = (): PreBoosters => {
+  try {
+    const saved = localStorage.getItem('beaver_puzzle_pre_boosters');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return {
+        startRocket: typeof parsed.startRocket === 'number' ? parsed.startRocket : DEFAULT_PRE_BOOSTERS.startRocket,
+        startBomb: typeof parsed.startBomb === 'number' ? parsed.startBomb : DEFAULT_PRE_BOOSTERS.startBomb,
+        extraMoves: typeof parsed.extraMoves === 'number' ? parsed.extraMoves : DEFAULT_PRE_BOOSTERS.extraMoves,
+      };
+    }
+  } catch (e) {
+    console.error('Failed to load pre-boosters:', e);
+  }
+  return { ...DEFAULT_PRE_BOOSTERS };
+};
+
+const loadWinStreak = (): number => {
+  try {
+    const saved = localStorage.getItem('beaver_puzzle_win_streak');
+    return saved ? Math.max(0, Number(saved)) : 0;
+  } catch {
+    return 0;
+  }
+};
+
 const loadBoosters = (): PlayerBoosters => {
   try {
     const saved = localStorage.getItem('beaver_puzzle_boosters');
@@ -161,6 +199,14 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
   }, [movesLeft, buddySkill, gameResult]);
   const [comboToast, setComboToast] = useState<string | null>(null);
   const [boosters, setBoosters] = useState<PlayerBoosters>(loadBoosters);
+  const [winStreak, setWinStreak] = useState<number>(loadWinStreak);
+  const [preBoosters, setPreBoosters] = useState<PreBoosters>(loadPreBoosters);
+  const [selectedPreBoosters, setSelectedPreBoosters] = useState<{
+    startRocket: boolean;
+    startBomb: boolean;
+    extraMoves: boolean;
+  }>({ startRocket: false, startBomb: false, extraMoves: false });
+  const [showStartModal, setShowStartModal] = useState<boolean>(true);
   const [activeBooster, setActiveBooster] = useState<BoosterItemType | null>(null);
 
   // 開発者モードや外部変更イベントによるアイテム同期
@@ -239,6 +285,40 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
   const isMouseDownRef = useRef<boolean>(false);
   const vinesClearedThisTurnRef = useRef<number>(0);
 
+  // ★ヒント案内・コンボコール・ボーナスタイム用ステート
+  const [hintTiles, setHintTiles] = useState<{ r: number; c: number }[] | null>(null);
+  const [comboCall, setComboCall] = useState<{ id: number; text: string; color: string; combo: number } | null>(null);
+  const [isBonusTime, setIsBonusTime] = useState<boolean>(false);
+  const [finalClearedMovesLeft, setFinalClearedMovesLeft] = useState<number>(movesLeft);
+  const isBonusTimeRef = useRef<boolean>(false);
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const triggerComboCall = (combo: number) => {
+    let text = "";
+    let color = "";
+    if (combo === 2) {
+      text = "Nice! 🪵";
+      color = "from-amber-400 to-yellow-500 border-amber-300 text-amber-950";
+    } else if (combo === 3) {
+      text = "Great! ✨";
+      color = "from-cyan-400 to-blue-500 border-cyan-300 text-slate-950";
+    } else if (combo === 4) {
+      text = "Amazing! 🚀";
+      color = "from-purple-400 to-pink-500 border-purple-300 text-white";
+    } else if (combo >= 5) {
+      text = `BEAVER BLAST! 🦫💥 x${combo}`;
+      color = "from-amber-400 via-rose-500 to-yellow-300 border-yellow-200 text-slate-950 font-black";
+    }
+
+    if (text) {
+      const id = Date.now();
+      setComboCall({ id, text, color, combo });
+      setTimeout(() => {
+        setComboCall((prev) => (prev?.id === id ? null : prev));
+      }, 950);
+    }
+  };
+
   const touchStartRef = useRef<{ x: number; y: number; r: number; c: number } | null>(null);
 
   useEffect(() => {
@@ -277,6 +357,63 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     setGameResult('playing');
     setSelectedPos(null);
     setComboToast(null);
+  };
+
+  // ★ステージ開始時のプレブースター消費＆連勝ボーナス初期配備
+  const handleStartStage = () => {
+    // 1. プレブースターの消費
+    const updatedPre = { ...preBoosters };
+    if (selectedPreBoosters.startRocket && updatedPre.startRocket > 0) updatedPre.startRocket--;
+    if (selectedPreBoosters.startBomb && updatedPre.startBomb > 0) updatedPre.startBomb--;
+    if (selectedPreBoosters.extraMoves && updatedPre.extraMoves > 0) updatedPre.extraMoves--;
+    setPreBoosters(updatedPre);
+    localStorage.setItem('beaver_puzzle_pre_boosters', JSON.stringify(updatedPre));
+
+    // 2. 手数+3ボーナス
+    const initialMoves = selectedPreBoosters.extraMoves ? stage.maxMoves + 3 : stage.maxMoves;
+    setMovesLeft(initialMoves);
+
+    // 3. 連勝ボーナス ＆ プレブースターの初期特殊ピース配置
+    let bonusRockets = 0;
+    let bonusBombs = 0;
+    if (winStreak === 1) bonusRockets += 1;
+    else if (winStreak === 2) { bonusRockets += 1; bonusBombs += 1; }
+    else if (winStreak >= 3) { bonusRockets += 2; bonusBombs += 1; }
+
+    if (selectedPreBoosters.startRocket) bonusRockets += 1;
+    if (selectedPreBoosters.startBomb) bonusBombs += 1;
+
+    if (bonusRockets > 0 || bonusBombs > 0) {
+      setBoard((prev) => {
+        const next = prev.map((row) => row.map((t) => ({ ...t })));
+        const candidates: { r: number; c: number }[] = [];
+        next.forEach((row, r) => {
+          row.forEach((t, c) => {
+            if (t.id !== '' && !t.disabled && !t.gimmick && t.special === 'none') {
+              candidates.push({ r, c });
+            }
+          });
+        });
+        // シャッフル
+        for (let i = candidates.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+        }
+        let idx = 0;
+        for (let i = 0; i < bonusRockets && idx < candidates.length; i++, idx++) {
+          const { r, c } = candidates[idx];
+          next[r][c].special = Math.random() < 0.5 ? 'rocket_h' : 'rocket_v';
+        }
+        for (let i = 0; i < bonusBombs && idx < candidates.length; i++, idx++) {
+          const { r, c } = candidates[idx];
+          next[r][c].special = 'bomb';
+        }
+        return next;
+      });
+      sounds.playRocket();
+    }
+
+    setShowStartModal(false);
 
     const map: { [key: string]: { required: number; current: number } } = {};
     stage.targets.forEach((t) => {
@@ -510,6 +647,73 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     return false;
   };
 
+  // 有効な動かせる手を1組探索（アイドリング時のヒント案内用）
+  const findAValidMove = (b: Tile[][]): { r1: number; c1: number; r2: number; c2: number } | null => {
+    // 1. 特殊ピース同士の組み合わせを優先チェック
+    for (let r = 0; r < numRows; r++) {
+      for (let c = 0; c < numCols; c++) {
+        if (b[r][c].disabled || b[r][c].gimmick?.type === "vine" || b[r][c].gimmick?.type === "rock") continue;
+        const s1 = b[r][c].special;
+        const isSpec1 = s1 !== "none";
+
+        if (c < numCols - 1 && !b[r][c + 1].disabled && b[r][c + 1].gimmick?.type !== "vine" && b[r][c + 1].gimmick?.type !== "rock") {
+          const s2 = b[r][c + 1].special;
+          if ((isSpec1 && s2 !== "none") || s1 === "rainbow" || s2 === "rainbow") {
+            return { r1: r, c1: c, r2: r, c2: c + 1 };
+          }
+        }
+        if (r < numRows - 1 && !b[r + 1][c].disabled && b[r + 1][c].gimmick?.type !== "vine" && b[r + 1][c].gimmick?.type !== "rock") {
+          const s2 = b[r + 1][c].special;
+          if ((isSpec1 && s2 !== "none") || s1 === "rainbow" || s2 === "rainbow") {
+            return { r1: r, c1: c, r2: r + 1, c2: c };
+          }
+        }
+      }
+    }
+
+    // 2. 通常マッチの組み合わせチェック
+    for (let r = 0; r < numRows; r++) {
+      for (let c = 0; c < numCols; c++) {
+        if (b[r][c].disabled || b[r][c].gimmick?.type === "vine" || b[r][c].gimmick?.type === "rock") continue;
+
+        if (c < numCols - 1 && !b[r][c + 1].disabled && b[r][c + 1].gimmick?.type !== "vine" && b[r][c + 1].gimmick?.type !== "rock") {
+          const testBoard = b.map((row) => [...row]);
+          const temp = testBoard[r][c];
+          testBoard[r][c] = testBoard[r][c + 1];
+          testBoard[r][c + 1] = temp;
+          if (findMatches(testBoard).length > 0) return { r1: r, c1: c, r2: r, c2: c + 1 };
+        }
+        if (r < numRows - 1 && !b[r + 1][c].disabled && b[r + 1][c].gimmick?.type !== "vine" && b[r + 1][c].gimmick?.type !== "rock") {
+          const testBoard = b.map((row) => [...row]);
+          const temp = testBoard[r][c];
+          testBoard[r][c] = testBoard[r + 1][c];
+          testBoard[r + 1][c] = temp;
+          if (findMatches(testBoard).length > 0) return { r1: r, c1: c, r2: r + 1, c2: c };
+        }
+      }
+    }
+    return null;
+  };
+
+  // アイドリングヒントタイマー（3.8秒放置で動かせるペアをぷるぷる揺らしてアシスト）
+  useEffect(() => {
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    setHintTiles(null);
+
+    if (!isAnimating && gameResult === "playing" && introDismissed && !selectedPos && !activeBooster && !isBonusTime) {
+      idleTimerRef.current = setTimeout(() => {
+        const move = findAValidMove(board);
+        if (move) {
+          setHintTiles([{ r: move.r1, c: move.c1 }, { r: move.r2, c: move.c2 }]);
+        }
+      }, 3800);
+    }
+
+    return () => {
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    };
+  }, [board, isAnimating, gameResult, introDismissed, selectedPos, activeBooster, isBonusTime]);
+
   // 自動シャッフル
   const performShuffle = () => {
     setIsShuffling(true);
@@ -535,6 +739,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
   // スワイプ検出
   const handleTouchStart = (r: number, c: number, e: React.TouchEvent) => {
+    setHintTiles(null);
     if (isAnimating || gameResult !== 'playing' || !introDismissed) return;
     const tile = board[r][c];
     // ツタや岩はスワイプ不可
@@ -582,6 +787,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
   // マウスドラッグ操作（PC対応）
   const handleMouseDown = (r: number, c: number, e: React.MouseEvent) => {
+    setHintTiles(null);
     if (isAnimating || gameResult !== 'playing' || !introDismissed) return;
     const tile = board[r][c];
     if (tile.gimmick?.type === 'vine' || tile.gimmick?.type === 'rock') return;
@@ -883,6 +1089,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
   };
 
   const handleTileClick = async (r: number, c: number) => {
+    setHintTiles(null);
     if (isAnimating || gameResult !== 'playing' || !introDismissed) return;
     const tile = board[r][c];
     if (tile.disabled) return;
@@ -1110,15 +1317,101 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     }, 350);
   };
 
-  const checkGameStatus = (moves: number) => {
+  // ★クリア後ボーナスタイム（余り手数がロケット・爆弾に変換され、全画面一斉連鎖大爆発！）
+  const executeBonusTime = async (initialMoves: number) => {
+    isBonusTimeRef.current = true;
+    setIsBonusTime(true);
+    setFinalClearedMovesLeft(initialMoves);
+    setIsAnimating(true);
+
+    try {
+      confetti({
+        particleCount: 50,
+        spread: 80,
+        origin: { y: 0.35 },
+        colors: ["#f59e0b", "#10b981", "#3b82f6", "#ec4899", "#ffffff"],
+      });
+    } catch {}
+
+    await new Promise((res) => setTimeout(res, 600));
+
+    let currentMoves = initialMoves;
+    let currentBoard = board.map((row) => row.map((t) => ({ ...t })));
+    const createdSpecials: { r: number; c: number; special: SpecialType }[] = [];
+
+    // 1手ずつ減らしながら通常ピースをロケット・爆弾に変換！
+    while (currentMoves > 0) {
+      currentMoves--;
+      setMovesLeft(currentMoves);
+
+      const candidates: { r: number; c: number }[] = [];
+      for (let r = 0; r < numRows; r++) {
+        for (let c = 0; c < numCols; c++) {
+          const t = currentBoard[r][c];
+          if (t.id !== "" && !t.disabled && !t.gimmick && t.special === "none") {
+            candidates.push({ r, c });
+          }
+        }
+      }
+
+      if (candidates.length > 0) {
+        const pick = candidates[Math.floor(Math.random() * candidates.length)];
+        const newSpecial: SpecialType =
+          Math.random() < 0.5 ? (Math.random() < 0.5 ? "rocket_h" : "rocket_v") : "bomb";
+        currentBoard[pick.r][pick.c] = {
+          ...currentBoard[pick.r][pick.c],
+          special: newSpecial,
+        };
+        createdSpecials.push({ r: pick.r, c: pick.c, special: newSpecial });
+        setBoard(currentBoard.map((row) => [...row]));
+        sounds.playWoodMatch(1);
+        await new Promise((res) => setTimeout(res, 120));
+      } else {
+        await new Promise((res) => setTimeout(res, 60));
+      }
+    }
+
+    await new Promise((res) => setTimeout(res, 400));
+
+    // 全ボーナス特殊ピースを一斉起爆＆大連鎖！！
+    if (createdSpecials.length > 0) {
+      const collectedCounts: { [key: string]: number } = {};
+      currentBoard = await detonateSpecialsWithChainReaction(currentBoard, createdSpecials, collectedCounts);
+      addCollectedTargets(collectedCounts);
+      await new Promise((res) => setTimeout(res, 400));
+      currentBoard = await dropBoardWithGravity(currentBoard);
+      await new Promise((res) => setTimeout(res, 400));
+    }
+
+    // 満を持してクリアモーダルへ！
+    setIsBonusTime(false);
+    setGameResult("cleared");
+    sounds.playStageClear();
+    try {
+      confetti({
+        particleCount: 75,
+        spread: 100,
+        origin: { y: 0.45 },
+        colors: ["#fbbf24", "#f59e0b", "#38bdf8", "#a855f7"],
+      });
+    } catch {}
+    setIsAnimating(false);
+  };
+
+  const checkGameStatus = async (moves: number) => {
     const allDone = Object.values(targetsRef.current).every((t) => !t || t.current >= t.required);
 
     if (allDone) {
-      setGameResult('cleared');
-      sounds.playStageClear();
-      triggerConfetti();
+      if (moves > 0 && !isBonusTimeRef.current) {
+        await executeBonusTime(moves);
+      } else {
+        setFinalClearedMovesLeft(moves);
+        setGameResult("cleared");
+        sounds.playStageClear();
+        triggerConfetti();
+      }
     } else if (moves <= 0) {
-      setGameResult('failed');
+      setGameResult("failed");
     }
   };
 
@@ -1404,6 +1697,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     await new Promise((res) => setTimeout(res, 100));
     const nextResult = findMatchesAndSpecials(settledBoard);
     if (nextResult.matches.length > 0) {
+      triggerComboCall(currentCombo + 1);
       await processMatches(settledBoard, nextResult.matches, currentCombo + 1, nextResult.specialsToCreate);
     }
   };
@@ -1979,6 +2273,154 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     >
       {/* 画面全体の可読性・奥行きを高めるグラデーション */}
       <div className="absolute inset-0 bg-gradient-to-b from-slate-950/40 via-transparent to-slate-950/60 pointer-events-none" />
+      {/* ステージ開始前モーダル（目標確認・連勝ボーナス・プレブースター持ち込み） */}
+      {showStartModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-sm bg-gradient-to-b from-amber-950/95 via-slate-900 to-slate-950 border-2 border-amber-500/50 rounded-3xl p-5 shadow-2xl text-center space-y-4">
+            {/* ヘッダー */}
+            <div>
+              <span className="text-[10px] font-black text-amber-300 uppercase tracking-widest bg-amber-950/80 px-2.5 py-0.5 rounded-full border border-amber-500/40">
+                {getStageBackgroundInfo(stage.id).icon} {getStageBackgroundInfo(stage.id).areaName}
+              </span>
+              <h3 className="text-xl font-black text-white mt-1.5 flex items-center justify-center space-x-2">
+                <span>ステージ {stage.id}</span>
+                {winStreak > 0 && (
+                  <span className="text-xs bg-gradient-to-r from-orange-500 to-amber-400 text-slate-950 font-black px-2 py-0.5 rounded-full shadow-sm animate-pulse">
+                    🔥 {winStreak}連勝中
+                  </span>
+                )}
+              </h3>
+            </div>
+
+            {/* 目標ターゲット一覧 */}
+            <div className="bg-slate-950/60 p-3 rounded-2xl border border-amber-500/20">
+              <span className="text-[10px] text-slate-400 font-bold block mb-2">クリア目標 (手数: {stage.maxMoves}手)</span>
+              <div className="flex items-center justify-center space-x-3">
+                {stage.targets.map((tgt) => {
+                  const pieceCfg = (PIECE_CONFIG as any)[tgt.type];
+                  return (
+                    <div key={tgt.type} className="flex flex-col items-center bg-slate-900/80 px-3 py-1.5 rounded-xl border border-slate-700/60 shadow-inner">
+                      <span className="text-2xl drop-shadow-sm">{pieceCfg ? pieceCfg.icon : '🎯'}</span>
+                      <span className="text-xs font-black text-amber-200 mt-0.5">x{tgt.required}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 連勝ボーナス枠 */}
+            {winStreak > 0 && (
+              <div className="bg-gradient-to-r from-orange-950/60 to-amber-950/60 p-2.5 rounded-2xl border border-orange-500/40 text-left flex items-center space-x-2.5">
+                <span className="text-2xl drop-shadow-sm">🔥</span>
+                <div className="flex-1 text-[11px]">
+                  <div className="font-black text-amber-300">連勝ボーナス発動中！</div>
+                  <div className="text-slate-300 text-[10px]">
+                    開始時に {winStreak === 1 ? '🚀 ロケットx1' : winStreak === 2 ? '🚀 ロケットx1 + 💣 爆弾x1' : '🚀 ロケットx2 + 💣 爆弾x1'} を初期配備！
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* プレブースター持ち込み選択 */}
+            <div className="space-y-1.5 text-left">
+              <span className="text-[10px] text-slate-400 font-bold block px-1">アイテムを持ち込む</span>
+              <div className="grid grid-cols-3 gap-2">
+                {/* 初期ロケット */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (preBoosters.startRocket > 0) {
+                      setSelectedPreBoosters((prev) => ({ ...prev, startRocket: !prev.startRocket }));
+                    }
+                  }}
+                  disabled={preBoosters.startRocket <= 0}
+                  className={`p-2 rounded-2xl border flex flex-col items-center justify-center transition-all ${
+                    selectedPreBoosters.startRocket
+                      ? 'bg-amber-500/25 border-amber-400 ring-2 ring-amber-400 shadow-md shadow-amber-500/20'
+                      : preBoosters.startRocket > 0
+                      ? 'bg-slate-900/80 border-slate-700/80 hover:bg-slate-800'
+                      : 'bg-slate-950/40 border-slate-800 opacity-40 cursor-not-allowed'
+                  }`}
+                >
+                  <span className="text-2xl drop-shadow-sm">🚀</span>
+                  <span className="text-[10px] font-bold text-slate-200 mt-0.5">初期ロケット</span>
+                  <span className="text-[9px] font-black text-amber-300 bg-slate-950/80 px-1.5 py-0.2 rounded-full mt-1 border border-slate-700">
+                    所持: {preBoosters.startRocket}
+                  </span>
+                </button>
+
+                {/* 初期爆弾 */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (preBoosters.startBomb > 0) {
+                      setSelectedPreBoosters((prev) => ({ ...prev, startBomb: !prev.startBomb }));
+                    }
+                  }}
+                  disabled={preBoosters.startBomb <= 0}
+                  className={`p-2 rounded-2xl border flex flex-col items-center justify-center transition-all ${
+                    selectedPreBoosters.startBomb
+                      ? 'bg-amber-500/25 border-amber-400 ring-2 ring-amber-400 shadow-md shadow-amber-500/20'
+                      : preBoosters.startBomb > 0
+                      ? 'bg-slate-900/80 border-slate-700/80 hover:bg-slate-800'
+                      : 'bg-slate-950/40 border-slate-800 opacity-40 cursor-not-allowed'
+                  }`}
+                >
+                  <span className="text-2xl drop-shadow-sm">💣</span>
+                  <span className="text-[10px] font-bold text-slate-200 mt-0.5">初期爆弾</span>
+                  <span className="text-[9px] font-black text-amber-300 bg-slate-950/80 px-1.5 py-0.2 rounded-full mt-1 border border-slate-700">
+                    所持: {preBoosters.startBomb}
+                  </span>
+                </button>
+
+                {/* 手数+3 */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (preBoosters.extraMoves > 0) {
+                      setSelectedPreBoosters((prev) => ({ ...prev, extraMoves: !prev.extraMoves }));
+                    }
+                  }}
+                  disabled={preBoosters.extraMoves <= 0}
+                  className={`p-2 rounded-2xl border flex flex-col items-center justify-center transition-all ${
+                    selectedPreBoosters.extraMoves
+                      ? 'bg-cyan-500/25 border-cyan-400 ring-2 ring-cyan-400 shadow-md shadow-cyan-500/20'
+                      : preBoosters.extraMoves > 0
+                      ? 'bg-slate-900/80 border-slate-700/80 hover:bg-slate-800'
+                      : 'bg-slate-950/40 border-slate-800 opacity-40 cursor-not-allowed'
+                  }`}
+                >
+                  <span className="text-2xl drop-shadow-sm">⏱️</span>
+                  <span className="text-[10px] font-bold text-slate-200 mt-0.5">手数 +3手</span>
+                  <span className="text-[9px] font-black text-cyan-300 bg-slate-950/80 px-1.5 py-0.2 rounded-full mt-1 border border-slate-700">
+                    所持: {preBoosters.extraMoves}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* ボタン群 */}
+            <div className="pt-2 flex items-center space-x-2">
+              <button
+                type="button"
+                onClick={onExit}
+                className="w-1/3 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-2xl transition-colors cursor-pointer"
+              >
+                戻る
+              </button>
+              <button
+                type="button"
+                onClick={handleStartStage}
+                className="flex-1 py-3.5 bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-amber-950 font-black text-sm rounded-2xl shadow-lg shadow-amber-500/30 active:scale-98 transition-transform cursor-pointer flex items-center justify-center space-x-1.5"
+              >
+                <span>スタート！</span>
+                <span>🎮</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 新ギミック紹介ポップアップ */}
       {!introDismissed && stage.newGimmickIntro && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in">
@@ -2044,9 +2486,16 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
               <span>{getStageBackgroundInfo(stage.id).icon}</span>
               <span>{getStageBackgroundInfo(stage.id).areaName}</span>
             </div>
-            <h2 className="text-xs sm:text-sm font-black text-amber-300 tracking-wide drop-shadow-sm">
-              {stage.title}
-            </h2>
+            <div className="flex items-center justify-center space-x-1.5">
+              <h2 className="text-xs sm:text-sm font-black text-amber-300 tracking-wide drop-shadow-sm">
+                {stage.title}
+              </h2>
+              {winStreak > 0 && (
+                <span className="inline-flex items-center px-1.5 py-0.2 bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 font-black text-[9px] rounded-full shadow-sm animate-pulse">
+                  🔥 x{winStreak}
+                </span>
+              )}
+            </div>
             <span className="text-[9px] text-amber-200/80 font-medium">
               クリア報酬: 🪵 +{stage.woodReward} ウッド
             </span>
@@ -2159,6 +2608,28 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
         className={`relative p-2.5 bg-amber-950/85 rounded-3xl border-2 border-amber-600/50 shadow-[0_12px_36px_rgba(0,0,0,0.6)] backdrop-blur-md touch-none z-10 overflow-hidden ${isShaking ? "animate-board-shake" : ""}`}>
+        {/* コンボ演出コールバナー */}
+        {comboCall && (
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 pointer-events-none animate-combo-call">
+            <div className={`px-5 py-2.5 rounded-2xl bg-gradient-to-r ${comboCall.color} border-2 shadow-[0_12px_36px_rgba(0,0,0,0.8)] text-center whitespace-nowrap`}>
+              <span className="text-xl sm:text-2xl font-black tracking-wider drop-shadow-md">
+                {comboCall.text}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* ボーナスタイム中バナー */}
+        {isBonusTime && (
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-40 pointer-events-none animate-bonus-pulse whitespace-nowrap">
+            <div className="px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500 text-slate-950 font-black text-xs sm:text-sm tracking-widest shadow-[0_0_24px_rgba(251,191,36,0.95)] border-2 border-yellow-100 flex items-center space-x-1.5">
+              <span>🎉</span>
+              <span>BONUS FEVER TIME!!</span>
+              <span>🚀💣</span>
+            </div>
+          </div>
+        )}
+
         {/* 爆弾ショックウェーブリング演出 */}
         {activeShockwaves.map((sw) => {
           const topPercent = ((sw.r + 0.5) / numRows) * 100;
@@ -2271,6 +2742,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
               const isRocket = tile.special === 'rocket_h' || tile.special === 'rocket_v';
               const isBomb = tile.special === 'bomb';
               const isRainbowGlow = rainbowTargets.some((rt) => rt.r === r && rt.c === c);
+              const isHinted = !isClearing && !isDropping && (hintTiles?.some((h) => h.r === r && h.c === c) || false);
 
               // ロケットの色分け装飾
               const rocketTheme = {
@@ -2311,6 +2783,8 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
                       ? 'bg-amber-400/40 ring-4 ring-amber-400 scale-105 z-10'
                       : isRainbowGlow
                       ? 'animate-rainbow-glow ring-2 ring-purple-400 bg-purple-950/60 z-20'
+                      : isHinted
+                      ? 'animate-hint-wiggle ring-2 ring-amber-300 ring-offset-1 z-20'
                       : (isRocket || isBomb)
                       ? `ring-2 ${rocketTheme.ring} shadow-lg shadow-amber-500/20`
                       : gimmick?.type === 'rock'
@@ -2552,7 +3026,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
       {/* ステージクリアモーダル（★1〜3評価システム搭載） */}
       {gameResult === 'cleared' && (() => {
-        const earnedStars = calculateStageStars(stage.maxMoves, movesLeft);
+        const earnedStars = calculateStageStars(stage.maxMoves, finalClearedMovesLeft);
         const bonusWood = getStarWoodBonus(earnedStars);
         const totalReward = stage.woodReward + bonusWood;
         const { star3MinMoves, star2MinMoves } = getStarThresholds(stage.maxMoves);
@@ -2641,7 +3115,12 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
               </p>
 
               <button
-                onClick={() => onStageClear(totalReward, stage.unfogAreaIds, earnedStars, movesLeft)}
+                onClick={() => {
+                  const nextStreak = winStreak + 1;
+                  setWinStreak(nextStreak);
+                  localStorage.setItem('beaver_puzzle_win_streak', String(nextStreak));
+                  onStageClear(totalReward, stage.unfogAreaIds, earnedStars, finalClearedMovesLeft);
+                }}
                 className="w-full py-3.5 bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-amber-950 font-black text-sm rounded-2xl shadow-lg shadow-amber-500/30 active:scale-98 transition-transform cursor-pointer"
               >
                 開拓マップへ進む！ 🚀
@@ -2679,13 +3158,22 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
             <div className="flex space-x-2">
               <button
-                onClick={onExit}
+                onClick={() => {
+                  setWinStreak(0);
+                  localStorage.setItem('beaver_puzzle_win_streak', '0');
+                  onExit();
+                }}
                 className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl"
               >
                 マップへ戻る
               </button>
               <button
-                onClick={initBoard}
+                onClick={() => {
+                  setWinStreak(0);
+                  localStorage.setItem('beaver_puzzle_win_streak', '0');
+                  initBoard();
+                  setShowStartModal(true);
+                }}
                 className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-amber-950 font-black text-xs rounded-xl shadow-md"
               >
                 もう一回挑戦！
