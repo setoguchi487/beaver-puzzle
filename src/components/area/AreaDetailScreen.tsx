@@ -224,7 +224,7 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col max-w-md mx-auto relative shadow-2xl overflow-hidden pb-24 select-none">
       {/* 1. ヘッダーナビゲーション */}
-      <header className="sticky top-0 z-30 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 py-2.5 flex items-center justify-between">
+      <header className="sticky top-0 z-30 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-4 pb-2.5 pt-[max(env(safe-area-inset-top,0px),12px)] flex items-center justify-between shadow-md">
         <button
           onClick={onBackToMap}
           className="flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-300 hover:text-white border border-slate-700 active:scale-95 transition-all text-xs font-bold cursor-pointer"
@@ -500,7 +500,7 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
       </div>
 
       {/* 5. 画面下部固定アクションバー（木材が足りない時はパズルへ！） */}
-      <footer className="fixed bottom-0 left-0 right-0 max-w-md mx-auto z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 p-3 flex items-center justify-between shadow-2xl">
+      <footer className="fixed bottom-0 left-0 right-0 max-w-md mx-auto z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 px-3 pt-3 pb-[max(env(safe-area-inset-bottom,0px),14px)] flex items-center justify-between shadow-2xl">
         {isAllCompleted ? (
           <button
             onClick={onBackToMap}

@@ -39,15 +39,18 @@ export default defineConfig({
         ]
       },
       workbox: {
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
             urlPattern: ({ request }) => request.destination === 'image',
-            handler: 'CacheFirst',
+            handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'beaver-game-images-cache',
               expiration: {
-                maxEntries: 200,
-                maxAgeSeconds: 30 * 24 * 60 * 60 // 30日間端末キャッシュ
+                maxEntries: 250,
+                maxAgeSeconds: 7 * 24 * 60 * 60
               },
               cacheableResponse: {
                 statuses: [0, 200]

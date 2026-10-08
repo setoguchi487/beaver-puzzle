@@ -198,7 +198,7 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col max-w-md mx-auto relative shadow-2xl overflow-hidden pb-20 select-none">
       {/* 1. トップステータスバー */}
-      <header className="sticky top-0 z-30 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 py-2.5">
+      <header className="sticky top-0 z-30 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-4 pb-2.5 pt-[max(env(safe-area-inset-top,0px),12px)] shadow-md">
         <div className="flex items-center justify-between">
           {/* ビーバー棟梁 & レベル */}
           <div
@@ -809,7 +809,7 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
       )}
 
       {/* 5. 画面下部固定アクションバー（パズルへ出発！） */}
-      <footer className="fixed bottom-0 left-0 right-0 max-w-md mx-auto z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 p-3 flex items-center justify-between shadow-2xl">
+      <footer className="fixed bottom-0 left-0 right-0 max-w-md mx-auto z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 px-3 pt-3 pb-[max(env(safe-area-inset-bottom,0px),14px)] flex items-center justify-between shadow-2xl">
         <div className="flex items-center space-x-2">
           <div className="text-left">
             <div className="text-[10px] text-slate-400 font-bold">次の開拓ステージ</div>

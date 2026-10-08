@@ -300,6 +300,31 @@ export const DevStageSelector: React.FC<DevStageSelectorProps> = ({
               </button>
             </div>
 
+            {/* PWA / 画像キャッシュ強制クリア */}
+            <button
+              onClick={async () => {
+                if (window.confirm("端末の画像キャッシュ・PWAキャッシュを全て削除して、最新の画像とプログラムを再ダウンロードしますか？")) {
+                  try {
+                    if ("caches" in window) {
+                      const keys = await caches.keys();
+                      await Promise.all(keys.map((k) => caches.delete(k)));
+                    }
+                    if ("serviceWorker" in navigator) {
+                      const regs = await navigator.serviceWorker.getRegistrations();
+                      await Promise.all(regs.map((r) => r.unregister()));
+                    }
+                    window.location.reload();
+                  } catch {
+                    window.location.reload();
+                  }
+                }
+              }}
+              className="w-full py-2 px-3 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/50 text-cyan-200 text-xs font-black rounded-xl flex items-center justify-center space-x-1.5 active:scale-98 transition-all cursor-pointer shadow-sm"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-cyan-300" />
+              <span>キャッシュ全消去＆最新アセットを再取得 ⚡</span>
+            </button>
+
             {/* ゲーム完全初期化 */}
             {onResetAll && (
               <button

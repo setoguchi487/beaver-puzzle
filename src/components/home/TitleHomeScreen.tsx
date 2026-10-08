@@ -54,6 +54,24 @@ export const TitleHomeScreen: React.FC<TitleHomeScreenProps> = ({
     onStartGame();
   };
 
+  const handleForceUpdate = async () => {
+    if (window.confirm("最新バージョンに更新しますか？\n※ゲームデータは保持されたまま、最新の画像とプログラムを再取得します。")) {
+      try {
+        if ("caches" in window) {
+          const cacheNames = await caches.keys();
+          await Promise.all(cacheNames.map((name) => caches.delete(name)));
+        }
+        if ("serviceWorker" in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(registrations.map((reg) => reg.unregister()));
+        }
+        window.location.reload();
+      } catch {
+        window.location.reload();
+      }
+    }
+  };
+
   const handleToggleSound = () => {
     const next = sounds.toggleMute();
     setIsMuted(next);
@@ -122,7 +140,7 @@ export const TitleHomeScreen: React.FC<TitleHomeScreenProps> = ({
       </div>
 
       {/* トップバー（サウンド切替 & 遊び方ガイド） */}
-      <div className="w-full max-w-md flex items-center justify-between z-10 pt-2">
+      <div className="w-full max-w-md flex items-center justify-between z-10 pt-[max(env(safe-area-inset-top,0px),16px)]">
         <button
           onClick={handleToggleSound}
           className="p-2 rounded-2xl bg-slate-900/80 border border-slate-800 text-slate-300 hover:text-white flex items-center space-x-1.5 backdrop-blur-md cursor-pointer active:scale-95 transition-all shadow-sm"
@@ -243,9 +261,23 @@ export const TitleHomeScreen: React.FC<TitleHomeScreenProps> = ({
           </span>
         </button>
 
-        <div className="text-center">
+        <div className="flex items-center justify-between pt-1 px-1">
+          <span className="text-[10px] font-bold text-slate-400 bg-slate-900/90 px-2.5 py-1 rounded-full border border-slate-800">
+            ✨ Ver 1.2.0 (手描きドロップ対応)
+          </span>
+          <button
+            onClick={handleForceUpdate}
+            className="text-[10px] font-bold text-amber-300 hover:text-amber-200 bg-slate-900/90 hover:bg-slate-850 px-2.5 py-1 rounded-full border border-amber-500/40 flex items-center space-x-1 active:scale-95 transition-transform cursor-pointer"
+            title="最新版にキャッシュを更新"
+          >
+            <RotateCcw className="w-3 h-3 text-amber-400" />
+            <span>最新版に更新 🔄</span>
+          </button>
+        </div>
+
+        <div className="text-center pb-[max(env(safe-area-inset-bottom,0px),8px)]">
           <p className="text-[10px] text-slate-500">
-            © ふたりビーバーのダム開拓パズル • PWA対応オフラインプレイ対応
+            © ふたりビーバーのダム開拓パズル • PWAオフライン対応
           </p>
         </div>
       </div>

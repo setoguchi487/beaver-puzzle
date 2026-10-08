@@ -1927,7 +1927,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
   return (
     <div 
-      className="flex flex-col items-center justify-between min-h-screen text-white max-w-md mx-auto p-3.5 select-none relative overflow-hidden bg-cover bg-top"
+      className="flex flex-col items-center justify-between min-h-screen text-white max-w-md mx-auto px-3.5 pb-[max(env(safe-area-inset-bottom,0px),14px)] pt-[max(env(safe-area-inset-top,0px),16px)] select-none relative overflow-hidden bg-cover bg-top"
       style={{ backgroundImage: `url("${getStageBackgroundInfo(stage.id).bg}")` }}
     >
       {/* 画面全体の可読性・奥行きを高めるグラデーション */}

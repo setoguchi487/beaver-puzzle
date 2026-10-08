@@ -12,6 +12,19 @@
   }
 }
 
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-top-padding {
+  padding-top: max(env(safe-area-inset-top, 0px), 16px);
+}
+
+.safe-bottom-padding {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
+}
+
 body {
   margin: 0;
   padding: 0;
