@@ -2600,7 +2600,15 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
                 t.type === 'boulder' ? '巨石' :
                 PIECE_CONFIG[t.type]?.label || '素材';
 
-              const targetImg = PIECE_CONFIG[t.type]?.image;
+              const gimmickImg =
+                t.type === 'ice' ? getAssetUrl('/assets/gimmick_ice.png') :
+                t.type === 'rock' ? getAssetUrl('/assets/gimmick_rock.png') :
+                t.type === 'vine' ? getAssetUrl('/assets/gimmick_vine.png') :
+                t.type === 'mud' ? getAssetUrl('/assets/gimmick_mud.png') :
+                t.type === 'chest' ? getAssetUrl('/assets/gimmick_chest.png') :
+                t.type === 'boulder' ? getAssetUrl('/assets/gimmick_rock.png') :
+                null;
+              const targetImg = gimmickImg || PIECE_CONFIG[t.type]?.image;
               return (
                 <div key={t.type} className="flex items-center space-x-1">
                   {targetImg ? (
@@ -2839,7 +2847,13 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
                 >
                   {/* メインピース */}
                   {gimmick?.type === "rock" ? (
-                    <span className="text-2xl drop-shadow-md">🪨</span>
+                    <div className="relative w-full h-full p-1 flex items-center justify-center">
+                      <img
+                        src={getAssetUrl("/assets/gimmick_rock.png")}
+                        alt="岩"
+                        className="w-full h-full object-contain filter drop-shadow-md select-none pointer-events-none"
+                      />
+                    </div>
                   ) : tile.special === "rainbow" ? (
                     <div className="relative flex items-center justify-center w-full h-full p-1">
                       <img
@@ -2892,15 +2906,13 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
                   {/* 下地ギミック：泥んこレイヤー */}
                   {tile.underlay?.type === 'mud' && (
-                    <div className={`absolute inset-0 rounded-xl pointer-events-none z-0 transition-all ${
-                      tile.underlay.hp >= 2
-                        ? 'bg-amber-950/80 border-2 border-amber-800/90 shadow-inner'
-                        : 'bg-amber-900/50 border border-amber-700/60'
-                    }`}>
-                      <div className="absolute inset-0 flex items-center justify-center opacity-30 select-none">
-                        <span className="text-xl">🟫</span>
-                      </div>
-                      <span className="absolute bottom-0.5 right-0.5 text-[8px] font-black text-amber-300 bg-amber-950/90 px-1 rounded-sm leading-none border border-amber-700/60">
+                    <div className="absolute inset-0 rounded-xl pointer-events-none z-0 overflow-hidden">
+                      <img
+                        src={getAssetUrl("/assets/gimmick_mud.png")}
+                        alt="泥"
+                        className={`w-full h-full object-cover transition-opacity ${tile.underlay.hp >= 2 ? 'opacity-95' : 'opacity-65'}`}
+                      />
+                      <span className="absolute bottom-0.5 right-0.5 text-[8px] font-black text-amber-200 bg-amber-950/90 px-1 rounded-sm leading-none border border-amber-600/70 shadow-xs">
                         泥{tile.underlay.hp}
                       </span>
                     </div>
@@ -2908,27 +2920,40 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
                   {/* ギミック① 氷ブロックオーバーレイ */}
                   {gimmick?.type === 'ice' && (
-                    <div className="absolute inset-0 bg-cyan-400/35 backdrop-blur-2xs border-2 border-cyan-300/80 rounded-xl flex items-center justify-center pointer-events-none z-20">
-                      {gimmick.hp === 1 ? (
-                        <span className="text-xs text-white drop-shadow-sm font-black">⚡️ヒビ</span>
-                      ) : (
-                        <span className="text-sm opacity-80">🧊</span>
+                    <div className="absolute inset-0 rounded-xl pointer-events-none z-20 overflow-hidden flex items-center justify-center">
+                      <img
+                        src={getAssetUrl("/assets/gimmick_ice.png")}
+                        alt="氷"
+                        className={`w-full h-full object-contain filter drop-shadow-md transition-opacity ${gimmick.hp === 1 ? 'opacity-70' : 'opacity-95'}`}
+                      />
+                      {gimmick.hp === 1 && (
+                        <span className="absolute text-[10px] text-white font-black drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] bg-cyan-950/70 px-1 py-0.2 rounded border border-cyan-300/60">
+                          ⚡️ヒビ
+                        </span>
                       )}
                     </div>
                   )}
 
                   {/* ギミック③ ツタオーバーレイ */}
                   {gimmick?.type === 'vine' && (
-                    <div className="absolute inset-0 border-2 border-dashed border-emerald-500 bg-emerald-950/30 rounded-xl flex items-center justify-center pointer-events-none z-20">
-                      <span className="text-xs text-emerald-300 drop-shadow-sm font-black absolute bottom-0 right-0 p-0.5">🌿</span>
+                    <div className="absolute inset-0 rounded-xl pointer-events-none z-20 overflow-hidden flex items-center justify-center">
+                      <img
+                        src={getAssetUrl("/assets/gimmick_vine.png")}
+                        alt="ツタ"
+                        className="w-full h-full object-contain filter drop-shadow-md"
+                      />
                     </div>
                   )}
 
                   {/* ギミック④ 木工のからくり宝箱 */}
                   {gimmick?.type === 'chest' && (
-                    <div className="absolute inset-0 bg-gradient-to-b from-amber-700 to-amber-950 border-2 border-amber-400 rounded-xl flex flex-col items-center justify-center shadow-lg z-20">
-                      <span className="text-2xl drop-shadow-md select-none animate-bounce-subtle">📦</span>
-                      <div className="flex gap-0.5 mt-0.5">
+                    <div className="absolute inset-0 rounded-xl flex flex-col items-center justify-center shadow-lg z-20 p-0.5">
+                      <img
+                        src={getAssetUrl("/assets/gimmick_chest.png")}
+                        alt="宝箱"
+                        className="w-full h-full object-contain filter drop-shadow-md select-none animate-bounce-subtle"
+                      />
+                      <div className="absolute bottom-1 flex gap-0.5 bg-slate-950/70 px-1 py-0.5 rounded-full border border-amber-500/40">
                         {[1, 2, 3].map((hpIndex) => (
                           <div
                             key={hpIndex}
@@ -2945,14 +2970,18 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
                   {/* ギミック⑤ ダムの巨石 */}
                   {gimmick?.type === 'boulder' && (
-                    <div className="absolute inset-0 bg-slate-900 border-2 border-slate-500 rounded-xl flex flex-col items-center justify-center shadow-inner z-20">
-                      <span className="text-2xl drop-shadow-md select-none">🗿</span>
-                      <div className="flex gap-0.5 mt-0.5">
+                    <div className="absolute inset-0 rounded-xl flex flex-col items-center justify-center shadow-inner z-20 p-0.5">
+                      <img
+                        src={getAssetUrl("/assets/gimmick_rock.png")}
+                        alt="巨石"
+                        className="w-full h-full object-contain filter drop-shadow-lg select-none"
+                      />
+                      <div className="absolute bottom-1 flex gap-0.5 bg-slate-950/70 px-1 py-0.5 rounded-full border border-slate-600/40">
                         {[1, 2, 3].map((hpIndex) => (
                           <div
                             key={hpIndex}
                             className={`w-1.5 h-1.5 rounded-full ${
-                              hpIndex <= (gimmick.hp || 1) ? 'bg-slate-300' : 'bg-slate-800'
+                              hpIndex <= (gimmick.hp || 1) ? 'bg-slate-200' : 'bg-slate-700'
                             }`}
                           />
                         ))}
