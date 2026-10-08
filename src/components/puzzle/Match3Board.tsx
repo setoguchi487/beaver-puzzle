@@ -112,12 +112,23 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
   const swanTriggeredRef = useRef(false);
   const onStartTriggeredRef = useRef(false);
 
-  // チャプターに応じた高解像度背景画像
-  const getChapterBg = (sId: number) => {
-    if (sId <= 25) return getAssetUrl('/assets/shallows_stage_5.jpg');
-    if (sId <= 50) return getAssetUrl('/assets/mill_stage_5.jpg');
-    if (sId <= 75) return getAssetUrl('/assets/spring_stage_5.jpg');
-    return getAssetUrl('/assets/paradise_stage_5.jpg');
+  // 全15エリアの美麗ステージ背景画像 & エリア情報マッピング（全100ステージ対応）
+  const getStageBackgroundInfo = (sId: number) => {
+    if (sId <= 7) return { bg: getAssetUrl('/assets/shallows_stage_5.jpg'), areaName: 'はじまりのせせらぎ', icon: '🦆' };
+    if (sId <= 14) return { bg: getAssetUrl('/assets/dam_stage_5.jpg'), areaName: '小枝ダムの浅瀬', icon: '🐟' };
+    if (sId <= 21) return { bg: getAssetUrl('/assets/lodge_stage_5.jpg'), areaName: '木漏れ日のロッジ', icon: '🐿️' };
+    if (sId <= 28) return { bg: getAssetUrl('/assets/pier_stage_5.jpg'), areaName: '釣りテラス＆桟橋', icon: '🐦' };
+    if (sId <= 35) return { bg: getAssetUrl('/assets/mill_stage_5.jpg'), areaName: '古い水車小屋', icon: '🦉' };
+    if (sId <= 42) return { bg: getAssetUrl('/assets/garden_stage_5.jpg'), areaName: 'ホタルの花園', icon: '🦌' };
+    if (sId <= 49) return { bg: getAssetUrl('/assets/camp_stage_5.jpg'), areaName: 'せせらぎキャンプ場', icon: '🦝' };
+    if (sId <= 56) return { bg: getAssetUrl('/assets/workshop_stage_5.jpg'), areaName: '木工ビーバー工房', icon: '🦔' };
+    if (sId <= 63) return { bg: getAssetUrl('/assets/bridge_stage_5.jpg'), areaName: '太鼓橋の渓谷', icon: '🐒' };
+    if (sId <= 70) return { bg: getAssetUrl('/assets/spring_stage_5.jpg'), areaName: '水晶の湧水池', icon: '🦢' };
+    if (sId <= 77) return { bg: getAssetUrl('/assets/orchard_stage_5.jpg'), areaName: 'ベリーの果樹園', icon: '🦡' };
+    if (sId <= 84) return { bg: getAssetUrl('/assets/waterfall_stage_5.jpg'), areaName: '霧立つ大滝', icon: '🦅' };
+    if (sId <= 91) return { bg: getAssetUrl('/assets/stargaze_stage_5.jpg'), areaName: '森の星見台', icon: '🐿️' };
+    if (sId <= 97) return { bg: getAssetUrl('/assets/sacred_stage_5.jpg'), areaName: '守り神の神木', icon: '🦊' };
+    return { bg: getAssetUrl('/assets/paradise_stage_5.jpg'), areaName: 'ビーバーの桃源郷', icon: '🐻' };
   };
 
   // 開始時相棒スキル（フクロウ+2手、クマ+3手など）
@@ -1893,7 +1904,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
   return (
     <div 
       className="flex flex-col items-center justify-between min-h-screen text-white max-w-md mx-auto p-3.5 select-none relative overflow-hidden bg-cover bg-top"
-      style={{ backgroundImage: `url(${getChapterBg(stage.id)})` }}
+      style={{ backgroundImage: `url("${getStageBackgroundInfo(stage.id).bg}")` }}
     >
       {/* 画面全体の可読性・奥行きを高めるグラデーション */}
       <div className="absolute inset-0 bg-gradient-to-b from-slate-950/40 via-transparent to-slate-950/60 pointer-events-none" />
@@ -1958,6 +1969,10 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
           </button>
 
           <div className="text-center">
+            <div className="inline-flex items-center space-x-1 px-2 py-0.2 rounded-full bg-slate-900/80 border border-emerald-400/40 text-[9px] text-emerald-300 font-bold mb-0.5">
+              <span>{getStageBackgroundInfo(stage.id).icon}</span>
+              <span>{getStageBackgroundInfo(stage.id).areaName}</span>
+            </div>
             <h2 className="text-xs sm:text-sm font-black text-amber-300 tracking-wide drop-shadow-sm">
               {stage.title}
             </h2>

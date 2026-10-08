@@ -1,3 +1,4 @@
+import { getAssetUrl } from '../../utils/assetPath';
 import React, { useState, useEffect } from 'react';
 import type { StageRecord } from '../../types';
 import { STAGES, PIECE_CONFIG } from '../../data/masterData';
@@ -162,12 +163,18 @@ export const StageSelectModal: React.FC<StageSelectModalProps> = ({
             })}
           </div>
 
-          {/* チャプター進捗バナー */}
-          <div className="flex items-center justify-between px-2 text-[10px] text-slate-400">
-            <span className="font-bold text-amber-200">
-              {currentChapter.name}: {currentChapter.subName}
+          {/* チャプター進捗ビジュアルバナー */}
+          <div className="relative rounded-2xl overflow-hidden border border-slate-700/80 p-2.5 flex items-center justify-between text-[11px] shadow-sm">
+            <div 
+              className="absolute inset-0 bg-cover bg-center filter brightness-40"
+              style={{ backgroundImage: `url("${getAssetUrl(currentChapter.bg)}")` }}
+            />
+            <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px]" />
+            <span className="relative z-10 font-black text-amber-200 flex items-center space-x-1.5 drop-shadow-sm">
+              <span className="text-sm">{currentChapter.icon}</span>
+              <span>{currentChapter.name}: {currentChapter.subName}</span>
             </span>
-            <span className="flex items-center space-x-1 text-yellow-300 font-mono">
+            <span className="relative z-10 flex items-center space-x-1 text-yellow-300 font-mono font-bold bg-slate-950/70 px-2 py-0.5 rounded-lg border border-yellow-400/40">
               <Star className="w-3 h-3 fill-yellow-400 text-yellow-300" />
               <span>{chapterStars} / {chapterMaxStars}</span>
             </span>

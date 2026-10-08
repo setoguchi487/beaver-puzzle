@@ -678,6 +678,21 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
               ) : (
                 /* 2. 開放済み（荒廃または復旧中・完了）の場合：ステージ説明＋進むボタン */
                 <div className="space-y-4">
+                  {/* ステージ復旧段階ビジュアルプレビュー */}
+                  {selectedArea.detailImages && selectedArea.detailImages[completedTasksCount] && (
+                    <div className="relative w-full h-36 rounded-2xl overflow-hidden border border-slate-700/80 shadow-md">
+                      <img
+                        src={getAssetUrl(selectedArea.detailImages[completedTasksCount])}
+                        alt={selectedArea.name}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-slate-950/75 backdrop-blur-xs text-[10px] font-bold text-amber-300 border border-amber-500/30 flex items-center space-x-1">
+                        <span>📷 現在の様子</span>
+                        <span>({completedTasksCount}/5段階)</span>
+                      </div>
+                    </div>
+                  )}
+
                   {/* ステージの説明カード */}
                   <div className="p-4 bg-slate-800/80 border border-slate-700/80 rounded-2xl space-y-2.5">
                     <div className="flex items-center justify-between text-xs">

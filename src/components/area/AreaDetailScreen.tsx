@@ -112,6 +112,14 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
 
   const prevImageRef = useRef(currentImage);
 
+  // エリア切り替え時、またはcurrentImageが外部から更新された時にbaseImageを同期
+  useEffect(() => {
+    setBaseImage(currentImage);
+    setRippleImage(null);
+    setIsRippling(false);
+    prevImageRef.current = currentImage;
+  }, [area.id]);
+
   // このエリアの全段階（0〜5）の画像を先読みしてメモリに保持
   useEffect(() => {
     if (area.detailImages) {
@@ -291,7 +299,7 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
         <img
           src={baseImage}
           alt={area.name}
-          onError={(e) => { e.currentTarget.src = getAssetUrl(isAllCompleted ? "/assets/watermill.jpg" : "/assets/river_map.jpg"); }}
+          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = getAssetUrl(isAllCompleted ? "/assets/watermill.jpg" : "/assets/river_map.jpg"); }}
           className="absolute inset-0 w-full h-full object-cover"
         />
 
@@ -301,7 +309,7 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
             key={rippleImage}
             src={rippleImage}
             alt={area.name}
-            onError={(e) => { e.currentTarget.src = getAssetUrl(isAllCompleted ? "/assets/watermill.jpg" : "/assets/river_map.jpg"); }}
+            onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = getAssetUrl(isAllCompleted ? "/assets/watermill.jpg" : "/assets/river_map.jpg"); }}
             className="absolute inset-0 w-full h-full object-cover animate-circle-ripple z-10"
           />
         )}

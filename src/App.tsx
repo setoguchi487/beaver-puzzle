@@ -490,6 +490,7 @@ export const App: React.FC = () => {
 
       {screenMode === 'area_detail' && (
         <AreaDetailScreen
+          key={activeDetailArea.id}
           area={activeDetailArea}
           woodPoints={woodPoints}
           onCompleteTask={handleCompleteTask}
@@ -511,6 +512,7 @@ export const App: React.FC = () => {
 
       {screenMode === 'puzzle' && (
         <Match3Board
+          key={currentStage.id}
           stage={currentStage}
           onStageClear={handleStageClear}
           onExit={() => setScreenMode(previousScreenMode)}
