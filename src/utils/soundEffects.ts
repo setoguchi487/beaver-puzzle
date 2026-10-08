@@ -699,6 +699,18 @@ class SoundEffectManager {
     this.playDrop();
   }
 
+  public buttonClick() {
+    this.playButtonClick();
+  }
+
+  public fanfare() {
+    this.playAreaComplete();
+  }
+
+  public warning() {
+    this.playDrop();
+  }
+
   public playWoodPlank() {
     this.playBuild();
   }

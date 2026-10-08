@@ -1,3 +1,12 @@
+import { AREA_FEATURE_CONFIG, canClaimWatermillWood, claimWatermillWood } from '../../utils/areaUnlocks';
+import { LuckyWheelModal } from '../common/LuckyWheelModal';
+import { WorkshopShopModal } from '../common/WorkshopShopModal';
+import { BeaverClosetModal } from '../common/BeaverClosetModal';
+import { JuiceStandModal } from '../common/JuiceStandModal';
+import { CampfireQuestsModal } from '../common/CampfireQuestsModal';
+import { FishingMiniGameModal } from '../common/FishingMiniGameModal';
+import { PlanetariumModal } from '../common/PlanetariumModal';
+import { SacredTreeModal } from '../common/SacredTreeModal';
 import { getRandomCreatureDialogue } from "../../data/creatureDialogues";
 import { getAssetUrl } from '../../utils/assetPath';
 import { preloadImage, preloadImages } from '../../utils/imagePreloader';
@@ -34,6 +43,8 @@ interface AreaDetailScreenProps {
   onUnlockAllAreas: () => void;
   onResetAreas?: () => void;
   onResetAll?: () => void;
+  areas?: FrontierArea[];
+  totalStars?: number;
 }
 
 export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
@@ -50,7 +61,60 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
   onUnlockAllAreas,
   onResetAreas,
   onResetAll,
+  areas = [],
+  totalStars = 0,
 }) => {
+  const allAreas = areas.length > 0 ? areas : [area];
+  const featureConfig = AREA_FEATURE_CONFIG[area.id];
+
+  const [isWheelOpen, setIsWheelOpen] = useState(false);
+  const [isShopOpen, setIsShopOpen] = useState(false);
+  const [isClosetOpen, setIsClosetOpen] = useState(false);
+  const [isJuiceOpen, setIsJuiceOpen] = useState(false);
+  const [isQuestsOpen, setIsQuestsOpen] = useState(false);
+  const [isFishingOpen, setIsFishingOpen] = useState(false);
+  const [isPlanetariumOpen, setIsPlanetariumOpen] = useState(false);
+  const [isSacredTreeOpen, setIsSacredTreeOpen] = useState(false);
+
+  const handleOpenCurrentFeature = () => {
+    switch (area.id) {
+      case 'small_dam':
+        setIsWheelOpen(true);
+        break;
+      case 'beaver_workshop':
+        setIsShopOpen(true);
+        break;
+      case 'watermill_zone':
+        if (canClaimWatermillWood(allAreas)) {
+          const wood = claimWatermillWood();
+          onAddWood(wood);
+          sounds.fanfare();
+        } else {
+          sounds.warning();
+        }
+        break;
+      case 'beaver_lodge':
+        setIsClosetOpen(true);
+        break;
+      case 'berry_orchard':
+        setIsJuiceOpen(true);
+        break;
+      case 'riverside_camp':
+        setIsQuestsOpen(true);
+        break;
+      case 'fishing_pier':
+        setIsFishingOpen(true);
+        break;
+      case 'stargazing_deck':
+        setIsPlanetariumOpen(true);
+        break;
+      case 'sacred_tree':
+        setIsSacredTreeOpen(true);
+        break;
+      default:
+        break;
+    }
+  };
   const [selectedCreature, setSelectedCreature] = useState<Creature | null>(null);
   const [creatureReaction, setCreatureReaction] = useState<string | null>(null);
   const [tappedCreatureId, setTappedCreatureId] = useState<string | null>(null);
@@ -513,6 +577,48 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
         </div>
       </div>
 
+      {/* 施設アンロック案内 / 施設起動バナー */}
+      {featureConfig && (
+        <div className="px-4 py-2">
+          {isAllCompleted ? (
+            <div className="p-3.5 bg-gradient-to-r from-amber-500/20 via-yellow-500/15 to-amber-500/20 border-2 border-amber-400/60 rounded-2xl shadow-lg flex items-center justify-between">
+              <div className="flex items-center space-x-2.5 min-w-0">
+                <span className="text-3xl shrink-0 animate-bounce-subtle">{featureConfig.icon.split('')[0]}</span>
+                <div className="min-w-0">
+                  <div className="flex items-center space-x-1.5">
+                    <span className="text-xs font-black text-amber-200 truncate">{featureConfig.featureName}</span>
+                    <span className="text-[9px] bg-emerald-500/30 text-emerald-300 border border-emerald-400/40 px-1.5 py-0.2 rounded-md font-bold shrink-0">
+                      OPEN!
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-slate-300 mt-0.5 line-clamp-1">{featureConfig.unlockedDescription}</p>
+                </div>
+              </div>
+              <button
+                onClick={handleOpenCurrentFeature}
+                className="px-3 py-1.5 bg-gradient-to-r from-amber-400 to-yellow-400 hover:brightness-110 text-slate-950 font-black text-xs rounded-xl shadow-md cursor-pointer active:scale-95 transition-all flex items-center space-x-1 shrink-0 ml-2"
+              >
+                <span>利用する</span>
+                <Sparkles className="w-3 h-3" />
+              </button>
+            </div>
+          ) : (
+            <div className="p-3 bg-slate-900/60 border border-slate-800 rounded-2xl flex items-center space-x-2.5 opacity-80">
+              <span className="text-2xl filter grayscale opacity-70 shrink-0">{featureConfig.icon.split('')[0]}</span>
+              <div className="text-left min-w-0">
+                <div className="text-[11px] font-black text-slate-300 flex items-center space-x-1">
+                  <span className="truncate">{featureConfig.featureName}</span>
+                  <span className="text-[9px] bg-slate-800 text-slate-400 px-1.5 py-0.2 rounded-md shrink-0">
+                    🔒 全復興で解放
+                  </span>
+                </div>
+                <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">{featureConfig.description}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* 5. 画面下部固定アクションバー（木材が足りない時はパズルへ！） */}
       <footer className="fixed bottom-0 left-0 right-0 max-w-md mx-auto z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 px-3 pt-3 pb-[max(env(safe-area-inset-bottom,0px),14px)] flex items-center justify-between shadow-2xl">
         {isAllCompleted ? (
@@ -533,6 +639,71 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
           </button>
         )}
       </footer>
+
+      {/* 水流仕掛けのラッキールーレットモーダル */}
+      <LuckyWheelModal
+        isOpen={isWheelOpen}
+        onClose={() => setIsWheelOpen(false)}
+        areas={allAreas}
+        onAddWood={onAddWood}
+      />
+
+      {/* 森の木工クラフトショップ */}
+      <WorkshopShopModal
+        isOpen={isShopOpen}
+        onClose={() => setIsShopOpen(false)}
+        areas={allAreas}
+        woodPoints={woodPoints}
+        onSpendWood={(cost) => onAddWood(-cost)}
+      />
+
+      {/* マイルーム＆着せ替えクローゼット */}
+      <BeaverClosetModal
+        isOpen={isClosetOpen}
+        onClose={() => setIsClosetOpen(false)}
+        areas={allAreas}
+      />
+
+      {/* 特製ジューススタンド */}
+      <JuiceStandModal
+        isOpen={isJuiceOpen}
+        onClose={() => setIsJuiceOpen(false)}
+        areas={allAreas}
+        woodPoints={woodPoints}
+        onSpendWood={(cost) => onAddWood(-cost)}
+      />
+
+      {/* 焚き火の集会場・デイリー依頼 */}
+      <CampfireQuestsModal
+        isOpen={isQuestsOpen}
+        onClose={() => setIsQuestsOpen(false)}
+        areas={allAreas}
+        onAddWood={onAddWood}
+      />
+
+      {/* 渓流フィッシングミニゲーム */}
+      <FishingMiniGameModal
+        isOpen={isFishingOpen}
+        onClose={() => setIsFishingOpen(false)}
+        areas={allAreas}
+        onAddWood={onAddWood}
+      />
+
+      {/* 満天の星見台・プラネタリウムギャラリー */}
+      <PlanetariumModal
+        isOpen={isPlanetariumOpen}
+        onClose={() => setIsPlanetariumOpen(false)}
+        areas={allAreas}
+        totalStars={totalStars}
+        onAddWood={onAddWood}
+      />
+
+      {/* 守り神の神木・永続パッシブ加護 */}
+      <SacredTreeModal
+        isOpen={isSacredTreeOpen}
+        onClose={() => setIsSacredTreeOpen(false)}
+        areas={allAreas}
+      />
 
       {/* 生き物詳細モーダル */}
       {selectedCreature && (

@@ -1,3 +1,11 @@
+import { BeaverClosetModal } from '../common/BeaverClosetModal';
+import { JuiceStandModal } from '../common/JuiceStandModal';
+import { CampfireQuestsModal } from '../common/CampfireQuestsModal';
+import { FishingMiniGameModal } from '../common/FishingMiniGameModal';
+import { PlanetariumModal } from '../common/PlanetariumModal';
+import { SacredTreeModal } from '../common/SacredTreeModal';
+import { AreaFeaturesHubModal } from '../common/AreaFeaturesHubModal';
+import { LuckyWheelModal } from '../common/LuckyWheelModal';
 import { WorkshopShopModal } from '../common/WorkshopShopModal';
 import { canClaimWatermillWood, claimWatermillWood } from '../../utils/areaUnlocks';
 import { getRandomCreatureDialogue } from "../../data/creatureDialogues";
@@ -110,6 +118,45 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
   const [isStarRoadOpen, setIsStarRoadOpen] = useState<boolean>(false);
   const [isDailyModalOpen, setIsDailyModalOpen] = useState<boolean>(false);
   const [isShopOpen, setIsShopOpen] = useState<boolean>(false);
+  const [isWheelOpen, setIsWheelOpen] = useState<boolean>(false);
+  const [isHubModalOpen, setIsHubModalOpen] = useState<boolean>(false);
+  const [isClosetOpen, setIsClosetOpen] = useState<boolean>(false);
+  const [isJuiceOpen, setIsJuiceOpen] = useState<boolean>(false);
+  const [isQuestsOpen, setIsQuestsOpen] = useState<boolean>(false);
+  const [isFishingOpen, setIsFishingOpen] = useState<boolean>(false);
+  const [isPlanetariumOpen, setIsPlanetariumOpen] = useState<boolean>(false);
+  const [isSacredTreeOpen, setIsSacredTreeOpen] = useState<boolean>(false);
+
+  const handleOpenFeature = (areaId: string) => {
+    switch (areaId) {
+      case 'small_dam':
+        setIsWheelOpen(true);
+        break;
+      case 'beaver_workshop':
+        setIsShopOpen(true);
+        break;
+      case 'beaver_lodge':
+        setIsClosetOpen(true);
+        break;
+      case 'berry_orchard':
+        setIsJuiceOpen(true);
+        break;
+      case 'riverside_camp':
+        setIsQuestsOpen(true);
+        break;
+      case 'fishing_pier':
+        setIsFishingOpen(true);
+        break;
+      case 'stargazing_deck':
+        setIsPlanetariumOpen(true);
+        break;
+      case 'sacred_tree':
+        setIsSacredTreeOpen(true);
+        break;
+      default:
+        break;
+    }
+  };
   const [watermillBonusClaimed, setWatermillBonusClaimed] = useState<boolean>(false);
   const [isDecoModalOpen, setIsDecoModalOpen] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState(sounds.getMuted());
@@ -337,6 +384,16 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
             >
               <span className="text-xs">🔨🦔</span>
               <span className="text-[10px] text-amber-300 font-black">ショップ</span>
+            </button>
+
+            {/* 水車ラッキールーレットボタン */}
+            <button
+              onClick={() => setIsWheelOpen(true)}
+              className="flex items-center space-x-1.5 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-500/30 hover:to-blue-500/30 border border-cyan-400/50 px-2.5 py-1 rounded-xl cursor-pointer active:scale-95 transition-all shadow-xs"
+              title="水流仕掛けのラッキールーレットを開く"
+            >
+              <span className="text-xs">🎡🌊</span>
+              <span className="text-[10px] text-cyan-300 font-black">ルーレット</span>
             </button>
 
             {/* 水車の木材ストック樽ボーナス受け取り */}
@@ -934,6 +991,72 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
         areas={areas}
         woodPoints={woodPoints}
         onSpendWood={(cost) => onAddWood(-cost)}
+      />
+
+      {/* 水流仕掛けのラッキールーレットモーダル */}
+      <LuckyWheelModal
+        isOpen={isWheelOpen}
+        onClose={() => setIsWheelOpen(false)}
+        areas={areas}
+        onAddWood={onAddWood}
+      />
+
+      {/* エリア施設一覧ハブモーダル */}
+      <AreaFeaturesHubModal
+        isOpen={isHubModalOpen}
+        onClose={() => setIsHubModalOpen(false)}
+        areas={areas}
+        onOpenFeature={handleOpenFeature}
+        onClaimWatermillBonus={handleClaimWatermill}
+        watermillBonusClaimed={watermillBonusClaimed}
+      />
+
+      {/* マイルーム＆着せ替えクローゼット */}
+      <BeaverClosetModal
+        isOpen={isClosetOpen}
+        onClose={() => setIsClosetOpen(false)}
+        areas={areas}
+      />
+
+      {/* 特製ジューススタンド */}
+      <JuiceStandModal
+        isOpen={isJuiceOpen}
+        onClose={() => setIsJuiceOpen(false)}
+        areas={areas}
+        woodPoints={woodPoints}
+        onSpendWood={(cost) => onAddWood(-cost)}
+      />
+
+      {/* 焚き火の集会場・デイリー依頼 */}
+      <CampfireQuestsModal
+        isOpen={isQuestsOpen}
+        onClose={() => setIsQuestsOpen(false)}
+        areas={areas}
+        onAddWood={onAddWood}
+      />
+
+      {/* 渓流フィッシングミニゲーム */}
+      <FishingMiniGameModal
+        isOpen={isFishingOpen}
+        onClose={() => setIsFishingOpen(false)}
+        areas={areas}
+        onAddWood={onAddWood}
+      />
+
+      {/* 満天の星見台・プラネタリウムギャラリー */}
+      <PlanetariumModal
+        isOpen={isPlanetariumOpen}
+        onClose={() => setIsPlanetariumOpen(false)}
+        areas={areas}
+        totalStars={totalStars}
+        onAddWood={onAddWood}
+      />
+
+      {/* 守り神の神木・永続パッシブ加護 */}
+      <SacredTreeModal
+        isOpen={isSacredTreeOpen}
+        onClose={() => setIsSacredTreeOpen(false)}
+        areas={areas}
       />
 
       {/* 生き物図鑑＆開拓バッジモーダル（相棒選択対応） */}

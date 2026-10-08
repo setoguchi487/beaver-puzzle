@@ -510,6 +510,8 @@ export const App: React.FC = () => {
           onUnlockAllAreas={handleUnlockAllAreas}
           onResetAreas={handleResetAreas}
           onResetAll={handleResetAll}
+          areas={areas}
+          totalStars={totalStars}
         />
       )}
 

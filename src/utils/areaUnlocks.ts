@@ -10,6 +10,14 @@ export interface AreaFeatureUnlock {
 }
 
 export const AREA_FEATURE_CONFIG: Record<string, AreaFeatureUnlock> = {
+  small_dam: {
+    areaId: 'small_dam',
+    featureName: '森のラッキールーレット',
+    icon: '🎡🌊',
+    badgeTitle: '水車ガラポン OPEN!',
+    description: '小枝ダムの水流で回る毎日の無料ルーレット',
+    unlockedDescription: '毎日1回無料で木材やブースターが当たります！',
+  },
   beaver_workshop: {
     areaId: 'beaver_workshop',
     featureName: '森の木工クラフトショップ',

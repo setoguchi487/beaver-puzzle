@@ -207,6 +207,14 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     extraMoves: boolean;
   }>({ startRocket: false, startBomb: false, extraMoves: false });
   const [showStartModal, setShowStartModal] = useState<boolean>(true);
+  const [dragOffset, setDragOffset] = useState<{
+    r: number;
+    c: number;
+    dx: number;
+    dy: number;
+    targetR: number;
+    targetC: number;
+  } | null>(null);
   const [activeBooster, setActiveBooster] = useState<BoosterItemType | null>(null);
 
   // 開発者モードや外部変更イベントによるアイテム同期
@@ -753,36 +761,58 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     if (!touchStartRef.current || isAnimating || gameResult !== 'playing') return;
 
     const touch = e.touches[0];
-    const dx = touch.clientX - touchStartRef.current.x;
-    const dy = touch.clientY - touchStartRef.current.y;
-    const threshold = 25;
+    const rawDx = touch.clientX - touchStartRef.current.x;
+    const rawDy = touch.clientY - touchStartRef.current.y;
+    const { r, c } = touchStartRef.current;
 
-    if (Math.abs(dx) > threshold || Math.abs(dy) > threshold) {
-      const { r, c } = touchStartRef.current;
-      touchStartRef.current = null;
+    const isHorizontal = Math.abs(rawDx) >= Math.abs(rawDy);
+    let targetR = r;
+    let targetC = c;
 
-      let targetR = r;
-      let targetC = c;
-
-      if (Math.abs(dx) > Math.abs(dy)) {
-        targetC = dx > 0 ? c + 1 : c - 1;
-      } else {
-        targetR = dy > 0 ? r + 1 : r - 1;
-      }
-
-      if (targetR >= 0 && targetR < numRows && targetC >= 0 && targetC < numCols && !board[targetR][targetC].disabled) {
-        const dest = board[targetR][targetC];
-        // 移動先がツタや岩ならスワイプ無効
-        if (dest.gimmick?.type === 'vine' || dest.gimmick?.type === 'rock') return;
-
-        sounds.playSwipe();
-        swapTiles(r, c, targetR, targetC);
-      }
+    if (isHorizontal) {
+      targetC = rawDx > 0 ? c + 1 : c - 1;
+    } else {
+      targetR = rawDy > 0 ? r + 1 : r - 1;
     }
+
+    if (
+      targetR < 0 || targetR >= numRows ||
+      targetC < 0 || targetC >= numCols ||
+      board[targetR][targetC].disabled ||
+      board[targetR][targetC].gimmick?.type === 'vine' ||
+      board[targetR][targetC].gimmick?.type === 'rock'
+    ) {
+      setDragOffset(null);
+      return;
+    }
+
+    const maxOffset = 46;
+    let clampedDx = 0;
+    let clampedDy = 0;
+
+    if (isHorizontal) {
+      clampedDx = Math.max(-maxOffset, Math.min(maxOffset, rawDx));
+    } else {
+      clampedDy = Math.max(-maxOffset, Math.min(maxOffset, rawDy));
+    }
+
+    setDragOffset({ r, c, dx: clampedDx, dy: clampedDy, targetR, targetC });
   };
 
   const handleTouchEnd = () => {
-    touchStartRef.current = null;
+    if (dragOffset) {
+      const threshold = 22;
+      const { r, c, dx, dy, targetR, targetC } = dragOffset;
+      setDragOffset(null);
+      touchStartRef.current = null;
+
+      if (Math.abs(dx) >= threshold || Math.abs(dy) >= threshold) {
+        sounds.playSwipe();
+        swapTiles(r, c, targetR, targetC);
+      }
+    } else {
+      touchStartRef.current = null;
+    }
   };
 
   // マウスドラッグ操作（PC対応）
@@ -799,37 +829,47 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isMouseDownRef.current || !touchStartRef.current || isAnimating || gameResult !== 'playing') return;
 
-    const dx = e.clientX - touchStartRef.current.x;
-    const dy = e.clientY - touchStartRef.current.y;
-    const threshold = 20;
+    const rawDx = e.clientX - touchStartRef.current.x;
+    const rawDy = e.clientY - touchStartRef.current.y;
+    const { r, c } = touchStartRef.current;
 
-    if (Math.abs(dx) > threshold || Math.abs(dy) > threshold) {
-      const { r, c } = touchStartRef.current;
-      touchStartRef.current = null;
-      isMouseDownRef.current = false;
+    const isHorizontal = Math.abs(rawDx) >= Math.abs(rawDy);
+    let targetR = r;
+    let targetC = c;
 
-      let targetR = r;
-      let targetC = c;
-
-      if (Math.abs(dx) > Math.abs(dy)) {
-        targetC = dx > 0 ? c + 1 : c - 1;
-      } else {
-        targetR = dy > 0 ? r + 1 : r - 1;
-      }
-
-      if (targetR >= 0 && targetR < numRows && targetC >= 0 && targetC < numCols && !board[targetR][targetC].disabled) {
-        const dest = board[targetR][targetC];
-        if (dest.gimmick?.type === 'vine' || dest.gimmick?.type === 'rock') return;
-
-        sounds.playSwipe();
-        swapTiles(r, c, targetR, targetC);
-      }
+    if (isHorizontal) {
+      targetC = rawDx > 0 ? c + 1 : c - 1;
+    } else {
+      targetR = rawDy > 0 ? r + 1 : r - 1;
     }
+
+    if (
+      targetR < 0 || targetR >= numRows ||
+      targetC < 0 || targetC >= numCols ||
+      board[targetR][targetC].disabled ||
+      board[targetR][targetC].gimmick?.type === 'vine' ||
+      board[targetR][targetC].gimmick?.type === 'rock'
+    ) {
+      setDragOffset(null);
+      return;
+    }
+
+    const maxOffset = 46;
+    let clampedDx = 0;
+    let clampedDy = 0;
+
+    if (isHorizontal) {
+      clampedDx = Math.max(-maxOffset, Math.min(maxOffset, rawDx));
+    } else {
+      clampedDy = Math.max(-maxOffset, Math.min(maxOffset, rawDy));
+    }
+
+    setDragOffset({ r, c, dx: clampedDx, dy: clampedDy, targetR, targetC });
   };
 
   const handleMouseUp = () => {
     isMouseDownRef.current = false;
-    touchStartRef.current = null;
+    handleTouchEnd();
   };
 
   // 所持木材ポイントの参照・消費ヘルパー（アイテムクラフトや復活に使用）
@@ -2768,6 +2808,11 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
                       ? ({
                           '--drop-offset': gravityDir === 'up' ? `${dropDist * 115}%` : `-${dropDist * 115}%`,
                         } as React.CSSProperties)
+                      : {}),
+                    ...(dragOffset?.r === r && dragOffset?.c === c
+                      ? { transform: `translate3d(${dragOffset.dx}px, ${dragOffset.dy}px, 0) scale(1.08)`, zIndex: 35 }
+                      : dragOffset?.targetR === r && dragOffset?.targetC === c
+                      ? { transform: `translate3d(${-dragOffset.dx}px, ${-dragOffset.dy}px, 0) scale(0.96)`, zIndex: 25 }
                       : {}),
                   }}
                   className={`${cellSizeClass} rounded-xl flex items-center justify-center font-bold ${
