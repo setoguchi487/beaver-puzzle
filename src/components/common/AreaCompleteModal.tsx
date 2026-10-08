@@ -55,12 +55,25 @@ export const AreaCompleteModal: React.FC<AreaCompleteModalProps> = ({
         )}
 
         {/* 獲得バッジ */}
-        <div className="p-3 bg-purple-950/40 border border-purple-500/40 rounded-2xl flex items-center justify-center space-x-3">
-          <span className="text-4xl">{area.badge.icon}</span>
-          <div className="text-left">
-            <div className="text-[10px] text-purple-300 font-bold uppercase">獲得バッジ</div>
-            <div className="text-sm font-black text-white">{area.badge.name}</div>
-            <div className="text-[10px] text-slate-400">{area.badge.description}</div>
+        <div className="p-3 bg-gradient-to-r from-amber-950/50 via-purple-950/40 to-amber-950/50 border border-amber-500/50 rounded-2xl flex items-center space-x-3 shadow-lg">
+          <div className="relative shrink-0">
+            {area.badge.image ? (
+              <img
+                src={getAssetUrl(area.badge.image)}
+                alt={area.badge.name}
+                className="w-16 h-16 object-contain drop-shadow-xl animate-bounce-subtle"
+              />
+            ) : (
+              <span className="text-4xl">{area.badge.icon}</span>
+            )}
+          </div>
+          <div className="text-left flex-1 min-w-0">
+            <div className="text-[10px] text-amber-300 font-black uppercase tracking-wider flex items-center space-x-1">
+              <Sparkles className="w-3 h-3 text-amber-400" />
+              <span>開拓勲章メダル授与</span>
+            </div>
+            <div className="text-sm font-black text-white truncate">{area.badge.name}</div>
+            <div className="text-[10px] text-slate-300 leading-snug mt-0.5">{area.badge.description}</div>
           </div>
         </div>
 

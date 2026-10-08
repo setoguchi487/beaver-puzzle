@@ -555,9 +555,17 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
           className="p-3 bg-emerald-950/40 border border-emerald-500/30 rounded-2xl flex items-center justify-between cursor-pointer hover:bg-emerald-950/60 transition-colors mt-2"
         >
           <div className="flex items-center space-x-2.5">
-            <span className="text-2xl animate-bounce-subtle inline-block">
-              {area.creature.icon}
-            </span>
+            {area.creature.image ? (
+              <img
+                src={getAssetUrl(area.creature.image)}
+                alt={area.creature.name}
+                className="w-8 h-8 object-contain shrink-0 animate-bounce-subtle"
+              />
+            ) : (
+              <span className="text-2xl animate-bounce-subtle inline-block">
+                {area.creature.icon}
+              </span>
+            )}
             <div>
               <div className="text-xs font-black text-emerald-200 flex items-center space-x-1">
                 <span>{area.creature.name}</span>
@@ -763,9 +771,17 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
             {/* やってきた生き物の紹介 */}
             <div className="p-3.5 bg-emerald-950/60 border border-emerald-500/40 rounded-2xl space-y-2">
               <div className="flex items-center justify-center space-x-2">
-                <span className="text-4xl filter drop-shadow-md animate-bounce-subtle inline-block">
-                  {area.creature.icon}
-                </span>
+                {area.creature.image ? (
+                  <img
+                    src={getAssetUrl(area.creature.image)}
+                    alt={area.creature.name}
+                    className="w-12 h-12 object-contain drop-shadow-md animate-bounce-subtle"
+                  />
+                ) : (
+                  <span className="text-4xl filter drop-shadow-md animate-bounce-subtle inline-block">
+                    {area.creature.icon}
+                  </span>
+                )}
                 <div className="text-left">
                   <div className="text-xs font-black text-emerald-200 flex items-center space-x-1">
                     <span>{area.creature.name}</span>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { FrontierArea, Creature } from '../../types';
 import { sounds } from '../../utils/soundEffects';
+import { getAssetUrl } from '../../utils/assetPath';
 import { BUDDY_SKILLS } from '../../data/buddySkills';
 import { Sparkles, ShieldCheck } from 'lucide-react';
 import {
@@ -38,6 +39,7 @@ export const CreatureBadgeModal: React.FC<CreatureBadgeModalProps> = ({
   onNavigateToArea,
 }) => {
   const [activeTab, setActiveTab] = useState<'creatures' | 'badges' | 'stats'>('creatures');
+  const [selectedBadge, setSelectedBadge] = useState<{ badge: FrontierArea['badge']; area: FrontierArea } | null>(null);
   const [selectedCreature, setSelectedCreature] = useState<{ creature: Creature; area: FrontierArea } | null>(null);
 
   // 全タスク数と完了タスク数
@@ -174,56 +176,116 @@ export const CreatureBadgeModal: React.FC<CreatureBadgeModalProps> = ({
 
           {/* 2. 開拓バッジルーム */}
           {activeTab === 'badges' && (
-            <div className="space-y-2">
-              {areas.map((a) => {
-                const isEarned = badges.includes(a.badge.id);
-                return (
-                  <div
-                    key={a.badge.id}
-                    className={`p-3 rounded-2xl border flex items-center justify-between transition-all ${
-                      isEarned
-                        ? 'bg-amber-950/20 border-amber-500/40 text-amber-100 shadow-sm'
-                        : 'bg-slate-900/40 border-slate-800/80 opacity-50'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div
-                        className={`w-11 h-11 rounded-2xl flex items-center justify-center text-2xl ${
-                          isEarned
-                            ? 'bg-amber-500/20 border border-amber-500/40 shadow-inner ring-1 ring-amber-400/30 animate-pulse-slow'
-                            : 'bg-slate-800/60 border border-slate-700/50'
-                        }`}
-                      >
-                        {isEarned ? a.badge.icon : <Lock className="w-5 h-5 text-slate-600" />}
-                      </div>
-
-                      <div>
-                        <div className="flex items-center space-x-1.5">
-                          <span className="text-xs font-black text-white">
-                            {isEarned ? a.badge.name : '未獲得のバッジ'}
-                          </span>
-                          {isEarned && (
-                            <span className="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded-md font-bold">
-                              GET!
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">
-                          {isEarned ? a.badge.description : `${a.name}を完全修復すると授与`}
-                        </div>
-                      </div>
-                    </div>
-
-                    {isEarned && (
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <div className="space-y-2.5">
+              {/* 選択中バッジの詳細プレビュー */}
+              {selectedBadge && (
+                <div className="p-3.5 bg-gradient-to-r from-amber-950/60 via-slate-900/80 to-amber-950/60 border-2 border-amber-400/60 rounded-2xl shadow-xl flex items-center space-x-3 animate-fade-in relative">
+                  <div className="relative shrink-0">
+                    {selectedBadge.badge.image ? (
+                      <img
+                        src={getAssetUrl(selectedBadge.badge.image)}
+                        alt={selectedBadge.badge.name}
+                        className="w-16 h-16 object-contain drop-shadow-xl animate-bounce-subtle"
+                      />
+                    ) : (
+                      <span className="text-4xl">{selectedBadge.badge.icon}</span>
                     )}
                   </div>
-                );
-              })}
+                  <div className="flex-1 min-w-0 text-left">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black text-amber-300 uppercase tracking-wider flex items-center space-x-1">
+                        <Sparkles className="w-3 h-3 text-amber-400" />
+                        <span>{selectedBadge.area.name} 完全制覇記念</span>
+                      </span>
+                      <button
+                        onClick={() => setSelectedBadge(null)}
+                        className="text-slate-400 hover:text-white text-xs p-1 cursor-pointer"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    <h4 className="text-sm font-black text-white truncate mt-0.5">
+                      {selectedBadge.badge.name}
+                    </h4>
+                    <p className="text-[10px] text-amber-100/80 leading-relaxed mt-0.5">
+                      {selectedBadge.badge.description}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* バッジ一覧 */}
+              <div className="space-y-2">
+                {areas.map((a) => {
+                  const isEarned = badges.includes(a.badge.id);
+                  const isSelected = selectedBadge?.badge.id === a.badge.id;
+                  return (
+                    <div
+                      key={a.badge.id}
+                      onClick={() => {
+                        if (isEarned) {
+                          sounds.playButtonClick();
+                          setSelectedBadge({ badge: a.badge, area: a });
+                        }
+                      }}
+                      className={`p-2.5 rounded-2xl border flex items-center justify-between transition-all ${
+                        isEarned
+                          ? isSelected
+                            ? 'bg-amber-900/40 border-amber-400 shadow-md ring-1 ring-amber-400 cursor-pointer scale-[1.01]'
+                            : 'bg-amber-950/20 border-amber-500/30 text-amber-100 hover:border-amber-400/60 hover:bg-amber-900/20 cursor-pointer'
+                          : 'bg-slate-900/40 border-slate-800/80 opacity-50 cursor-not-allowed'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3 min-w-0">
+                        <div
+                          className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 overflow-hidden ${
+                            isEarned
+                              ? 'bg-amber-500/10 border border-amber-500/40 shadow-inner'
+                              : 'bg-slate-800/60 border border-slate-700/50'
+                          }`}
+                        >
+                          {isEarned ? (
+                            a.badge.image ? (
+                              <img
+                                src={getAssetUrl(a.badge.image)}
+                                alt={a.badge.name}
+                                className="w-11 h-11 object-contain drop-shadow-md hover:scale-105 transition-transform"
+                              />
+                            ) : (
+                              <span className="text-2xl">{a.badge.icon}</span>
+                            )
+                          ) : (
+                            <Lock className="w-5 h-5 text-slate-600" />
+                          )}
+                        </div>
+
+                        <div className="min-w-0">
+                          <div className="flex items-center space-x-1.5">
+                            <span className="text-xs font-black text-white truncate">
+                              {isEarned ? a.badge.name : '未獲得のバッジ'}
+                            </span>
+                            {isEarned && (
+                              <span className="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-1.5 py-0.2 rounded-md font-bold shrink-0">
+                                GET!
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-[10px] text-slate-400 truncate mt-0.5">
+                            {isEarned ? a.badge.description : `${a.name}を完全修復すると授与`}
+                          </div>
+                        </div>
+                      </div>
+
+                      {isEarned && (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 ml-2" />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
 
-          {/* 3. 開拓ジャーナル＆記録 */}
           {activeTab === 'stats' && (
             <div className="space-y-3">
               {/* プログレスカード */}
@@ -276,9 +338,19 @@ export const CreatureBadgeModal: React.FC<CreatureBadgeModalProps> = ({
         {selectedCreature && (
           <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in">
             <div className="w-full max-w-xs bg-slate-900 border-2 border-emerald-400/60 rounded-3xl p-5 shadow-2xl text-center space-y-3 animate-complete-pop">
-              <span className="text-6xl inline-block drop-shadow-lg animate-bounce-subtle">
-                {selectedCreature.creature.icon}
-              </span>
+              {selectedCreature.creature.image ? (
+                <div className="flex justify-center py-1">
+                  <img
+                    src={getAssetUrl(selectedCreature.creature.image)}
+                    alt={selectedCreature.creature.name}
+                    className="w-24 h-24 object-contain drop-shadow-2xl animate-bounce-subtle"
+                  />
+                </div>
+              ) : (
+                <span className="text-6xl inline-block drop-shadow-lg animate-bounce-subtle">
+                  {selectedCreature.creature.icon}
+                </span>
+              )}
               <div>
                 <h3 className="text-base font-black text-white">{selectedCreature.creature.name}</h3>
                 <span className="text-[10px] text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded-full inline-block mt-1 font-bold">

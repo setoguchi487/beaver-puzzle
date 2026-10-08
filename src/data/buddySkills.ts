@@ -3,6 +3,7 @@ export interface BuddySkill {
   creatureId: string;
   creatureName: string;
   creatureIcon: string;
+  creatureImage?: string;
   name: string;
   description: string;
   shortDesc: string;
@@ -15,6 +16,7 @@ export const BUDDY_SKILLS: Record<string, BuddySkill> = {
   mallard_duck: {
     id: 'skill_duck',
     creatureId: 'mallard_duck',
+    creatureImage: '/assets/creature_mallard_duck.png',
     creatureName: 'カルガモの親子',
     creatureIcon: '🦆',
     name: 'せせらぎ水流',
@@ -27,6 +29,7 @@ export const BUDDY_SKILLS: Record<string, BuddySkill> = {
   sweetfish: {
     id: 'skill_sweetfish',
     creatureId: 'sweetfish',
+    creatureImage: '/assets/creature_sweetfish.png',
     creatureName: '清流のアユ',
     creatureIcon: '🐟',
     name: '清流ダイブ',
@@ -38,6 +41,7 @@ export const BUDDY_SKILLS: Record<string, BuddySkill> = {
   chipmunk: {
     id: 'skill_chipmunk',
     creatureId: 'chipmunk',
+    creatureImage: '/assets/creature_chipmunk.png',
     creatureName: 'シマリス',
     creatureIcon: '🐿️',
     name: 'ドングリ貯蓄',
@@ -49,6 +53,7 @@ export const BUDDY_SKILLS: Record<string, BuddySkill> = {
   kingfisher: {
     id: 'skill_kingfisher',
     creatureId: 'kingfisher',
+    creatureImage: '/assets/creature_kingfisher.png',
     creatureName: '渓流の宝石 カワセミ',
     creatureIcon: '🐦',
     name: '水面の一閃',
@@ -61,6 +66,7 @@ export const BUDDY_SKILLS: Record<string, BuddySkill> = {
   owl: {
     id: 'skill_owl',
     creatureId: 'owl',
+    creatureImage: '/assets/creature_owl.png',
     creatureName: '森の知恵袋 フクロウ',
     creatureIcon: '🦉',
     name: '森の先見の明',
@@ -72,6 +78,7 @@ export const BUDDY_SKILLS: Record<string, BuddySkill> = {
   deer: {
     id: 'skill_deer',
     creatureId: 'deer',
+    creatureImage: '/assets/creature_deer.png',
     creatureName: '森の貴公子 ニホンジカ',
     creatureIcon: '🦌',
     name: '神聖なる角',
@@ -84,6 +91,7 @@ export const BUDDY_SKILLS: Record<string, BuddySkill> = {
   raccoon: {
     id: 'skill_raccoon',
     creatureId: 'raccoon',
+    creatureImage: '/assets/creature_raccoon.png',
     creatureName: 'いたずらアライグマ',
     creatureIcon: '🦝',
     name: '器用な前足',
@@ -96,6 +104,7 @@ export const BUDDY_SKILLS: Record<string, BuddySkill> = {
   hedgehog: {
     id: 'skill_hedgehog',
     creatureId: 'hedgehog',
+    creatureImage: '/assets/creature_hedgehog.png',
     creatureName: 'トゲトゲ ハリネズミ',
     creatureIcon: '🦔',
     name: 'トゲトゲバースト',
@@ -107,6 +116,7 @@ export const BUDDY_SKILLS: Record<string, BuddySkill> = {
   snow_monkey: {
     id: 'skill_snow_monkey',
     creatureId: 'snow_monkey',
+    creatureImage: '/assets/creature_snow_monkey.png',
     creatureName: '渓谷のニホンザル',
     creatureIcon: '🐒',
     name: 'ひらめきの湯',
@@ -119,6 +129,7 @@ export const BUDDY_SKILLS: Record<string, BuddySkill> = {
   swan: {
     id: 'skill_swan',
     creatureId: 'swan',
+    creatureImage: '/assets/creature_swan.png',
     creatureName: '優美なコハクチョウ',
     creatureIcon: '🦢',
     name: '白鳥の祈り',
@@ -130,6 +141,7 @@ export const BUDDY_SKILLS: Record<string, BuddySkill> = {
   badger: {
     id: 'skill_badger',
     creatureId: 'badger',
+    creatureImage: '/assets/creature_badger.png',
     creatureName: 'おっとりアナグマ',
     creatureIcon: '🦡',
     name: '頑丈な穴掘り爪',
@@ -141,6 +153,7 @@ export const BUDDY_SKILLS: Record<string, BuddySkill> = {
   golden_eagle: {
     id: 'skill_golden_eagle',
     creatureId: 'golden_eagle',
+    creatureImage: '/assets/creature_golden_eagle.png',
     creatureName: '空の王者 イヌワシ',
     creatureIcon: '🦅',
     name: '天空の急降下',
@@ -152,6 +165,7 @@ export const BUDDY_SKILLS: Record<string, BuddySkill> = {
   flying_squirrel: {
     id: 'skill_flying_squirrel',
     creatureId: 'flying_squirrel',
+    creatureImage: '/assets/creature_flying_squirrel.png',
     creatureName: '夜の案内人 モモンガ',
     creatureIcon: '🦇',
     name: '星空グライド',
@@ -163,6 +177,7 @@ export const BUDDY_SKILLS: Record<string, BuddySkill> = {
   mystic_fox: {
     id: 'skill_mystic_fox',
     creatureId: 'mystic_fox',
+    creatureImage: '/assets/creature_mystic_fox.png',
     creatureName: '賢者のキツネ',
     creatureIcon: '🦊',
     name: '森の化かし術',
@@ -175,6 +190,7 @@ export const BUDDY_SKILLS: Record<string, BuddySkill> = {
   bear_family: {
     id: 'skill_bear_family',
     creatureId: 'bear_family',
+    creatureImage: '/assets/creature_bear_family.png',
     creatureName: 'やさしい森のクマさん',
     creatureIcon: '🐻',
     name: '桃源郷の剛力',

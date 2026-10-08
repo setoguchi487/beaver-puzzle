@@ -52,6 +52,7 @@ export interface PuzzleStage {
     title: string;
     description: string;
     icon: string;
+  image?: string;
   };
   initialGimmicks?: { r: number; c: number; type: GimmickType; hp: number }[];
   boardRows?: number; // 盤面の行数（未指定なら 7）
@@ -69,6 +70,7 @@ export interface AreaTask {
   woodCost: number;
   isCompleted: boolean;
   icon: string;
+  image?: string;
   visualLabel: string;
 }
 
@@ -76,6 +78,7 @@ export interface AreaBadge {
   id: string;
   name: string;
   icon: string;
+  image?: string;
   description: string;
 }
 
@@ -83,6 +86,7 @@ export interface Creature {
   id: string;
   name: string;
   icon: string;
+  image?: string;
   rarity: 'common' | 'rare' | 'super_rare' | 'legendary';
   description: string;
   comment: string;
@@ -92,6 +96,7 @@ export interface FrontierArea {
   id: string;
   name: string;
   icon: string;
+  image?: string;
   description: string;
   status: 'locked_fog' | 'cleared_fog' | 'completed';
   requiredBadges: number;

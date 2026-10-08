@@ -2491,8 +2491,15 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
       {/* 相棒スキル発動カットインアニメーション */}
       {buddyCutIn && (
-        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-60 bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400 text-slate-950 px-4 py-2.5 rounded-2xl shadow-2xl font-black text-xs flex items-center space-x-2 animate-bounce-subtle ring-2 ring-white drop-shadow-lg whitespace-nowrap">
-          <Sparkles className="w-4 h-4 fill-current text-slate-950" />
+        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-60 bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400 text-slate-950 px-4 py-2 rounded-2xl shadow-2xl font-black text-xs flex items-center space-x-2.5 animate-bounce-subtle ring-2 ring-white drop-shadow-lg whitespace-nowrap">
+          {buddySkill?.creatureImage && (
+            <img
+              src={getAssetUrl(buddySkill.creatureImage)}
+              alt={buddySkill.creatureName}
+              className="w-7 h-7 object-contain drop-shadow"
+            />
+          )}
+          <Sparkles className="w-4 h-4 fill-current text-slate-950 shrink-0" />
           <span>{buddyCutIn}</span>
         </div>
       )}

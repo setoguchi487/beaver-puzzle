@@ -637,12 +637,14 @@ export const INITIAL_AREAS: FrontierArea[] = [
     requiredBadges: 0,
     badge: {
       id: "badge_stream",
+      image: "/assets/badge_stream.png",
       name: "せせらぎの開拓者",
       icon: "🏅",
       description: "はじまりのせせらぎをピカピカに整備した証！",
     },
     creature: {
       id: "mallard_duck",
+      image: "/assets/creature_mallard_duck.png",
       name: "カルガモの親子",
       icon: "🦆",
       rarity: "common",
@@ -680,12 +682,14 @@ export const INITIAL_AREAS: FrontierArea[] = [
     requiredBadges: 1,
     badge: {
       id: "badge_dam_1",
+      image: "/assets/badge_dam.png",
       name: "最初のダム職人",
       icon: "🪵🏅",
       description: "ふたりで初めての小枝ダムを完成させた栄誉！",
     },
     creature: {
       id: "sweetfish",
+      image: "/assets/creature_sweetfish.png",
       name: "清流のアユ",
       icon: "🐟",
       rarity: "common",
@@ -723,12 +727,14 @@ export const INITIAL_AREAS: FrontierArea[] = [
     requiredBadges: 2,
     badge: {
       id: "badge_lodge",
+      image: "/assets/badge_lodge.png",
       name: "ぬくもりマイホーム",
       icon: "🏡🏅",
       description: "居心地抜群のビーバーロッジを建てたマスター！",
     },
     creature: {
       id: "chipmunk",
+      image: "/assets/creature_chipmunk.png",
       name: "シマリス",
       icon: "🐿️",
       rarity: "common",
@@ -766,12 +772,14 @@ export const INITIAL_AREAS: FrontierArea[] = [
     requiredBadges: 3,
     badge: {
       id: "badge_pier",
+      image: "/assets/badge_pier.png",
       name: "名釣り師のテラス",
       icon: "🎣🏅",
       description: "風情ある釣りテラスを完成させた証！",
     },
     creature: {
       id: "kingfisher",
+      image: "/assets/creature_kingfisher.png",
       name: "渓流の宝石 カワセミ",
       icon: "🐦",
       rarity: "rare",
@@ -809,12 +817,14 @@ export const INITIAL_AREAS: FrontierArea[] = [
     requiredBadges: 4,
     badge: {
       id: "badge_watermill",
+      image: "/assets/badge_watermill.png",
       name: "水車村の動力主",
       icon: "⚙️🏅",
       description: "水車の動力を完全に蘇らせたエンジニア！",
     },
     creature: {
       id: "owl",
+      image: "/assets/creature_owl.png",
       name: "森の知恵袋 フクロウ",
       icon: "🦉",
       rarity: "rare",
@@ -852,12 +862,14 @@ export const INITIAL_AREAS: FrontierArea[] = [
     requiredBadges: 5,
     badge: {
       id: "badge_garden",
+      image: "/assets/badge_garden.png",
       name: "楽園ガーデナー",
       icon: "🌸🏅",
       description: "大自然の花畑とホタルの並木道を咲かせた称号！",
     },
     creature: {
       id: "deer",
+      image: "/assets/creature_deer.png",
       name: "森の貴公子 ニホンジカ",
       icon: "🦌",
       rarity: "super_rare",
@@ -895,12 +907,14 @@ export const INITIAL_AREAS: FrontierArea[] = [
     requiredBadges: 6,
     badge: {
       id: "badge_camp",
+      image: "/assets/badge_camp.png",
       name: "キャンピングマスター",
       icon: "⛺🏅",
       description: "川辺に最高の憩いキャンプ地を拓いた証！",
     },
     creature: {
       id: "raccoon",
+      image: "/assets/creature_raccoon.png",
       name: "いたずらアライグマ",
       icon: "🦝",
       rarity: "common",
@@ -938,12 +952,14 @@ export const INITIAL_AREAS: FrontierArea[] = [
     requiredBadges: 7,
     badge: {
       id: "badge_workshop",
+      image: "/assets/badge_workshop.png",
       name: "一流クラフト職人",
       icon: "🪚🏅",
       description: "高度な木工加工ができる名工の工房を再建した証！",
     },
     creature: {
       id: "hedgehog",
+      image: "/assets/creature_hedgehog.png",
       name: "トゲトゲ ハリネズミ",
       icon: "🦔",
       rarity: "rare",
@@ -981,12 +997,14 @@ export const INITIAL_AREAS: FrontierArea[] = [
     requiredBadges: 8,
     badge: {
       id: "badge_bridge",
+      image: "/assets/badge_bridge.png",
       name: "架け橋のエンジニア",
       icon: "🌉🏅",
       description: "険しい渓谷に立派な太鼓橋を架けたマスター！",
     },
     creature: {
       id: "snow_monkey",
+      image: "/assets/creature_snow_monkey.png",
       name: "渓谷のニホンザル",
       icon: "🐒",
       rarity: "rare",
@@ -1024,12 +1042,14 @@ export const INITIAL_AREAS: FrontierArea[] = [
     requiredBadges: 9,
     badge: {
       id: "badge_spring",
+      image: "/assets/badge_spring.png",
       name: "湧水の守護者",
       icon: "💎🏅",
       description: "奇跡の透き通る湧水泉を再生させた栄誉！",
     },
     creature: {
       id: "swan",
+      image: "/assets/creature_swan.png",
       name: "優美なコハクチョウ",
       icon: "🦢",
       rarity: "super_rare",
@@ -1067,12 +1087,14 @@ export const INITIAL_AREAS: FrontierArea[] = [
     requiredBadges: 10,
     badge: {
       id: "badge_orchard",
+      image: "/assets/badge_orchard.png",
       name: "豊穣の果樹マスター",
       icon: "🍓🏅",
       description: "森の動物たちに甘い果実をもたらした功労者！",
     },
     creature: {
       id: "badger",
+      image: "/assets/creature_badger.png",
       name: "おっとりアナグマ",
       icon: "🦡",
       rarity: "rare",
@@ -1110,12 +1132,14 @@ export const INITIAL_AREAS: FrontierArea[] = [
     requiredBadges: 11,
     badge: {
       id: "badge_waterfall",
+      image: "/assets/badge_waterfall.png",
       name: "激流の制覇者",
       icon: "🌊🏅",
       description: "危険な土砂を取り除き、壮大な大滝を取り戻した勇者！",
     },
     creature: {
       id: "golden_eagle",
+      image: "/assets/creature_golden_eagle.png",
       name: "空の王者 イヌワシ",
       icon: "🦅",
       rarity: "super_rare",
@@ -1153,12 +1177,14 @@ export const INITIAL_AREAS: FrontierArea[] = [
     requiredBadges: 12,
     badge: {
       id: "badge_stars",
+      image: "/assets/badge_stars.png",
       name: "星空の天文学者",
       icon: "🔭🏅",
       description: "夜の森をロマンチックに彩る星見台を建てた証！",
     },
     creature: {
       id: "flying_squirrel",
+      image: "/assets/creature_flying_squirrel.png",
       name: "夜の案内人 モモンガ",
       icon: "🦇",
       rarity: "super_rare",
@@ -1196,12 +1222,14 @@ export const INITIAL_AREAS: FrontierArea[] = [
     requiredBadges: 13,
     badge: {
       id: "badge_sacred",
+      image: "/assets/badge_sacred.png",
       name: "自然の奇跡の守護者",
       icon: "⛩️🏅",
       description: "千年の神木に命を宿し、森全体の精気を蘇らせた証！",
     },
     creature: {
       id: "mystic_fox",
+      image: "/assets/creature_mystic_fox.png",
       name: "賢者のキツネ",
       icon: "🦊",
       rarity: "super_rare",
@@ -1239,12 +1267,14 @@ export const INITIAL_AREAS: FrontierArea[] = [
     requiredBadges: 14,
     badge: {
       id: "badge_paradise",
+      image: "/assets/badge_paradise.png",
       name: "伝説のダムマスター",
       icon: "👑🏅",
       description: "すべてのエリアを開拓し、ビーバーの楽園を築き上げた覇者！",
     },
     creature: {
       id: "bear_family",
+      image: "/assets/creature_bear_family.png",
       name: "やさしい森のクマさん",
       icon: "🐻",
       rarity: "legendary",

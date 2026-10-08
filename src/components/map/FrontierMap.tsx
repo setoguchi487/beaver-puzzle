@@ -172,6 +172,8 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
       if (a.detailImages) {
         preloadImages(a.detailImages.map((img) => getAssetUrl(img)));
       }
+      if (a.badge.image) preloadImages([getAssetUrl(a.badge.image)]);
+      if (a.creature.image) preloadImages([getAssetUrl(a.creature.image)]);
     });
   }, [areas]);
 
