@@ -3,6 +3,7 @@ import { X, Lock, Check } from 'lucide-react';
 import type { FrontierArea } from '../../types';
 import { isAreaFeatureUnlocked } from '../../utils/areaUnlocks';
 import { sounds } from '../../utils/soundEffects';
+import { getAssetUrl } from '../../utils/assetPath';
 
 interface JuiceStandModalProps {
   isOpen: boolean;
@@ -16,16 +17,18 @@ export interface JuiceBuff {
   id: string;
   name: string;
   icon: string;
+  image?: string;
   cost: number;
   remainingStages: number;
   description: string;
 }
 
-const JUICE_BUFFS: { id: string; name: string; icon: string; cost: number; stages: number; description: string }[] = [
+const JUICE_BUFFS: { id: string; name: string; icon: string; image: string; cost: number; stages: number; description: string }[] = [
   {
     id: 'berry_cider',
     name: '木苺のエナジーサイダー',
     icon: '🍓🍹',
+    image: '/assets/juice_berry_cider.jpg',
     cost: 100,
     stages: 3,
     description: '甘酸っぱい元気の源！次の3ステージの間、獲得木材が 1.5倍 にアップ！',
@@ -34,6 +37,7 @@ const JUICE_BUFFS: { id: string; name: string; icon: string; cost: number; stage
     id: 'blueberry_syrup',
     name: 'ブルーベリー集中シロップ',
     icon: '🫐🥤',
+    image: '/assets/juice_blueberry_syrup.jpg',
     cost: 120,
     stages: 3,
     description: '頭が冴え渡る！次の3ステージの間、パズルの初期手数が +2手 増加！',
@@ -42,6 +46,7 @@ const JUICE_BUFFS: { id: string; name: string; icon: string; cost: number; stage
     id: 'ripe_smoothie',
     name: '完熟ミックススムージー',
     icon: '🍯🧉',
+    image: '/assets/juice_ripe_smoothie.jpg',
     cost: 160,
     stages: 3,
     description: '特濃のご馳走！次の3ステージの間、ロケット生成時にボーナス爆発が付く！',
@@ -96,6 +101,7 @@ export const JuiceStandModal: React.FC<JuiceStandModalProps> = ({
       id: buffCfg.id,
       name: buffCfg.name,
       icon: buffCfg.icon,
+      image: buffCfg.image,
       cost: buffCfg.cost,
       remainingStages: buffCfg.stages,
       description: buffCfg.description,
@@ -165,7 +171,15 @@ export const JuiceStandModal: React.FC<JuiceStandModalProps> = ({
             {activeBuff && (
               <div className="bg-rose-500/20 border border-rose-400 p-2.5 rounded-2xl flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <span className="text-2xl">{activeBuff.icon}</span>
+                  {activeBuff.image ? (
+                    <img
+                      src={getAssetUrl(activeBuff.image)}
+                      alt={activeBuff.name}
+                      className="w-8 h-8 rounded-lg object-cover border border-rose-300 shadow-sm shrink-0"
+                    />
+                  ) : (
+                    <span className="text-2xl shrink-0">{activeBuff.icon}</span>
+                  )}
                   <div>
                     <div className="text-xs font-black text-rose-200">{activeBuff.name}</div>
                     <div className="text-[10px] text-slate-300">効果残り: あと {activeBuff.remainingStages} ステージ</div>
@@ -197,7 +211,15 @@ export const JuiceStandModal: React.FC<JuiceStandModalProps> = ({
                     }`}
                   >
                     <div className="flex items-center space-x-2.5 flex-1 min-w-0">
-                      <span className="text-2xl shrink-0">{item.icon}</span>
+                      {item.image ? (
+                        <img
+                          src={getAssetUrl(item.image)}
+                          alt={item.name}
+                          className="w-12 h-12 rounded-xl object-cover border border-rose-400/40 shadow-md shrink-0"
+                        />
+                      ) : (
+                        <span className="text-2xl shrink-0">{item.icon}</span>
+                      )}
                       <div className="min-w-0 flex-1">
                         <div className="text-xs font-black text-white truncate">{item.name}</div>
                         <div className="text-[10px] text-slate-400 line-clamp-2 mt-0.5">{item.description}</div>

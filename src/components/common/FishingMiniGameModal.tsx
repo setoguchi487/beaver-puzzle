@@ -4,6 +4,7 @@ import confetti from 'canvas-confetti';
 import type { FrontierArea } from '../../types';
 import { isAreaFeatureUnlocked } from '../../utils/areaUnlocks';
 import { sounds } from '../../utils/soundEffects';
+import { getAssetUrl } from '../../utils/assetPath';
 
 interface FishingMiniGameModalProps {
   isOpen: boolean;
@@ -16,17 +17,18 @@ interface FishCatch {
   id: string;
   name: string;
   icon: string;
+  image?: string;
   rarity: 'common' | 'rare' | 'legendary';
   woodReward: number;
   description: string;
 }
 
 const FISH_TYPES: FishCatch[] = [
-  { id: 'ayu', name: '清流の若鮎（アユ）', icon: '🐟', rarity: 'common', woodReward: 80, description: 'スイカの香りがする清流の代表魚' },
-  { id: 'yamame', name: '渓流の女王ヤマメ', icon: '🐠', rarity: 'common', woodReward: 100, description: '美しいパーマーク模様を持つ銀色の魚' },
-  { id: 'iwana', name: '深山の幻イワナ', icon: '🎣', rarity: 'rare', woodReward: 150, description: '冷たい最上流の岩陰に潜む警戒心の強い美魚' },
-  { id: 'rainbow_trout', name: '虹色ニジマス', icon: '🌈🐟', rarity: 'rare', woodReward: 180, description: '七色に輝く鮮やかな大型トラウト' },
-  { id: 'golden_king', name: '黄金のヌシ・大ナマズ', icon: '👑✨', rarity: 'legendary', woodReward: 300, description: '湖の底深くに何十年も生きる伝説の巨大魚' },
+  { id: 'ayu', name: '清流の若鮎（アユ）', icon: '🐟', image: '/assets/fish_ayu.jpg', rarity: 'common', woodReward: 80, description: 'スイカの香りがする清流の代表魚' },
+  { id: 'yamame', name: '渓流の女王ヤマメ', icon: '🐠', image: '/assets/fish_yamame.jpg', rarity: 'common', woodReward: 100, description: '美しいパーマーク模様を持つ銀色の魚' },
+  { id: 'iwana', name: '深山の幻イワナ', icon: '🎣', image: '/assets/fish_iwana.jpg', rarity: 'rare', woodReward: 150, description: '冷たい最上流の岩陰に潜む警戒心の強い美魚' },
+  { id: 'rainbow_trout', name: '虹色ニジマス', icon: '🌈🐟', image: '/assets/fish_rainbow_trout.jpg', rarity: 'rare', woodReward: 180, description: '七色に輝く鮮やかな大型トラウト' },
+  { id: 'golden_king', name: '黄金のヌシ・大ナマズ', icon: '👑✨', image: '/assets/fish_golden_king.jpg', rarity: 'legendary', woodReward: 300, description: '湖の底深くに何十年も生きる伝説の巨大魚' },
 ];
 
 const FISHING_DATE_KEY = 'beaver_puzzle_fishing_date';
@@ -308,7 +310,17 @@ export const FishingMiniGameModal: React.FC<FishingMiniGameModalProps> = ({
                       </>
                     ) : (
                       <>
-                        <div className="text-5xl animate-bounce-subtle">{resultFish?.icon}</div>
+                        {resultFish?.image ? (
+                          <div className="flex justify-center my-1">
+                            <img
+                              src={getAssetUrl(resultFish.image)}
+                              alt={resultFish.name}
+                              className="w-24 h-24 object-cover rounded-2xl border-2 border-amber-400/80 shadow-2xl animate-bounce-subtle"
+                            />
+                          </div>
+                        ) : (
+                          <div className="text-5xl animate-bounce-subtle">{resultFish?.icon}</div>
+                        )}
                         <h4 className="text-base font-black bg-gradient-to-r from-amber-200 to-yellow-400 bg-clip-text text-transparent">
                           {resultType === 'great' ? '大漁！' : 'HIT！'} {resultFish?.name}
                         </h4>
@@ -392,8 +404,16 @@ export const FishingMiniGameModal: React.FC<FishingMiniGameModalProps> = ({
                           : 'bg-slate-900/60 border-slate-800 opacity-60'
                       }`}
                     >
-                      <div className="flex items-center space-x-1.5">
-                        <span className="text-xl">{isCaught ? fish.icon : '❓'}</span>
+                      <div className="flex items-center space-x-2">
+                        {isCaught && fish.image ? (
+                          <img
+                            src={getAssetUrl(fish.image)}
+                            alt={fish.name}
+                            className="w-8 h-8 rounded-lg object-cover shrink-0 border border-sky-400/40 shadow-sm"
+                          />
+                        ) : (
+                          <span className="text-xl shrink-0">{isCaught ? fish.icon : '❓'}</span>
+                        )}
                         <div className="min-w-0 flex-1">
                           <div className="text-[11px] font-black truncate text-slate-200">
                             {isCaught ? fish.name : '？？？'}

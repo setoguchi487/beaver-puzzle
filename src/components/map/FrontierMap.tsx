@@ -175,6 +175,16 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
       if (a.badge.image) preloadImages([getAssetUrl(a.badge.image)]);
       if (a.creature.image) preloadImages([getAssetUrl(a.creature.image)]);
     });
+    preloadImages([
+      getAssetUrl('/assets/fish_ayu.jpg'),
+      getAssetUrl('/assets/fish_yamame.jpg'),
+      getAssetUrl('/assets/fish_iwana.jpg'),
+      getAssetUrl('/assets/fish_rainbow_trout.jpg'),
+      getAssetUrl('/assets/fish_golden_king.jpg'),
+      getAssetUrl('/assets/juice_berry_cider.jpg'),
+      getAssetUrl('/assets/juice_blueberry_syrup.jpg'),
+      getAssetUrl('/assets/juice_ripe_smoothie.jpg'),
+    ]);
   }, [areas]);
 
   useEffect(() => {
