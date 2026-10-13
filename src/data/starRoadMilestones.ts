@@ -10,6 +10,7 @@ export interface StarMilestone {
     clock?: number;
   };
   badgeIcon: string;
+  image?: string;
 }
 
 export const STAR_MILESTONES: StarMilestone[] = [
@@ -20,6 +21,7 @@ export const STAR_MILESTONES: StarMilestone[] = [
     rewardWood: 300,
     boosters: { hammer: 1 },
     badgeIcon: '🌱',
+    image: '/assets/star_trophy_bronze.jpg',
   },
   {
     starsRequired: 25,
@@ -28,6 +30,7 @@ export const STAR_MILESTONES: StarMilestone[] = [
     rewardWood: 600,
     boosters: { hammer: 2, saw: 1 },
     badgeIcon: '🔨',
+    image: '/assets/star_trophy_bronze.jpg',
   },
   {
     starsRequired: 50,
@@ -36,6 +39,7 @@ export const STAR_MILESTONES: StarMilestone[] = [
     rewardWood: 1200,
     boosters: { tail: 2, clock: 1 },
     badgeIcon: '🌊',
+    image: '/assets/star_trophy_silver.jpg',
   },
   {
     starsRequired: 80,
@@ -44,6 +48,7 @@ export const STAR_MILESTONES: StarMilestone[] = [
     rewardWood: 2000,
     boosters: { clock: 3, hammer: 2 },
     badgeIcon: '⏱️',
+    image: '/assets/star_trophy_silver.jpg',
   },
   {
     starsRequired: 120,
@@ -52,6 +57,7 @@ export const STAR_MILESTONES: StarMilestone[] = [
     rewardWood: 3500,
     boosters: { hammer: 2, saw: 2, tail: 2, clock: 2 },
     badgeIcon: '🍎',
+    image: '/assets/star_trophy_amber.jpg',
   },
   {
     starsRequired: 160,
@@ -60,6 +66,7 @@ export const STAR_MILESTONES: StarMilestone[] = [
     rewardWood: 5000,
     boosters: { hammer: 3, saw: 3 },
     badgeIcon: '💎',
+    image: '/assets/star_trophy_amber.jpg',
   },
   {
     starsRequired: 200,
@@ -68,6 +75,7 @@ export const STAR_MILESTONES: StarMilestone[] = [
     rewardWood: 8000,
     boosters: { hammer: 3, saw: 3, tail: 3, clock: 3 },
     badgeIcon: '🏅',
+    image: '/assets/star_trophy_gold.jpg',
   },
   {
     starsRequired: 250,
@@ -76,6 +84,7 @@ export const STAR_MILESTONES: StarMilestone[] = [
     rewardWood: 15000,
     boosters: { hammer: 5, saw: 5, tail: 5, clock: 5 },
     badgeIcon: '👑',
+    image: '/assets/star_trophy_gold.jpg',
   },
   {
     starsRequired: 300,
@@ -84,5 +93,6 @@ export const STAR_MILESTONES: StarMilestone[] = [
     rewardWood: 30000,
     boosters: { hammer: 10, saw: 10, tail: 10, clock: 10 },
     badgeIcon: '✨👑✨',
+    image: '/assets/star_trophy_gold.jpg',
   },
 ];

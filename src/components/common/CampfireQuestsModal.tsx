@@ -31,9 +31,9 @@ interface DailyQuest {
 }
 
 const DEFAULT_QUESTS: DailyQuest[] = [
-  { id: 'q1', title: '丸太ピースを30個消去する', icon: '🪵', image: '/assets/piece_wood.png', progress: 30, max: 30, rewardType: 'wood', rewardAmount: 150, rewardLabel: '木材 +150', rewardImage: '/assets/piece_wood.png', isClaimed: false },
-  { id: 'q2', title: '水流ピースを25個消去する', icon: '💧', image: '/assets/piece_water.png', progress: 25, max: 25, rewardType: 'pre', rewardKey: 'startRocket', rewardAmount: 1, rewardLabel: '初期ロケット x1', rewardImage: '/assets/piece_rocket.png', isClaimed: false },
-  { id: 'q3', title: 'パズルステージを1回クリアする', icon: '🌟', image: '/assets/badge_camp.png', progress: 1, max: 1, rewardType: 'booster', rewardKey: 'clock', rewardAmount: 1, rewardLabel: 'ぜんまい時計 x1', rewardImage: '/assets/booster_clock.png', isClaimed: false },
+  { id: 'q1', title: '丸太ピースを30個消去する', icon: '🪵', image: '/assets/quest_scroll.jpg', progress: 30, max: 30, rewardType: 'wood', rewardAmount: 150, rewardLabel: '木材 +150', rewardImage: '/assets/icon_wood_coin.jpg', isClaimed: false },
+  { id: 'q2', title: '水流ピースを25個消去する', icon: '💧', image: '/assets/quest_bottle.jpg', progress: 25, max: 25, rewardType: 'pre', rewardKey: 'startRocket', rewardAmount: 1, rewardLabel: '初期ロケット x1', rewardImage: '/assets/piece_rocket.png', isClaimed: false },
+  { id: 'q3', title: 'パズルステージを1回クリアする', icon: '🌟', image: '/assets/quest_pot.jpg', progress: 1, max: 1, rewardType: 'booster', rewardKey: 'clock', rewardAmount: 1, rewardLabel: 'ぜんまい時計 x1', rewardImage: '/assets/booster_clock.png', isClaimed: false },
 ];
 
 const STORAGE_QUESTS_KEY = 'beaver_puzzle_campfire_quests';
@@ -48,7 +48,13 @@ export const CampfireQuestsModal: React.FC<CampfireQuestsModalProps> = ({
   const [quests, setQuests] = useState<DailyQuest[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_QUESTS_KEY);
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return DEFAULT_QUESTS.map(def => {
+          const found = parsed.find((p: any) => p.id === def.id);
+          return found ? { ...def, progress: found.progress ?? def.progress, isClaimed: !!found.isClaimed } : def;
+        });
+      }
     } catch {}
     return DEFAULT_QUESTS;
   });

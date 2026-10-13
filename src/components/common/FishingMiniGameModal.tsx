@@ -29,6 +29,7 @@ const FISH_TYPES: FishCatch[] = [
   { id: 'iwana', name: '深山の幻イワナ', icon: '🎣', image: '/assets/fish_iwana.jpg', rarity: 'rare', woodReward: 150, description: '冷たい最上流の岩陰に潜む警戒心の強い美魚' },
   { id: 'rainbow_trout', name: '虹色ニジマス', icon: '🌈🐟', image: '/assets/fish_rainbow_trout.jpg', rarity: 'rare', woodReward: 180, description: '七色に輝く鮮やかな大型トラウト' },
   { id: 'golden_king', name: '黄金のヌシ・大ナマズ', icon: '👑✨', image: '/assets/fish_golden_king.jpg', rarity: 'legendary', woodReward: 300, description: '湖の底深くに何十年も生きる伝説の巨大魚' },
+  { id: 'sunken_chest', name: '沈没した財宝箱', icon: '👑💎', image: '/assets/fishing_sunken_chest.jpg', rarity: 'legendary', woodReward: 500, description: '川底に眠っていた金貨と宝石が溢れる沈没宝箱' },
 ];
 
 const FISHING_DATE_KEY = 'beaver_puzzle_fishing_date';
@@ -309,9 +310,19 @@ export const FishingMiniGameModal: React.FC<FishingMiniGameModalProps> = ({
                   <div className="space-y-1.5 animate-complete-pop">
                     {resultType === 'miss' ? (
                       <>
-                        <div className="text-4xl">🌿🪵</div>
+                        <div className="flex justify-center my-1">
+                          <img
+                            src={getAssetUrl('/assets/fishing_driftwood.jpg')}
+                            alt="水草と流木"
+                            className="w-24 h-24 object-cover rounded-2xl border-2 border-slate-600/80 shadow-xl animate-bounce-subtle"
+                          />
+                        </div>
                         <h4 className="text-sm font-black text-slate-300">逃げられた…！</h4>
-                        <p className="text-[11px] text-slate-400">水草と流木を拾ったよ（木材 +20）</p>
+                        <p className="text-[11px] text-slate-400 flex items-center justify-center space-x-1">
+                          <span>水草と流木を拾ったよ（木材 +20</span>
+                          <img src={getAssetUrl('/assets/icon_wood_coin.jpg')} alt="木材" className="w-3.5 h-3.5 rounded-full object-cover inline-block" />
+                          <span>）</span>
+                        </p>
                       </>
                     ) : (
                       <>
@@ -329,8 +340,9 @@ export const FishingMiniGameModal: React.FC<FishingMiniGameModalProps> = ({
                         <h4 className="text-base font-black bg-gradient-to-r from-amber-200 to-yellow-400 bg-clip-text text-transparent">
                           {resultType === 'great' ? '大漁！' : 'HIT！'} {resultFish?.name}
                         </h4>
-                        <div className="inline-block bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-black px-2.5 py-0.5 rounded-full">
-                          木材 +{resultFish?.woodReward} GET! 🪵
+                        <div className="inline-flex items-center space-x-1 bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-black px-2.5 py-0.5 rounded-full">
+                          <img src={getAssetUrl('/assets/icon_wood_coin.jpg')} alt="木材" className="w-3.5 h-3.5 rounded-full object-cover inline-block" />
+                          <span>木材 +{resultFish?.woodReward} GET!</span>
                         </div>
                       </>
                     )}

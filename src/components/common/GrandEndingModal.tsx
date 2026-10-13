@@ -77,11 +77,11 @@ export const GrandEndingModal: React.FC<GrandEndingModalProps> = ({
         </div>
 
         {/* 桃源郷の絶景ビジュアル */}
-        <div className="relative rounded-2xl overflow-hidden border border-amber-400/60 shadow-lg">
+        <div className="relative rounded-2xl overflow-hidden border-2 border-amber-400/80 shadow-2xl ring-2 ring-amber-300/30">
           <img
-            src={getAssetUrl("/assets/paradise_stage_5.jpg")}
-            alt="桃源郷グランドダム"
-            className="w-full h-44 object-cover"
+            src={getAssetUrl("/assets/grand_ending_celebration.jpg")}
+            alt="桃源郷大団円グランドフィナーレ"
+            className="w-full h-48 object-cover transform hover:scale-105 transition-transform duration-700"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex items-end p-2.5">
             <span className="text-[11px] font-black text-amber-300 flex items-center space-x-1 drop-shadow-md">

@@ -199,14 +199,21 @@ export const TitleHomeScreen: React.FC<TitleHomeScreenProps> = ({
           </div>
         </div>
 
-        {/* ゲームタイトル */}
-        <div className="mt-5 space-y-1">
-          <div className="inline-flex items-center space-x-1 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-400/30 text-amber-300 text-[11px] font-black tracking-wider uppercase mb-1">
+        {/* ゲームタイトル & 公式ロゴ */}
+        <div className="mt-4 space-y-1 flex flex-col items-center">
+          <div className="w-48 sm:w-56 mb-1 drop-shadow-2xl hover:scale-105 transition-transform duration-300">
+            <img
+              src={getAssetUrl('/assets/game_title_logo.jpg')}
+              alt="BEAVER PUZZLE 公式ロゴ"
+              className="w-full h-auto object-contain rounded-2xl border border-amber-400/40 shadow-xl"
+            />
+          </div>
+          <div className="inline-flex items-center space-x-1 px-3 py-0.5 rounded-full bg-amber-500/15 border border-amber-400/30 text-amber-300 text-[10px] font-black tracking-wider uppercase">
             <Sparkles className="w-3 h-3 text-amber-400" />
             <span>開拓パズルアドベンチャー</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-amber-100 to-amber-300 tracking-tight drop-shadow-md">
-            ふたりビーバーの<br />ダム開拓パズル
+          <h1 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-amber-100 to-amber-300 tracking-tight drop-shadow-md">
+            ふたりビーバーのダム開拓パズル
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 font-medium">
             荒れた渓流を大復興！15のエリアを仲間と蘇らせよう
@@ -217,10 +224,10 @@ export const TitleHomeScreen: React.FC<TitleHomeScreenProps> = ({
         <div className="mt-6 w-full bg-slate-900/80 border border-slate-800 rounded-2xl p-3.5 backdrop-blur-md shadow-xl">
           <div className="flex items-center justify-between text-xs border-b border-slate-800/80 pb-2 mb-2">
             <span className="text-slate-400 font-bold">現在の冒険状況</span>
-            <span className="text-amber-400 font-black flex items-center space-x-1">
+            <span className="text-amber-400 font-black flex items-center space-x-1.5">
               <span>所持木材:</span>
+              <img src={getAssetUrl('/assets/icon_wood_coin.jpg')} alt="木材コイン" className="w-4 h-4 rounded-full object-cover inline-block shadow-sm" />
               <span className="text-white text-sm">{summary.wood.toLocaleString()}</span>
-              <span>🪵</span>
             </span>
           </div>
           <div className="grid grid-cols-3 gap-2 text-center">

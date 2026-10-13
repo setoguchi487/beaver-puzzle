@@ -2325,8 +2325,9 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
               <h3 className="text-xl font-black text-white mt-1.5 flex items-center justify-center space-x-2">
                 <span>ステージ {stage.id}</span>
                 {winStreak > 0 && (
-                  <span className="text-xs bg-gradient-to-r from-orange-500 to-amber-400 text-slate-950 font-black px-2 py-0.5 rounded-full shadow-sm animate-pulse">
-                    🔥 {winStreak}連勝中
+                  <span className="text-xs bg-gradient-to-r from-orange-500 to-amber-400 text-slate-950 font-black px-2.5 py-0.5 rounded-full shadow-sm animate-pulse inline-flex items-center space-x-1">
+                    <img src={getAssetUrl('/assets/icon_fire_streak.jpg')} alt="連勝" className="w-3.5 h-3.5 rounded-full object-cover inline-block shadow-sm" />
+                    <span>{winStreak}連勝中</span>
                   </span>
                 )}
               </h3>
@@ -2355,7 +2356,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
             {/* 連勝ボーナス枠 */}
             {winStreak > 0 && (
               <div className="bg-gradient-to-r from-orange-950/60 to-amber-950/60 p-2.5 rounded-2xl border border-orange-500/40 text-left flex items-center space-x-2.5">
-                <span className="text-2xl drop-shadow-sm">🔥</span>
+                <img src={getAssetUrl('/assets/icon_fire_streak.jpg')} alt="連勝の炎" className="w-10 h-10 rounded-xl object-cover border border-orange-400/50 shadow-md shrink-0 animate-pulse" />
                 <div className="flex-1 text-[11px]">
                   <div className="font-black text-amber-300">連勝ボーナス発動中！</div>
                   <div className="text-slate-300 text-[10px] flex items-center space-x-1.5 mt-0.5">
@@ -2572,13 +2573,16 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
                 {stage.title}
               </h2>
               {winStreak > 0 && (
-                <span className="inline-flex items-center px-1.5 py-0.2 bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 font-black text-[9px] rounded-full shadow-sm animate-pulse">
-                  🔥 x{winStreak}
+                <span className="inline-flex items-center space-x-0.5 px-1.5 py-0.2 bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 font-black text-[9px] rounded-full shadow-sm animate-pulse">
+                  <img src={getAssetUrl('/assets/icon_fire_streak.jpg')} alt="連勝" className="w-3 h-3 rounded-full object-cover inline-block" />
+                  <span>x{winStreak}</span>
                 </span>
               )}
             </div>
-            <span className="text-[9px] text-amber-200/80 font-medium">
-              クリア報酬: 🪵 +{stage.woodReward} ウッド
+            <span className="text-[9px] text-amber-200/80 font-medium inline-flex items-center justify-center space-x-1">
+              <span>クリア報酬:</span>
+              <img src={getAssetUrl('/assets/icon_wood_coin.jpg')} alt="木材" className="w-3 h-3 rounded-full object-cover inline-block" />
+              <span>+{stage.woodReward} ウッド</span>
             </span>
           </div>
 
@@ -3208,7 +3212,10 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
               <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl space-y-1.5">
                 <div className="flex items-center justify-between text-xs font-bold text-slate-300">
                   <span>ステージ基本報酬:</span>
-                  <span className="text-amber-300 font-black">+{stage.woodReward} 🪵</span>
+                  <span className="text-amber-300 font-black inline-flex items-center space-x-1">
+                    <img src={getAssetUrl('/assets/icon_wood_coin.jpg')} alt="木材" className="w-3.5 h-3.5 rounded-full object-cover inline-block" />
+                    <span>+{stage.woodReward}</span>
+                  </span>
                 </div>
                 {bonusWood > 0 && (
                   <div className="flex items-center justify-between text-xs font-bold text-yellow-300">
@@ -3216,12 +3223,18 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
                       <Sparkles className="w-3.5 h-3.5" />
                       <span>{earnedStars === 3 ? '★3 パーフェクトボーナス:' : '★2 グッドボーナス:'}</span>
                     </span>
-                    <span className="font-black">+{bonusWood} 🪵</span>
+                    <span className="font-black inline-flex items-center space-x-1">
+                      <img src={getAssetUrl('/assets/icon_wood_coin.jpg')} alt="木材" className="w-3.5 h-3.5 rounded-full object-cover inline-block" />
+                      <span>+{bonusWood}</span>
+                    </span>
                   </div>
                 )}
                 <div className="pt-1 border-t border-amber-500/20 flex items-center justify-between text-sm font-black text-white">
                   <span>合計獲得木材:</span>
-                  <span className="text-amber-400 text-base font-black">+{totalReward} 🪵</span>
+                  <span className="text-amber-400 text-base font-black inline-flex items-center space-x-1">
+                    <img src={getAssetUrl('/assets/icon_wood_coin.jpg')} alt="木材" className="w-4 h-4 rounded-full object-cover inline-block shadow-sm" />
+                    <span>+{totalReward}</span>
+                  </span>
                 </div>
               </div>
 

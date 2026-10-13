@@ -114,17 +114,38 @@ export const StarRoadModal: React.FC<StarRoadModalProps> = ({
                 }`}
               >
                 <div className="flex items-center space-x-3 min-w-0">
-                  <div
-                    className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center shrink-0 font-black ${
-                      isClaimed
-                        ? 'bg-slate-800 text-slate-500'
-                        : isReached
-                        ? 'bg-yellow-400 text-slate-950 shadow-md'
-                        : 'bg-slate-800 text-slate-400 border border-slate-700'
-                    }`}
-                  >
-                    <Star className="w-3.5 h-3.5 fill-current" />
-                    <span className="text-[10px] font-mono leading-none mt-0.5">{m.starsRequired}</span>
+                  <div className="relative shrink-0">
+                    {m.image ? (
+                      <div className={`w-11 h-11 rounded-2xl overflow-hidden border relative bg-slate-900 shadow-md ${
+                        isClaimed
+                          ? 'border-slate-700 opacity-60 grayscale'
+                          : isReached
+                          ? 'border-amber-400/90 ring-2 ring-amber-400/40 shadow-amber-500/20'
+                          : 'border-slate-700 opacity-75'
+                      }`}>
+                        <img
+                          src={getAssetUrl(m.image)}
+                          alt={m.title}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute -bottom-0.5 -right-0.5 bg-slate-950/90 text-[8px] font-mono font-black text-amber-300 px-1 py-0.2 rounded border border-amber-400/40">
+                          ★{m.starsRequired}
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center shrink-0 font-black ${
+                          isClaimed
+                            ? 'bg-slate-800 text-slate-500'
+                            : isReached
+                            ? 'bg-yellow-400 text-slate-950 shadow-md'
+                            : 'bg-slate-800 text-slate-400 border border-slate-700'
+                        }`}
+                      >
+                        <Star className="w-3.5 h-3.5 fill-current" />
+                        <span className="text-[10px] font-mono leading-none mt-0.5">{m.starsRequired}</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="min-w-0">
@@ -133,8 +154,8 @@ export const StarRoadModal: React.FC<StarRoadModalProps> = ({
                       <span className="text-xs">{m.badgeIcon}</span>
                     </div>
                     <div className="text-[10px] text-slate-300 mt-0.5 flex flex-wrap items-center gap-1.5">
-                      <span className="text-amber-300 font-bold flex items-center space-x-0.5">
-                        <img src={getAssetUrl("/assets/piece_wood.png")} alt="木材" className="w-3.5 h-3.5 object-contain inline-block" />
+                      <span className="text-amber-300 font-bold flex items-center space-x-1">
+                        <img src={getAssetUrl("/assets/icon_wood_coin.jpg")} alt="木材" className="w-3.5 h-3.5 rounded-full object-cover inline-block shadow-sm" />
                         <span>+{m.rewardWood}</span>
                       </span>
                       {m.boosters?.hammer && (
