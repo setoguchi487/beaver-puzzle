@@ -2479,9 +2479,29 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
       {!introDismissed && stage.newGimmickIntro && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in">
           <div className="w-full max-w-sm bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-cyan-400 rounded-3xl p-6 text-center shadow-2xl space-y-4">
-            <span className="text-6xl inline-block drop-shadow-md animate-bounce-subtle">
-              {stage.newGimmickIntro.icon}
-            </span>
+            {(() => {
+              const type = stage.newGimmickIntro?.type as string | undefined;
+              const gImg =
+                type === "mud" ? "/assets/gimmick_mud.png" :
+                type === "chest" ? "/assets/gimmick_chest.png" :
+                type === "vine" ? "/assets/gimmick_vine.png" :
+                (type === "boulder" || type === "rock") ? "/assets/gimmick_rock.png" :
+                type === "ice" ? "/assets/gimmick_ice.png" : null;
+
+              return gImg ? (
+                <div className="flex justify-center my-1">
+                  <img
+                    src={getAssetUrl(gImg)}
+                    alt={stage.newGimmickIntro?.title}
+                    className="w-20 h-20 object-contain drop-shadow-2xl animate-bounce-subtle"
+                  />
+                </div>
+              ) : (
+                <span className="text-6xl inline-block drop-shadow-md animate-bounce-subtle">
+                  {stage.newGimmickIntro?.icon}
+                </span>
+              );
+            })()}
             <div>
               <span className="text-[10px] font-black text-cyan-400 uppercase tracking-widest bg-cyan-950 px-2.5 py-0.5 rounded-full border border-cyan-500/40">
                 NEW GIMMICK!

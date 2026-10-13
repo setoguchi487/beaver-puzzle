@@ -147,7 +147,19 @@ export const CreatureBadgeModal: React.FC<CreatureBadgeModalProps> = ({
                             : 'bg-slate-800/60 border border-slate-700/50'
                         }`}
                       >
-                        {isUnlocked ? a.creature.icon : <Lock className="w-5 h-5 text-slate-600" />}
+                        {isUnlocked ? (
+                          a.creature.image ? (
+                            <img
+                              src={getAssetUrl(a.creature.image)}
+                              alt={a.creature.name}
+                              className="w-9 h-9 object-contain drop-shadow"
+                            />
+                          ) : (
+                            a.creature.icon
+                          )
+                        ) : (
+                          <Lock className="w-5 h-5 text-slate-600" />
+                        )}
                       </div>
 
                       <div className="flex-1 min-w-0">

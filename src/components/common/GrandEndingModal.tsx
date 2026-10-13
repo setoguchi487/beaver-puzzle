@@ -105,7 +105,15 @@ export const GrandEndingModal: React.FC<GrandEndingModalProps> = ({
                 className="p-1.5 bg-slate-800/80 rounded-xl flex flex-col items-center justify-center border border-slate-700/60"
                 title={`${a.name}: ${a.creature.name}`}
               >
-                <span className="text-xl leading-none">{a.creature.icon}</span>
+                {a.creature.image ? (
+                  <img
+                    src={getAssetUrl(a.creature.image)}
+                    alt={a.creature.name}
+                    className="w-7 h-7 object-contain drop-shadow"
+                  />
+                ) : (
+                  <span className="text-xl leading-none">{a.creature.icon}</span>
+                )}
                 <span className="text-[8px] text-slate-300 truncate max-w-full mt-0.5 font-bold">
                   {a.creature.name.split(' ')[0]}
                 </span>
