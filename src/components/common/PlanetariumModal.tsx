@@ -4,6 +4,7 @@ import confetti from 'canvas-confetti';
 import type { FrontierArea } from '../../types';
 import { isAreaFeatureUnlocked } from '../../utils/areaUnlocks';
 import { sounds } from '../../utils/soundEffects';
+import { getAssetUrl } from '../../utils/assetPath';
 
 interface PlanetariumModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ interface Constellation {
   id: string;
   name: string;
   icon: string;
+  image?: string;
   requiredStars: number;
   woodReward: number;
   description: string;
@@ -28,6 +30,7 @@ const CONSTELLATIONS: Constellation[] = [
     id: 'beaver_constellation',
     name: '森の働き者・ビーバー座',
     icon: '🦫✨',
+    image: '/assets/constellation_beaver.jpg',
     requiredStars: 10,
     woodReward: 100,
     description: '丸太を抱えて泳ぐ姿を描いた、森の象徴的な星座',
@@ -37,6 +40,7 @@ const CONSTELLATIONS: Constellation[] = [
     id: 'watermill_constellation',
     name: 'せせらぎの恵み・水車座',
     icon: '⚙️🌊',
+    image: '/assets/constellation_watermill.jpg',
     requiredStars: 25,
     woodReward: 150,
     description: '巡る水の循環と豊かな実りを表す四大星座の1つ',
@@ -46,6 +50,7 @@ const CONSTELLATIONS: Constellation[] = [
     id: 'kingfisher_constellation',
     name: '蒼き飛翔・カワセミ座',
     icon: '🐦💎',
+    image: '/assets/constellation_kingfisher.jpg',
     requiredStars: 45,
     woodReward: 200,
     description: '水面すれすれを美しく滑空するエメラルドの星',
@@ -55,6 +60,7 @@ const CONSTELLATIONS: Constellation[] = [
     id: 'sacred_tree_constellation',
     name: '千年の守り・神木座',
     icon: '🌳🌟',
+    image: '/assets/constellation_sacred_tree.jpg',
     requiredStars: 70,
     woodReward: 300,
     description: '根を大地に、枝を宇宙に伸ばす壮大なる大樹の星座',
@@ -64,6 +70,7 @@ const CONSTELLATIONS: Constellation[] = [
     id: 'mystic_fox_constellation',
     name: '賢者の導き・キツネ座',
     icon: '🦊🌌',
+    image: '/assets/constellation_mystic_fox.jpg',
     requiredStars: 100,
     woodReward: 500,
     description: '九尾の輝きを放ち、天の川を渡る神話の星座',
@@ -181,9 +188,19 @@ export const PlanetariumModal: React.FC<PlanetariumModalProps> = ({
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.2)_0%,transparent_70%)] pointer-events-none" />
 
               <div className="relative z-10 space-y-2">
-                <div className="text-5xl animate-bounce-subtle drop-shadow-[0_0_15px_rgba(255,255,255,0.7)]">
-                  {selectedConstellation.icon}
-                </div>
+                {selectedConstellation.image ? (
+                  <div className="flex justify-center my-1">
+                    <img
+                      src={getAssetUrl(selectedConstellation.image)}
+                      alt={selectedConstellation.name}
+                      className="w-40 h-40 sm:w-44 sm:h-44 object-cover rounded-2xl border-2 border-indigo-400/70 shadow-[0_0_30px_rgba(99,102,241,0.5)] animate-bounce-subtle"
+                    />
+                  </div>
+                ) : (
+                  <div className="text-5xl animate-bounce-subtle drop-shadow-[0_0_15px_rgba(255,255,255,0.7)]">
+                    {selectedConstellation.icon}
+                  </div>
+                )}
                 <div>
                   <h3 className="text-base font-black text-white flex items-center justify-center space-x-1.5">
                     <span>{selectedConstellation.name}</span>
@@ -261,8 +278,16 @@ export const PlanetariumModal: React.FC<PlanetariumModalProps> = ({
                           : 'bg-slate-950/60 border-slate-800 opacity-70 hover:opacity-100'
                       }`}
                     >
-                      <div className="flex items-center space-x-2 min-w-0">
-                        <span className="text-2xl">{c.icon.split('')[0]}</span>
+                      <div className="flex items-center space-x-2.5 min-w-0">
+                        {c.image ? (
+                          <img
+                            src={getAssetUrl(c.image)}
+                            alt={c.name}
+                            className="w-9 h-9 rounded-lg object-cover shrink-0 border border-indigo-400/40 shadow-sm"
+                          />
+                        ) : (
+                          <span className="text-2xl shrink-0">{c.icon.split('')[0]}</span>
+                        )}
                         <div className="min-w-0">
                           <div className="text-xs font-black text-slate-200 truncate">
                             {c.name}

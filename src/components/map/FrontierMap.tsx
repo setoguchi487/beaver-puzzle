@@ -184,6 +184,11 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
       getAssetUrl('/assets/juice_berry_cider.jpg'),
       getAssetUrl('/assets/juice_blueberry_syrup.jpg'),
       getAssetUrl('/assets/juice_ripe_smoothie.jpg'),
+      getAssetUrl('/assets/constellation_beaver.jpg'),
+      getAssetUrl('/assets/constellation_watermill.jpg'),
+      getAssetUrl('/assets/constellation_kingfisher.jpg'),
+      getAssetUrl('/assets/constellation_sacred_tree.jpg'),
+      getAssetUrl('/assets/constellation_mystic_fox.jpg'),
     ]);
   }, [areas]);
 
