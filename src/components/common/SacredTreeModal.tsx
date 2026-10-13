@@ -4,6 +4,7 @@ import confetti from 'canvas-confetti';
 import type { FrontierArea } from '../../types';
 import { isAreaFeatureUnlocked } from '../../utils/areaUnlocks';
 import { sounds } from '../../utils/soundEffects';
+import { getAssetUrl } from '../../utils/assetPath';
 
 interface SacredTreeModalProps {
   isOpen: boolean;
@@ -99,15 +100,20 @@ export const SacredTreeModal: React.FC<SacredTreeModalProps> = ({
         </button>
 
         {/* ヘッダー */}
-        <div className="text-center space-y-1">
-          <div className="inline-flex items-center space-x-1.5 bg-amber-500/20 text-amber-300 border border-amber-400/30 px-3 py-0.5 rounded-full text-xs font-black">
-            <span>🍁🦊 守り神の神木</span>
-            <span>・</span>
-            <span>大樹の加護</span>
+        <div className="text-center space-y-1.5">
+          <div className="flex items-center justify-center space-x-2.5">
+            <img src={getAssetUrl("/assets/creature_mystic_fox.png")} alt="賢者キツネ" className="w-11 h-11 object-contain drop-shadow animate-bounce-subtle shrink-0" />
+            <div className="text-left">
+              <div className="inline-flex items-center space-x-1 bg-amber-500/20 text-amber-300 border border-amber-400/30 px-2 py-0.2 rounded-full text-[10px] font-black">
+                <span>守り神の神木</span>
+                <span>・</span>
+                <span>大樹の加護</span>
+              </div>
+              <h2 className="text-base sm:text-lg font-black bg-gradient-to-r from-amber-200 via-yellow-200 to-orange-200 bg-clip-text text-transparent">
+                賢者キツネの神聖加護
+              </h2>
+            </div>
           </div>
-          <h2 className="text-xl font-black bg-gradient-to-r from-amber-200 via-yellow-200 to-orange-200 bg-clip-text text-transparent">
-            賢者キツネの神聖加護
-          </h2>
           <p className="text-[11px] text-amber-200/80">
             千年を生きる神木に祈りを捧げ、森全体の永続パッシブ能力を授かろう！
           </p>

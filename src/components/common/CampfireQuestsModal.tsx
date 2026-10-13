@@ -5,6 +5,7 @@ import type { FrontierArea, PlayerBoosters } from '../../types';
 import type { PreBoosters } from '../puzzle/Match3Board';
 import { isAreaFeatureUnlocked } from '../../utils/areaUnlocks';
 import { sounds } from '../../utils/soundEffects';
+import { getAssetUrl } from '../../utils/assetPath';
 
 interface CampfireQuestsModalProps {
   isOpen: boolean;
@@ -18,19 +19,21 @@ interface DailyQuest {
   id: string;
   title: string;
   icon: string;
+  image?: string;
   progress: number;
   max: number;
   rewardType: 'wood' | 'booster' | 'pre';
   rewardKey?: keyof PlayerBoosters | keyof PreBoosters;
   rewardAmount: number;
   rewardLabel: string;
+  rewardImage?: string;
   isClaimed: boolean;
 }
 
 const DEFAULT_QUESTS: DailyQuest[] = [
-  { id: 'q1', title: '丸太ピースを30個消去する', icon: '🪵', progress: 30, max: 30, rewardType: 'wood', rewardAmount: 150, rewardLabel: '木材 +150', isClaimed: false },
-  { id: 'q2', title: '水流ピースを25個消去する', icon: '💧', progress: 25, max: 25, rewardType: 'pre', rewardKey: 'startRocket', rewardAmount: 1, rewardLabel: '初期ロケット x1', isClaimed: false },
-  { id: 'q3', title: 'パズルステージを1回クリアする', icon: '🌟', progress: 1, max: 1, rewardType: 'booster', rewardKey: 'clock', rewardAmount: 1, rewardLabel: 'ぜんまい時計 x1', isClaimed: false },
+  { id: 'q1', title: '丸太ピースを30個消去する', icon: '🪵', image: '/assets/piece_wood.png', progress: 30, max: 30, rewardType: 'wood', rewardAmount: 150, rewardLabel: '木材 +150', rewardImage: '/assets/piece_wood.png', isClaimed: false },
+  { id: 'q2', title: '水流ピースを25個消去する', icon: '💧', image: '/assets/piece_water.png', progress: 25, max: 25, rewardType: 'pre', rewardKey: 'startRocket', rewardAmount: 1, rewardLabel: '初期ロケット x1', rewardImage: '/assets/piece_rocket.png', isClaimed: false },
+  { id: 'q3', title: 'パズルステージを1回クリアする', icon: '🌟', image: '/assets/badge_camp.png', progress: 1, max: 1, rewardType: 'booster', rewardKey: 'clock', rewardAmount: 1, rewardLabel: 'ぜんまい時計 x1', rewardImage: '/assets/booster_clock.png', isClaimed: false },
 ];
 
 const STORAGE_QUESTS_KEY = 'beaver_puzzle_campfire_quests';
@@ -104,7 +107,10 @@ export const CampfireQuestsModal: React.FC<CampfireQuestsModalProps> = ({
         {/* ヘッダー */}
         <div className="flex items-center justify-between border-b border-orange-500/20 pb-3">
           <div className="flex items-center space-x-2">
-            <span className="text-3xl animate-bounce-subtle">🔥🦝</span>
+            <div className="relative w-11 h-11 shrink-0 animate-bounce-subtle">
+              <img src={getAssetUrl("/assets/deco_campfire.jpg")} alt="焚き火" className="w-11 h-11 rounded-2xl object-cover border border-orange-500/40 drop-shadow" />
+              <img src={getAssetUrl("/assets/creature_raccoon.png")} alt="アライグマ" className="w-7 h-7 object-contain absolute -bottom-1 -right-1 drop-shadow" />
+            </div>
             <div>
               <h3 className="text-base sm:text-lg font-black text-orange-300">
                 焚き火の集会場・デイリー依頼
@@ -158,11 +164,21 @@ export const CampfireQuestsModal: React.FC<CampfireQuestsModalProps> = ({
                   }`}
                 >
                   <div className="flex items-center space-x-2.5 flex-1 min-w-0">
-                    <span className="text-2xl shrink-0">{q.icon}</span>
+                    <div className="w-10 h-10 rounded-xl bg-slate-950/80 border border-orange-500/30 flex items-center justify-center p-1 shrink-0 shadow-inner">
+                      {q.image ? (
+                        <img src={getAssetUrl(q.image)} alt={q.title} className="w-8 h-8 object-contain drop-shadow" />
+                      ) : (
+                        <span className="text-2xl">{q.icon}</span>
+                      )}
+                    </div>
                     <div className="min-w-0 flex-1">
                       <div className="text-xs font-black text-white truncate">{q.title}</div>
-                      <div className="text-[10px] text-orange-300 font-bold mt-0.5">
-                        報酬: {q.rewardLabel}
+                      <div className="text-[10px] text-orange-300 font-bold mt-0.5 flex items-center space-x-1">
+                        <span>報酬:</span>
+                        {q.rewardImage && (
+                          <img src={getAssetUrl(q.rewardImage)} alt="" className="w-3.5 h-3.5 object-contain inline-block" />
+                        )}
+                        <span>{q.rewardLabel}</span>
                       </div>
                     </div>
                   </div>

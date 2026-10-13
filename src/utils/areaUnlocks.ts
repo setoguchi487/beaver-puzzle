@@ -4,6 +4,7 @@ export interface AreaFeatureUnlock {
   areaId: string;
   featureName: string;
   icon: string;
+  image: string;
   badgeTitle: string;
   description: string;
   unlockedDescription: string;
@@ -14,6 +15,7 @@ export const AREA_FEATURE_CONFIG: Record<string, AreaFeatureUnlock> = {
     areaId: 'small_dam',
     featureName: '森のラッキールーレット',
     icon: '🎡🌊',
+    image: '/assets/dam_stage_5.jpg',
     badgeTitle: '水車ガラポン OPEN!',
     description: '小枝ダムの水流で回る毎日の無料ルーレット',
     unlockedDescription: '毎日1回無料で木材やブースターが当たります！',
@@ -22,6 +24,7 @@ export const AREA_FEATURE_CONFIG: Record<string, AreaFeatureUnlock> = {
     areaId: 'beaver_workshop',
     featureName: '森の木工クラフトショップ',
     icon: '🔨🦔',
+    image: '/assets/booster_hammer.png',
     badgeTitle: '道具補給所 OPEN!',
     description: '木材を使ってブースターアイテムを補給・作成できるショップ',
     unlockedDescription: 'ハリネズミ店長から道具をクラフトできます！',
@@ -30,6 +33,7 @@ export const AREA_FEATURE_CONFIG: Record<string, AreaFeatureUnlock> = {
     areaId: 'watermill_zone',
     featureName: '水車の自動製材所',
     icon: '🪵🦉',
+    image: '/assets/watermill.jpg',
     badgeTitle: '木材ストック稼働!',
     description: '水車が回り、時間経過や毎日のログインで木材を自動備蓄',
     unlockedDescription: '毎日の訪問でボーナス木材樽を受け取れます！',
@@ -38,6 +42,7 @@ export const AREA_FEATURE_CONFIG: Record<string, AreaFeatureUnlock> = {
     areaId: 'beaver_lodge',
     featureName: 'マイルーム＆着せ替え',
     icon: '🏡🐿️',
+    image: '/assets/lodge_stage_5.jpg',
     badgeTitle: '我が家が完成!',
     description: 'ロッジの模様替えやビーバーの衣装チェンジ',
     unlockedDescription: 'お気に入りのスタイルで冒険に出かけよう！',
@@ -46,6 +51,7 @@ export const AREA_FEATURE_CONFIG: Record<string, AreaFeatureUnlock> = {
     areaId: 'berry_orchard',
     featureName: '特製ジューススタンド',
     icon: '🍹🦡',
+    image: '/assets/juice_berry_cider.jpg',
     badgeTitle: 'スタミナ補給!',
     description: '特製ベリージュースでパズルの獲得木材や手数をブースト',
     unlockedDescription: '甘酸っぱいジュースでパズルを有利に進めよう！',
@@ -54,6 +60,7 @@ export const AREA_FEATURE_CONFIG: Record<string, AreaFeatureUnlock> = {
     areaId: 'riverside_camp',
     featureName: '焚き火の集会場',
     icon: '🔥🦝',
+    image: '/assets/deco_campfire.jpg',
     badgeTitle: '仲間たちの集い!',
     description: '仲間たちのおしゃべりやデイリープチ依頼',
     unlockedDescription: '焚き火を囲んで特別な報酬をもらおう！',
@@ -62,6 +69,7 @@ export const AREA_FEATURE_CONFIG: Record<string, AreaFeatureUnlock> = {
     areaId: 'fishing_pier',
     featureName: '渓流フィッシング',
     icon: '🎣🐟',
+    image: '/assets/fish_ayu.jpg',
     badgeTitle: '釣りテラス解放!',
     description: 'カワセミと一緒に清流の魚を釣るミニゲーム＆魚拓図鑑',
     unlockedDescription: '糸を垂らして幻の魚を釣り上げよう！',
@@ -70,6 +78,7 @@ export const AREA_FEATURE_CONFIG: Record<string, AreaFeatureUnlock> = {
     areaId: 'stargazing_deck',
     featureName: '満天のプラネタリウム',
     icon: '🔭✨',
+    image: '/assets/constellation_beaver.jpg',
     badgeTitle: '星空ギャラリー!',
     description: '集めた★（スター）で夜空の星座を復元＆夜景テーマ解放',
     unlockedDescription: '美しい星座を夜空に輝かせよう！',
@@ -78,6 +87,7 @@ export const AREA_FEATURE_CONFIG: Record<string, AreaFeatureUnlock> = {
     areaId: 'sacred_tree',
     featureName: '大樹の加護',
     icon: '🍁🦊',
+    image: '/assets/sacred_stage_5.jpg',
     badgeTitle: '永続パッシブ発動!',
     description: '賢者キツネから授かる木材ボーナスなどの神聖なパッシブ能力',
     unlockedDescription: '森のすべての開拓で神聖な恩恵を受けられます！',

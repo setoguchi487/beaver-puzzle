@@ -609,9 +609,17 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                             className="flex items-center space-x-1 px-2 py-0.5 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 hover:brightness-110 text-slate-950 rounded-full shadow-[0_0_12px_rgba(251,191,36,0.7)] border-2 border-white cursor-pointer active:scale-95 transition-transform animate-bounce-subtle"
                             title={`${AREA_FEATURE_CONFIG[area.id].featureName}を開く`}
                           >
-                            <span className="text-xs leading-none">
-                              {AREA_FEATURE_CONFIG[area.id].icon.split('')[0]}
-                            </span>
+                            {AREA_FEATURE_CONFIG[area.id].image ? (
+                              <img
+                                src={getAssetUrl(AREA_FEATURE_CONFIG[area.id].image)}
+                                alt=""
+                                className="w-4 h-4 rounded-full object-cover shrink-0 border border-amber-600/50"
+                              />
+                            ) : (
+                              <span className="text-xs leading-none">
+                                {AREA_FEATURE_CONFIG[area.id].icon.split('')[0]}
+                              </span>
+                            )}
                             <span className="text-[8.5px] font-black tracking-tight whitespace-nowrap">
                               {AREA_FEATURE_CONFIG[area.id].featureName.replace('森の', '').replace('マイルーム＆', '').replace('満天の', '')}
                             </span>
@@ -783,7 +791,15 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                         className="px-2 py-1 bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 font-black text-[10px] rounded-xl flex items-center space-x-1 shadow-sm active:scale-95 transition-all cursor-pointer"
                         title={`${AREA_FEATURE_CONFIG[area.id].featureName}を開く`}
                       >
-                        <span>{AREA_FEATURE_CONFIG[area.id].icon.split('')[0]}</span>
+                        {AREA_FEATURE_CONFIG[area.id].image ? (
+                          <img
+                            src={getAssetUrl(AREA_FEATURE_CONFIG[area.id].image)}
+                            alt=""
+                            className="w-4 h-4 rounded-md object-cover shrink-0 border border-amber-600/40"
+                          />
+                        ) : (
+                          <span>{AREA_FEATURE_CONFIG[area.id].icon.split('')[0]}</span>
+                        )}
                         <span>{AREA_FEATURE_CONFIG[area.id].featureName.replace('森の', '').replace('マイルーム＆', '').replace('満天の', '')}</span>
                       </button>
                     )}
@@ -961,7 +977,15 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                       }}
                       className="w-full py-3 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 hover:brightness-110 text-slate-950 font-black text-sm rounded-2xl shadow-lg flex items-center justify-center space-x-1.5 active:scale-98 transition-all cursor-pointer"
                     >
-                      <span>{AREA_FEATURE_CONFIG[selectedArea.id].icon.split('')[0]}</span>
+                      {AREA_FEATURE_CONFIG[selectedArea.id].image ? (
+                        <img
+                          src={getAssetUrl(AREA_FEATURE_CONFIG[selectedArea.id].image)}
+                          alt=""
+                          className="w-5 h-5 rounded-md object-cover shrink-0 border border-amber-700/50"
+                        />
+                      ) : (
+                        <span>{AREA_FEATURE_CONFIG[selectedArea.id].icon.split('')[0]}</span>
+                      )}
                       <span>{AREA_FEATURE_CONFIG[selectedArea.id].featureName} を利用する</span>
                     </button>
                   )}

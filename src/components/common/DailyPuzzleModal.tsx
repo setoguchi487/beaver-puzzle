@@ -6,6 +6,7 @@ import {
   isDailyClearedToday,
 } from '../../utils/dailyPuzzle';
 import { PIECE_CONFIG } from '../../data/masterData';
+import { getAssetUrl } from '../../utils/assetPath';
 import { X, Calendar, Play, CheckCircle2, Gift } from 'lucide-react';
 
 interface DailyPuzzleModalProps {
@@ -94,9 +95,13 @@ export const DailyPuzzleModal: React.FC<DailyPuzzleModalProps> = ({
               {stage.targets.map((tgt, i) => {
                 const conf = (PIECE_CONFIG as any)[tgt.type];
                 return (
-                  <div key={i} className="flex items-center space-x-0.5 text-xs font-mono font-bold">
-                    <span>{conf?.icon || '📦'}</span>
-                    <span className="text-amber-300">{tgt.required}</span>
+                  <div key={i} className="flex items-center space-x-1 text-xs font-mono font-bold bg-slate-900/90 px-1.5 py-0.5 rounded-lg border border-slate-700/60">
+                    {conf?.image ? (
+                      <img src={conf.image} alt={conf.label} className="w-4 h-4 object-contain drop-shadow" />
+                    ) : (
+                      <span>{conf?.icon || '📦'}</span>
+                    )}
+                    <span className="text-amber-300">x{tgt.required}</span>
                   </div>
                 );
               })}
@@ -119,19 +124,34 @@ export const DailyPuzzleModal: React.FC<DailyPuzzleModalProps> = ({
             )}
           </div>
 
-          <div className="flex items-center space-x-3 text-xs font-black">
-            <span className="text-amber-400">🪵 +{rewardInfo.wood}</span>
+          <div className="flex flex-wrap items-center gap-2 text-xs font-black">
+            <span className="text-amber-400 flex items-center space-x-1">
+              <img src={getAssetUrl("/assets/piece_wood.png")} alt="木材" className="w-4 h-4 object-contain drop-shadow" />
+              <span>+{rewardInfo.wood}</span>
+            </span>
             {rewardInfo.boosters.hammer && (
-              <span className="text-cyan-300">🔨 ×{rewardInfo.boosters.hammer}</span>
+              <span className="text-cyan-300 flex items-center space-x-1 bg-slate-900/80 px-1.5 py-0.5 rounded-lg border border-slate-700/60">
+                <img src={getAssetUrl("/assets/booster_hammer.png")} alt="木づち" className="w-3.5 h-3.5 object-contain" />
+                <span>×{rewardInfo.boosters.hammer}</span>
+              </span>
             )}
             {rewardInfo.boosters.saw && (
-              <span className="text-emerald-300">🪚 ×{rewardInfo.boosters.saw}</span>
+              <span className="text-emerald-300 flex items-center space-x-1 bg-slate-900/80 px-1.5 py-0.5 rounded-lg border border-slate-700/60">
+                <img src={getAssetUrl("/assets/booster_saw.png")} alt="ノコギリ" className="w-3.5 h-3.5 object-contain" />
+                <span>×{rewardInfo.boosters.saw}</span>
+              </span>
             )}
             {rewardInfo.boosters.tail && (
-              <span className="text-purple-300">🦫 ×{rewardInfo.boosters.tail}</span>
+              <span className="text-purple-300 flex items-center space-x-1 bg-slate-900/80 px-1.5 py-0.5 rounded-lg border border-slate-700/60">
+                <img src={getAssetUrl("/assets/booster_tail.png")} alt="しっぽ" className="w-3.5 h-3.5 object-contain" />
+                <span>×{rewardInfo.boosters.tail}</span>
+              </span>
             )}
             {rewardInfo.boosters.clock && (
-              <span className="text-rose-300">⏱️ ×{rewardInfo.boosters.clock}</span>
+              <span className="text-rose-300 flex items-center space-x-1 bg-slate-900/80 px-1.5 py-0.5 rounded-lg border border-slate-700/60">
+                <img src={getAssetUrl("/assets/booster_clock.png")} alt="時計" className="w-3.5 h-3.5 object-contain" />
+                <span>×{rewardInfo.boosters.clock}</span>
+              </span>
             )}
           </div>
         </div>

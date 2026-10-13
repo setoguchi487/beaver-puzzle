@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { STAR_MILESTONES, type StarMilestone } from '../../data/starRoadMilestones';
 import { X, Star, Gift, Check, Lock } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { getAssetUrl } from '../../utils/assetPath';
 
 interface StarRoadModalProps {
   totalStars: number;
@@ -132,18 +133,33 @@ export const StarRoadModal: React.FC<StarRoadModalProps> = ({
                       <span className="text-xs">{m.badgeIcon}</span>
                     </div>
                     <div className="text-[10px] text-slate-300 mt-0.5 flex flex-wrap items-center gap-1.5">
-                      <span className="text-amber-300 font-bold">🪵 +{m.rewardWood}</span>
+                      <span className="text-amber-300 font-bold flex items-center space-x-0.5">
+                        <img src={getAssetUrl("/assets/piece_wood.png")} alt="木材" className="w-3.5 h-3.5 object-contain inline-block" />
+                        <span>+{m.rewardWood}</span>
+                      </span>
                       {m.boosters?.hammer && (
-                        <span className="text-cyan-300 font-bold">🔨×{m.boosters.hammer}</span>
+                        <span className="text-cyan-300 font-bold flex items-center space-x-0.5 bg-slate-950/60 px-1 py-0.5 rounded border border-slate-700/60">
+                          <img src={getAssetUrl("/assets/booster_hammer.png")} alt="木づち" className="w-3.5 h-3.5 object-contain" />
+                          <span>×{m.boosters.hammer}</span>
+                        </span>
                       )}
                       {m.boosters?.saw && (
-                        <span className="text-emerald-300 font-bold">🪚×{m.boosters.saw}</span>
+                        <span className="text-emerald-300 font-bold flex items-center space-x-0.5 bg-slate-950/60 px-1 py-0.5 rounded border border-slate-700/60">
+                          <img src={getAssetUrl("/assets/booster_saw.png")} alt="ノコギリ" className="w-3.5 h-3.5 object-contain" />
+                          <span>×{m.boosters.saw}</span>
+                        </span>
                       )}
                       {m.boosters?.tail && (
-                        <span className="text-purple-300 font-bold">🦫×{m.boosters.tail}</span>
+                        <span className="text-purple-300 font-bold flex items-center space-x-0.5 bg-slate-950/60 px-1 py-0.5 rounded border border-slate-700/60">
+                          <img src={getAssetUrl("/assets/booster_tail.png")} alt="しっぽ" className="w-3.5 h-3.5 object-contain" />
+                          <span>×{m.boosters.tail}</span>
+                        </span>
                       )}
                       {m.boosters?.clock && (
-                        <span className="text-rose-300 font-bold">⏱️×{m.boosters.clock}</span>
+                        <span className="text-rose-300 font-bold flex items-center space-x-0.5 bg-slate-950/60 px-1 py-0.5 rounded border border-slate-700/60">
+                          <img src={getAssetUrl("/assets/booster_clock.png")} alt="時計" className="w-3.5 h-3.5 object-contain" />
+                          <span>×{m.boosters.clock}</span>
+                        </span>
                       )}
                     </div>
                   </div>

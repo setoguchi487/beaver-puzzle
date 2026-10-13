@@ -136,15 +136,20 @@ export const PlanetariumModal: React.FC<PlanetariumModalProps> = ({
         </button>
 
         {/* ヘッダー */}
-        <div className="text-center space-y-1">
-          <div className="inline-flex items-center space-x-1.5 bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 px-3 py-0.5 rounded-full text-xs font-black">
-            <span>🔭✨ 星見台</span>
-            <span>・</span>
-            <span>プラネタリウム</span>
+        <div className="text-center space-y-1.5">
+          <div className="flex items-center justify-center space-x-2.5">
+            <img src={getAssetUrl("/assets/badge_stars.png")} alt="星空バッジ" className="w-11 h-11 object-contain drop-shadow animate-bounce-subtle shrink-0" />
+            <div className="text-left">
+              <div className="inline-flex items-center space-x-1 bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 px-2 py-0.2 rounded-full text-[10px] font-black">
+                <span>満天の星見台</span>
+                <span>・</span>
+                <span>プラネタリウム</span>
+              </div>
+              <h2 className="text-base sm:text-lg font-black bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200 bg-clip-text text-transparent">
+                満天の星空ギャラリー
+              </h2>
+            </div>
           </div>
-          <h2 className="text-xl font-black bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200 bg-clip-text text-transparent">
-            満天の星空ギャラリー
-          </h2>
           <p className="text-[11px] text-indigo-200/80">
             パズルで集めたスター（★）を捧げて、森の夜空の星座を復元しよう！
           </p>

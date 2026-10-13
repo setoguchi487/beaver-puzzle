@@ -4,6 +4,7 @@ import type { FrontierArea, PlayerBoosters } from '../../types';
 import type { PreBoosters } from '../puzzle/Match3Board';
 import { isAreaFeatureUnlocked } from '../../utils/areaUnlocks';
 import { sounds } from '../../utils/soundEffects';
+import { getAssetUrl } from '../../utils/assetPath';
 
 interface WorkshopShopModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ interface ShopItem {
   category: 'in_game' | 'pre_game';
   targetKey: keyof PlayerBoosters | keyof PreBoosters;
   icon: string;
+  image: string;
   cost: number;
   description: string;
 }
@@ -31,6 +33,7 @@ const SHOP_ITEMS: ShopItem[] = [
     category: 'in_game',
     targetKey: 'hammer',
     icon: '🔨',
+    image: '/assets/booster_hammer.png',
     cost: 80,
     description: 'パズル中、狙ったピースや障害物を1マス叩き割る！',
   },
@@ -40,6 +43,7 @@ const SHOP_ITEMS: ShopItem[] = [
     category: 'in_game',
     targetKey: 'saw',
     icon: '🪚',
+    image: '/assets/booster_saw.png',
     cost: 120,
     description: 'パズル中、横1列のドロップやギミックを一気に切り払う！',
   },
@@ -49,6 +53,7 @@ const SHOP_ITEMS: ShopItem[] = [
     category: 'in_game',
     targetKey: 'clock',
     icon: '⏱️',
+    image: '/assets/booster_clock.png',
     cost: 150,
     description: 'パズル中、ピンチの時に残り手数を+5手回復する！',
   },
@@ -58,6 +63,7 @@ const SHOP_ITEMS: ShopItem[] = [
     category: 'pre_game',
     targetKey: 'startRocket',
     icon: '🚀',
+    image: '/assets/piece_rocket.png',
     cost: 100,
     description: 'ステージ開始時に、最初から盤面にロケットを1個配置！',
   },
@@ -67,6 +73,7 @@ const SHOP_ITEMS: ShopItem[] = [
     category: 'pre_game',
     targetKey: 'startBomb',
     icon: '💣',
+    image: '/assets/piece_bomb.png',
     cost: 130,
     description: 'ステージ開始時に、最初から盤面に爆弾を1個配置！',
   },
@@ -76,6 +83,7 @@ const SHOP_ITEMS: ShopItem[] = [
     category: 'pre_game',
     targetKey: 'extraMoves',
     icon: '➕',
+    image: '/assets/booster_extra_moves.png',
     cost: 110,
     description: 'ステージ開始時の残り手数を+3手増やして有利に挑む！',
   },
@@ -146,7 +154,10 @@ export const WorkshopShopModal: React.FC<WorkshopShopModalProps> = ({
         {/* ヘッダー */}
         <div className="flex items-center justify-between border-b border-amber-500/20 pb-3">
           <div className="flex items-center space-x-2">
-            <span className="text-3xl animate-bounce-subtle">🦔🔨</span>
+            <div className="relative w-11 h-11 shrink-0 animate-bounce-subtle">
+              <img src={getAssetUrl("/assets/creature_hedgehog.png")} alt="店長ハリネズミ" className="w-11 h-11 object-contain drop-shadow" />
+              <img src={getAssetUrl("/assets/booster_hammer.png")} alt="木工ハンマー" className="w-5 h-5 object-contain absolute -bottom-1 -right-1 drop-shadow" />
+            </div>
             <div>
               <h3 className="text-base sm:text-lg font-black text-amber-300 flex items-center space-x-1.5">
                 <span>森の木工クラフトショップ</span>
@@ -215,8 +226,8 @@ export const WorkshopShopModal: React.FC<WorkshopShopModalProps> = ({
                   className="bg-slate-900/90 border border-amber-500/20 rounded-2xl p-2.5 flex items-center justify-between space-x-2.5 hover:border-amber-500/40 transition-colors"
                 >
                   <div className="flex items-center space-x-2.5 flex-1 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-amber-950/60 border border-amber-500/30 flex items-center justify-center text-2xl shadow-inner shrink-0">
-                      {item.icon}
+                    <div className="w-11 h-11 rounded-xl bg-amber-950/60 border border-amber-500/30 flex items-center justify-center p-1 shadow-inner shrink-0">
+                      <img src={getAssetUrl(item.image)} alt={item.name} className="w-8 h-8 object-contain drop-shadow" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center space-x-1.5">

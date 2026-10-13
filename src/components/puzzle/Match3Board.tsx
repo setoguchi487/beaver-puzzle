@@ -2340,7 +2340,11 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
                   const pieceCfg = (PIECE_CONFIG as any)[tgt.type];
                   return (
                     <div key={tgt.type} className="flex flex-col items-center bg-slate-900/80 px-3 py-1.5 rounded-xl border border-slate-700/60 shadow-inner">
-                      <span className="text-2xl drop-shadow-sm">{pieceCfg ? pieceCfg.icon : '🎯'}</span>
+                      {pieceCfg?.image ? (
+                        <img src={pieceCfg.image} alt={pieceCfg.label} className="w-7 h-7 object-contain drop-shadow" />
+                      ) : (
+                        <span className="text-2xl drop-shadow-sm">{pieceCfg ? pieceCfg.icon : '🎯'}</span>
+                      )}
                       <span className="text-xs font-black text-amber-200 mt-0.5">x{tgt.required}</span>
                     </div>
                   );
@@ -2354,8 +2358,18 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
                 <span className="text-2xl drop-shadow-sm">🔥</span>
                 <div className="flex-1 text-[11px]">
                   <div className="font-black text-amber-300">連勝ボーナス発動中！</div>
-                  <div className="text-slate-300 text-[10px]">
-                    開始時に {winStreak === 1 ? '🚀 ロケットx1' : winStreak === 2 ? '🚀 ロケットx1 + 💣 爆弾x1' : '🚀 ロケットx2 + 💣 爆弾x1'} を初期配備！
+                  <div className="text-slate-300 text-[10px] flex items-center space-x-1.5 mt-0.5">
+                    <span>開始時に初期配備:</span>
+                    <span className="inline-flex items-center space-x-1 bg-slate-950/80 px-1.5 py-0.5 rounded border border-orange-500/30">
+                      <img src={getAssetUrl("/assets/piece_rocket.png")} alt="ロケット" className="w-3.5 h-3.5 object-contain" />
+                      <span>x{winStreak >= 3 ? 2 : 1}</span>
+                    </span>
+                    {winStreak >= 2 && (
+                      <span className="inline-flex items-center space-x-1 bg-slate-950/80 px-1.5 py-0.5 rounded border border-orange-500/30">
+                        <img src={getAssetUrl("/assets/piece_bomb.png")} alt="爆弾" className="w-3.5 h-3.5 object-contain" />
+                        <span>x1</span>
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -3231,7 +3245,10 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
               onClick={handleContinueWithClock}
               className="w-full py-3 bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-600 hover:from-cyan-400 hover:to-blue-500 text-white font-black text-xs rounded-2xl shadow-lg shadow-cyan-500/25 active:scale-98 transition-transform flex items-center justify-center space-x-2 cursor-pointer border border-cyan-400/50"
             >
-              <span>⏱️ 手数を +5 回復して再開！</span>
+              <span className="flex items-center space-x-1.5">
+                <img src={getAssetUrl("/assets/booster_clock.png")} alt="" className="w-4 h-4 object-contain" />
+                <span>手数を +5 回復して再開！</span>
+              </span>
               <span className="text-[10px] bg-slate-950/60 px-2 py-0.5 rounded-full text-cyan-200">
                 {boosters.clock > 0 ? '所持時計 1個消費' : '50 ウッド消費'}
               </span>

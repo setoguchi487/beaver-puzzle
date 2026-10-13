@@ -3,6 +3,7 @@ import { X, Lock, ChevronRight } from 'lucide-react';
 import type { FrontierArea } from '../../types';
 import { AREA_FEATURE_CONFIG, isAreaFeatureUnlocked, canClaimWatermillWood } from '../../utils/areaUnlocks';
 import { sounds } from '../../utils/soundEffects';
+import { getAssetUrl } from '../../utils/assetPath';
 
 interface AreaFeaturesHubModalProps {
   isOpen: boolean;
@@ -68,7 +69,17 @@ export const AreaFeaturesHubModal: React.FC<AreaFeaturesHubModalProps> = ({
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center space-x-2.5 min-w-0">
-                    <span className="text-3xl shrink-0">{feature.icon.split('')[0]}</span>
+                    <div className="w-11 h-11 rounded-2xl overflow-hidden shrink-0 border border-amber-500/40 bg-slate-950/80 shadow-md flex items-center justify-center p-0.5">
+                      {feature.image ? (
+                        <img
+                          src={getAssetUrl(feature.image)}
+                          alt={feature.featureName}
+                          className="w-full h-full object-cover rounded-xl"
+                        />
+                      ) : (
+                        <span className="text-2xl">{feature.icon.split('')[0]}</span>
+                      )}
+                    </div>
                     <div className="min-w-0">
                       <div className="flex items-center space-x-1.5">
                         <span className="text-xs font-black text-white truncate">

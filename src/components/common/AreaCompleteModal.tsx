@@ -86,18 +86,29 @@ export const AreaCompleteModal: React.FC<AreaCompleteModalProps> = ({
               <div className="text-xs font-black text-white">お助けアイテム全種 +1個</div>
             </div>
           </div>
-          <div className="flex items-center space-x-1.5 text-base bg-slate-900/80 px-2 py-1 rounded-xl border border-amber-500/30">
-            <span>🔨</span><span>🪚</span><span>🦫</span><span>⏱️</span>
+          <div className="flex items-center space-x-1.5 bg-slate-900/80 px-2.5 py-1 rounded-xl border border-amber-500/30">
+            <img src={getAssetUrl("/assets/booster_hammer.png")} alt="木づち" className="w-5 h-5 object-contain drop-shadow" />
+            <img src={getAssetUrl("/assets/booster_saw.png")} alt="ノコギリ" className="w-5 h-5 object-contain drop-shadow" />
+            <img src={getAssetUrl("/assets/booster_tail.png")} alt="しっぽ" className="w-5 h-5 object-contain drop-shadow" />
+            <img src={getAssetUrl("/assets/booster_clock.png")} alt="時計" className="w-5 h-5 object-contain drop-shadow" />
           </div>
         </div>
 
         {/* 住み着いた生き物 */}
         <div className="p-3 bg-emerald-950/40 border border-emerald-500/30 rounded-2xl flex items-center justify-center space-x-3">
-          <span className="text-4xl animate-bounce-subtle">{area.creature.icon}</span>
-          <div className="text-left">
+          {area.creature.image ? (
+            <img
+              src={getAssetUrl(area.creature.image)}
+              alt={area.creature.name}
+              className="w-14 h-14 object-contain animate-bounce-subtle drop-shadow-md rounded-xl bg-slate-900/50 p-1 border border-emerald-500/30 shrink-0"
+            />
+          ) : (
+            <span className="text-4xl animate-bounce-subtle shrink-0">{area.creature.icon}</span>
+          )}
+          <div className="text-left flex-1 min-w-0">
             <div className="text-[10px] text-emerald-300 font-bold uppercase">仲間になった生き物</div>
             <div className="text-sm font-black text-white">{area.creature.name}</div>
-            <div className="text-[10px] text-slate-400">{area.creature.comment}</div>
+            <div className="text-[10px] text-slate-300 mt-0.5">{area.creature.comment}</div>
           </div>
         </div>
 
