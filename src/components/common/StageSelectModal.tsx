@@ -23,10 +23,10 @@ export const StageSelectModal: React.FC<StageSelectModalProps> = ({
 }) => {
   // チャプター定義
   const CHAPTERS = [
-    { id: 1, name: '第1章', subName: '小川・巣作り', range: [1, 25], icon: '🌱', bg: 'from-emerald-950/40 to-teal-950/30' },
-    { id: 2, name: '第2章', subName: '激流・水車小屋', range: [26, 50], icon: '🌊', bg: 'from-blue-950/40 to-cyan-950/30' },
-    { id: 3, name: '第3章', subName: '果樹園・秘境渓谷', range: [51, 75], icon: '🍎', bg: 'from-amber-950/40 to-orange-950/30' },
-    { id: 4, name: '第4章', subName: '桃源郷グランドダム', range: [76, 100], icon: '👑', bg: 'from-purple-950/40 to-fuchsia-950/30' },
+    { id: 1, name: '第1章', subName: '小川・巣作り', range: [1, 25], icon: '🌱', image: '/assets/chapter_1_stream.jpg', bg: 'from-emerald-950/40 to-teal-950/30' },
+    { id: 2, name: '第2章', subName: '激流・水車小屋', range: [26, 50], icon: '🌊', image: '/assets/chapter_2_torrent.jpg', bg: 'from-blue-950/40 to-cyan-950/30' },
+    { id: 3, name: '第3章', subName: '果樹園・秘境渓谷', range: [51, 75], icon: '🍎', image: '/assets/chapter_3_orchard.jpg', bg: 'from-amber-950/40 to-orange-950/30' },
+    { id: 4, name: '第4章', subName: '桃源郷グランドダム', range: [76, 100], icon: '👑', image: '/assets/chapter_4_paradise.jpg', bg: 'from-purple-950/40 to-fuchsia-950/30' },
   ];
 
   // 初期タブ: 現在の最新到達ステージが属するチャプター
@@ -148,7 +148,7 @@ export const StageSelectModal: React.FC<StageSelectModalProps> = ({
                       : 'bg-slate-800/80 hover:bg-slate-750 text-slate-300 border border-slate-700/60'
                   }`}
                 >
-                  <span className="text-sm leading-none">{ch.icon}</span>
+                  <img src={getAssetUrl(ch.image)} alt={ch.name} className="w-7 h-7 rounded-full object-cover border border-amber-400/60 drop-shadow mb-0.5" />
                   <span className="truncate leading-tight mt-1 font-black">{ch.name}</span>
                   <span className="text-[8px] opacity-80 leading-none scale-90">
                     {ch.range[0]}〜{ch.range[1]}
@@ -170,8 +170,8 @@ export const StageSelectModal: React.FC<StageSelectModalProps> = ({
               style={{ backgroundImage: `url("${getAssetUrl(currentChapter.bg)}")` }}
             />
             <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px]" />
-            <span className="relative z-10 font-black text-amber-200 flex items-center space-x-1.5 drop-shadow-sm">
-              <span className="text-sm">{currentChapter.icon}</span>
+            <span className="relative z-10 font-black text-amber-200 flex items-center space-x-2 drop-shadow-sm">
+              <img src={getAssetUrl(currentChapter.image)} alt="" className="w-6 h-6 rounded-full object-cover border border-amber-300 drop-shadow" />
               <span>{currentChapter.name}: {currentChapter.subName}</span>
             </span>
             <span className="relative z-10 flex items-center space-x-1 text-yellow-300 font-mono font-bold bg-slate-950/70 px-2 py-0.5 rounded-lg border border-yellow-400/40">

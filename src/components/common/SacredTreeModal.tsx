@@ -16,6 +16,7 @@ export interface SacredBlessing {
   id: string;
   name: string;
   icon: string;
+  image: string;
   color: string;
   tagline: string;
   description: string;
@@ -27,6 +28,7 @@ export const SACRED_BLESSINGS: SacredBlessing[] = [
     id: 'abundance',
     name: '豊穣の大樹の祈り',
     icon: '🪵🌿',
+    image: '/assets/blessing_abundance.jpg',
     color: 'from-emerald-500/20 to-teal-500/20 border-emerald-400/40 text-emerald-300',
     tagline: '木材獲得量 +25% 永続UP',
     description: '大樹の豊かな生命力が宿り、すべてのパズルクリア時に得られる木材ポイントが永続で1.25倍に増加します。',
@@ -36,6 +38,7 @@ export const SACRED_BLESSINGS: SacredBlessing[] = [
     id: 'serenity',
     name: '静寂の木陰の祈り',
     icon: '🍃🕊️',
+    image: '/assets/blessing_serenity.jpg',
     color: 'from-sky-500/20 to-blue-500/20 border-sky-400/40 text-sky-300',
     tagline: 'パズル初期手数 +1 永続UP',
     description: '静謐な森の守りが心を研ぎ澄まし、すべてのパズルステージで初期手数が永続で+1回追加されます。',
@@ -45,6 +48,7 @@ export const SACRED_BLESSINGS: SacredBlessing[] = [
     id: 'resonance',
     name: '共鳴の雫の祈り',
     icon: '⚡💥',
+    image: '/assets/blessing_resonance.jpg',
     color: 'from-amber-500/20 to-orange-500/20 border-amber-400/40 text-amber-300',
     tagline: 'スペシャルピース連鎖スコア 2倍',
     description: '神聖なマナがロケットや爆弾と共鳴し、起爆・誘爆時の獲得スコアが2倍に倍増します。',
@@ -143,8 +147,12 @@ export const SacredTreeModal: React.FC<SacredTreeModalProps> = ({
             <div className="relative rounded-2xl bg-gradient-to-b from-amber-900/40 via-yellow-950/20 to-slate-950 border border-amber-400/40 p-4 text-center space-y-2 overflow-hidden shadow-inner">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(251,191,36,0.15)_0%,transparent_70%)] pointer-events-none" />
 
-              <div className="text-4xl animate-bounce-subtle drop-shadow-[0_0_12px_rgba(251,191,36,0.5)]">
-                {currentBlessing.icon}
+              <div className="flex justify-center my-1">
+                <img
+                  src={getAssetUrl(currentBlessing.image)}
+                  alt={currentBlessing.name}
+                  className="w-20 h-20 rounded-full object-cover border-2 border-amber-400 shadow-[0_0_20px_rgba(251,191,36,0.6)] animate-bounce-subtle drop-shadow-lg"
+                />
               </div>
 
               <div>
@@ -183,7 +191,11 @@ export const SacredTreeModal: React.FC<SacredTreeModalProps> = ({
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex items-center space-x-2.5">
-                          <span className="text-3xl">{blessing.icon}</span>
+                          <img
+                            src={getAssetUrl(blessing.image)}
+                            alt={blessing.name}
+                            className="w-11 h-11 rounded-full object-cover shrink-0 border border-amber-400/50 shadow-sm"
+                          />
                           <div>
                             <div className="text-xs font-black text-white flex items-center space-x-1.5">
                               <span>{blessing.name}</span>
