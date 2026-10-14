@@ -658,7 +658,8 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                             className="flex items-center space-x-1 px-2 py-0.5 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 rounded-full shadow-lg border-2 border-white cursor-pointer active:scale-95 transition-all animate-bounce font-black text-[8.5px]"
                             title="毎朝の木材ストック樽を受け取る！"
                           >
-                            <span>🪵🦉</span>
+                            <img src={getAssetUrl('/assets/creature_owl.png')} alt="フクロウ" className="w-3.5 h-3.5 object-contain inline-block drop-shadow" />
+                            <img src={getAssetUrl('/assets/icon_wood_coin.jpg')} alt="木材" className="w-3 h-3 rounded-full object-cover inline-block shadow-sm" />
                             <span>木材+200</span>
                           </button>
                         </div>

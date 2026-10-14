@@ -21,12 +21,12 @@ export interface OutfitItem {
 }
 
 export const OUTFIT_ITEMS: OutfitItem[] = [
-  { id: 'none_hat', name: '帽子なし', icon: '🍃', slot: 'hat', description: '自然体のままのふわふわ毛並み' },
+  { id: 'none_hat', name: '帽子なし', icon: '🍃', image: '/assets/closet_natural_fur.jpg', slot: 'hat', description: '自然体のままのふわふわ毛並み' },
   { id: 'straw_hat', name: '麦わら帽子', icon: '👒', image: '/assets/hat_straw.jpg', slot: 'hat', description: '日差しをさえぎる開拓者の定番帽子' },
   { id: 'sunglasses', name: 'サングラス', icon: '🕶️', image: '/assets/hat_sunglasses.jpg', slot: 'hat', description: 'イケイケでクールな森の開拓リーダー' },
   { id: 'crown', name: '森の王冠', icon: '👑', image: '/assets/hat_crown.jpg', slot: 'hat', description: '森の桃源郷を築きし者にふさわしい王冠' },
 
-  { id: 'none_clothes', name: '服なし', icon: '🦫', slot: 'clothes', description: 'ありのままの身軽なスタイル' },
+  { id: 'none_clothes', name: '服なし', icon: '🦫', image: '/assets/closet_natural_body.jpg', slot: 'clothes', description: 'ありのままの身軽なスタイル' },
   { id: 'lumberjack', name: 'チェック柄木こりシャツ', icon: '👕', image: '/assets/costume_lumberjack.jpg', slot: 'clothes', description: '赤と黒のチェックが温かい木こりの服' },
   { id: 'apron', name: 'クラフトエプロン', icon: '🦺', image: '/assets/costume_apron.jpg', slot: 'clothes', description: '木くずをしっかり防ぐ丈夫な作業エプロン' },
   { id: 'explorer', name: '探検家ベスト', icon: '🧥', image: '/assets/costume_explorer.jpg', slot: 'clothes', description: 'ポケットがいっぱい付いた冒険ベスト' },

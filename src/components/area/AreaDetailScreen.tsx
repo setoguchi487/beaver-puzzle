@@ -47,6 +47,30 @@ interface AreaDetailScreenProps {
   totalStars?: number;
 }
 
+
+const getTaskIconImage = (task: { icon: string; title: string }) => {
+  const text = `${task.icon} ${task.title}`;
+  if (text.includes('🧹') || text.includes('清掃') || text.includes('ヘドロ') || text.includes('ゴミ') || text.includes('掃除') || text.includes('水質')) {
+    return getAssetUrl('/assets/task_icon_clean.jpg');
+  }
+  if (text.includes('🌉') || text.includes('橋') || text.includes('太鼓梁') || text.includes('跳ね橋')) {
+    return getAssetUrl('/assets/task_icon_bridge.jpg');
+  }
+  if (text.includes('👑') || text.includes('⛩') || text.includes('記念碑') || text.includes('鳥居') || text.includes('モニュメント') || text.includes('城') || text.includes('展望グランドロッジ')) {
+    return getAssetUrl('/assets/task_icon_monument.jpg');
+  }
+  if (text.includes('🏮') || text.includes('灯籠') || text.includes('提灯') || text.includes('ランタン') || text.includes('火') || text.includes('暖炉') || text.includes('煙突')) {
+    return getAssetUrl('/assets/task_icon_lantern.jpg');
+  }
+  if (text.includes('🌱') || text.includes('花') || text.includes('植樹') || text.includes('睡蓮') || text.includes('苗') || text.includes('草') || text.includes('ベリー') || text.includes('果樹')) {
+    return getAssetUrl('/assets/task_icon_plant.jpg');
+  }
+  if (text.includes('🪨') || text.includes('石') || text.includes('岩') || text.includes('ブロック') || text.includes('削る') || text.includes('掘る') || text.includes('整地')) {
+    return getAssetUrl('/assets/task_icon_stone.jpg');
+  }
+  return getAssetUrl('/assets/task_icon_build.jpg');
+};
+
 export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
   area,
   woodPoints,
@@ -483,15 +507,32 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2.5">
                     <div
-                      className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg ${
+                      className={`relative w-10 h-10 rounded-xl overflow-hidden shrink-0 flex items-center justify-center border shadow-xs ${
                         task.isCompleted
-                          ? 'bg-emerald-500/20 border border-emerald-500/30'
+                          ? 'border-emerald-500/40 bg-emerald-950/40'
                           : isCurrent
-                          ? 'bg-amber-500/20 border border-amber-500/40 shadow-xs'
-                          : 'bg-slate-800/40 border border-slate-800 text-slate-600'
+                          ? 'border-amber-400 ring-2 ring-amber-400/40 shadow-amber-500/20'
+                          : 'border-slate-700 bg-slate-900 opacity-60'
                       }`}
                     >
-                      {task.isCompleted ? '✅' : isLocked ? '🔒' : task.icon}
+                      {isLocked ? (
+                        <div className="w-full h-full flex items-center justify-center bg-slate-900 text-slate-500">
+                          <Lock className="w-4 h-4" />
+                        </div>
+                      ) : (
+                        <>
+                          <img
+                            src={getTaskIconImage(task)}
+                            alt={task.title}
+                            className={`w-full h-full object-cover ${task.isCompleted ? 'brightness-90' : ''}`}
+                          />
+                          {task.isCompleted && (
+                            <div className="absolute inset-0 bg-emerald-950/40 flex items-center justify-center">
+                              <CheckCircle2 className="w-5 h-5 text-emerald-400 drop-shadow-md" />
+                            </div>
+                          )}
+                        </>
+                      )}
                     </div>
                     <div>
                       <div className="flex items-center space-x-1.5">

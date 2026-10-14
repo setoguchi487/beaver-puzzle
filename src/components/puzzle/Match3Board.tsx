@@ -152,21 +152,21 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
   // 全15エリアの美麗ステージ背景画像 & エリア情報マッピング（全100ステージ対応）
   const getStageBackgroundInfo = (sId: number) => {
-    if (sId <= 7) return { bg: getAssetUrl('/assets/shallows_stage_5.jpg'), areaName: 'はじまりのせせらぎ', icon: '🦆' };
-    if (sId <= 14) return { bg: getAssetUrl('/assets/dam_stage_5.jpg'), areaName: '小枝ダムの浅瀬', icon: '🐟' };
-    if (sId <= 21) return { bg: getAssetUrl('/assets/lodge_stage_5.jpg'), areaName: '木漏れ日のロッジ', icon: '🐿️' };
-    if (sId <= 28) return { bg: getAssetUrl('/assets/pier_stage_5.jpg'), areaName: '釣りテラス＆桟橋', icon: '🐦' };
-    if (sId <= 35) return { bg: getAssetUrl('/assets/mill_stage_5.jpg'), areaName: '古い水車小屋', icon: '🦉' };
-    if (sId <= 42) return { bg: getAssetUrl('/assets/garden_stage_5.jpg'), areaName: 'ホタルの花園', icon: '🦌' };
-    if (sId <= 49) return { bg: getAssetUrl('/assets/camp_stage_5.jpg'), areaName: 'せせらぎキャンプ場', icon: '🦝' };
-    if (sId <= 56) return { bg: getAssetUrl('/assets/workshop_stage_5.jpg'), areaName: '木工ビーバー工房', icon: '🦔' };
-    if (sId <= 63) return { bg: getAssetUrl('/assets/bridge_stage_5.jpg'), areaName: '太鼓橋の渓谷', icon: '🐒' };
-    if (sId <= 70) return { bg: getAssetUrl('/assets/spring_stage_5.jpg'), areaName: '水晶の湧水池', icon: '🦢' };
-    if (sId <= 77) return { bg: getAssetUrl('/assets/orchard_stage_5.jpg'), areaName: 'ベリーの果樹園', icon: '🦡' };
-    if (sId <= 84) return { bg: getAssetUrl('/assets/waterfall_stage_5.jpg'), areaName: '霧立つ大滝', icon: '🦅' };
-    if (sId <= 91) return { bg: getAssetUrl('/assets/stargaze_stage_5.jpg'), areaName: '森の星見台', icon: '🐿️' };
-    if (sId <= 97) return { bg: getAssetUrl('/assets/sacred_stage_5.jpg'), areaName: '守り神の神木', icon: '🦊' };
-    return { bg: getAssetUrl('/assets/paradise_stage_5.jpg'), areaName: 'ビーバーの桃源郷', icon: '🐻' };
+    if (sId <= 7) return { bg: getAssetUrl('/assets/shallows_stage_5.jpg'), areaName: 'はじまりのせせらぎ', icon: '🦆', creatureImg: getAssetUrl('/assets/creature_mallard.png') };
+    if (sId <= 14) return { bg: getAssetUrl('/assets/dam_stage_5.jpg'), areaName: '小枝ダムの浅瀬', icon: '🐟', creatureImg: getAssetUrl('/assets/creature_salmon.png') };
+    if (sId <= 21) return { bg: getAssetUrl('/assets/lodge_stage_5.jpg'), areaName: '木漏れ日のロッジ', icon: '🐿️', creatureImg: getAssetUrl('/assets/creature_chipmunk.png') };
+    if (sId <= 28) return { bg: getAssetUrl('/assets/pier_stage_5.jpg'), areaName: '釣りテラス＆桟橋', icon: '🐦', creatureImg: getAssetUrl('/assets/creature_kingfisher.png') };
+    if (sId <= 35) return { bg: getAssetUrl('/assets/mill_stage_5.jpg'), areaName: '古い水車小屋', icon: '🦉', creatureImg: getAssetUrl('/assets/creature_owl.png') };
+    if (sId <= 42) return { bg: getAssetUrl('/assets/garden_stage_5.jpg'), areaName: 'ホタルの花園', icon: '🦌', creatureImg: getAssetUrl('/assets/creature_deer.png') };
+    if (sId <= 49) return { bg: getAssetUrl('/assets/camp_stage_5.jpg'), areaName: 'せせらぎキャンプ場', icon: '🦝', creatureImg: getAssetUrl('/assets/creature_raccoon.png') };
+    if (sId <= 56) return { bg: getAssetUrl('/assets/workshop_stage_5.jpg'), areaName: '木工ビーバー工房', icon: '🦔', creatureImg: getAssetUrl('/assets/creature_hedgehog.png') };
+    if (sId <= 63) return { bg: getAssetUrl('/assets/bridge_stage_5.jpg'), areaName: '太鼓橋の渓谷', icon: '🐒', creatureImg: getAssetUrl('/assets/creature_monkey.png') };
+    if (sId <= 70) return { bg: getAssetUrl('/assets/spring_stage_5.jpg'), areaName: '水晶の湧水池', icon: '🦢', creatureImg: getAssetUrl('/assets/creature_swan.png') };
+    if (sId <= 77) return { bg: getAssetUrl('/assets/orchard_stage_5.jpg'), areaName: 'ベリーの果樹園', icon: '🦡', creatureImg: getAssetUrl('/assets/creature_badger.png') };
+    if (sId <= 84) return { bg: getAssetUrl('/assets/waterfall_stage_5.jpg'), areaName: '霧立つ大滝', icon: '🦅', creatureImg: getAssetUrl('/assets/creature_eagle.png') };
+    if (sId <= 91) return { bg: getAssetUrl('/assets/stargaze_stage_5.jpg'), areaName: '森の星見台', icon: '🐿️', creatureImg: getAssetUrl('/assets/creature_flying_squirrel.png') };
+    if (sId <= 97) return { bg: getAssetUrl('/assets/sacred_stage_5.jpg'), areaName: '守り神の神木', icon: '🦊', creatureImg: getAssetUrl('/assets/creature_fox.png') };
+    return { bg: getAssetUrl('/assets/paradise_stage_5.jpg'), areaName: 'ビーバーの桃源郷', icon: '🐻', creatureImg: getAssetUrl('/assets/creature_bear.png') };
   };
 
   // 開始時相棒スキル（フクロウ+2手、クマ+3手など）
@@ -2319,8 +2319,13 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
           <div className="w-full max-w-sm bg-gradient-to-b from-amber-950/95 via-slate-900 to-slate-950 border-2 border-amber-500/50 rounded-3xl p-5 shadow-2xl text-center space-y-4">
             {/* ヘッダー */}
             <div>
-              <span className="text-[10px] font-black text-amber-300 uppercase tracking-widest bg-amber-950/80 px-2.5 py-0.5 rounded-full border border-amber-500/40">
-                {getStageBackgroundInfo(stage.id).icon} {getStageBackgroundInfo(stage.id).areaName}
+              <span className="text-[10px] font-black text-amber-300 uppercase tracking-widest bg-amber-950/80 px-2.5 py-0.5 rounded-full border border-amber-500/40 inline-flex items-center space-x-1.5">
+                {getStageBackgroundInfo(stage.id).creatureImg ? (
+                  <img src={getStageBackgroundInfo(stage.id).creatureImg} alt="" className="w-4 h-4 object-contain inline-block drop-shadow" />
+                ) : (
+                  <span>{getStageBackgroundInfo(stage.id).icon}</span>
+                )}
+                <span>{getStageBackgroundInfo(stage.id).areaName}</span>
               </span>
               <h3 className="text-xl font-black text-white mt-1.5 flex items-center justify-center space-x-2">
                 <span>ステージ {stage.id}</span>
@@ -2565,7 +2570,11 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
           <div className="text-center">
             <div className="inline-flex items-center space-x-1 px-2 py-0.2 rounded-full bg-slate-900/80 border border-emerald-400/40 text-[9px] text-emerald-300 font-bold mb-0.5">
-              <span>{getStageBackgroundInfo(stage.id).icon}</span>
+              {getStageBackgroundInfo(stage.id).creatureImg ? (
+                <img src={getStageBackgroundInfo(stage.id).creatureImg} alt="" className="w-3.5 h-3.5 object-contain inline-block drop-shadow" />
+              ) : (
+                <span>{getStageBackgroundInfo(stage.id).icon}</span>
+              )}
               <span>{getStageBackgroundInfo(stage.id).areaName}</span>
             </div>
             <div className="flex items-center justify-center space-x-1.5">
@@ -3044,9 +3053,17 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
         {activeBooster && (
           <div className="w-full flex items-center justify-between bg-amber-500/20 border border-amber-400/60 px-3 py-1.5 rounded-2xl text-amber-200 text-xs shadow-lg shadow-amber-500/10 backdrop-blur-md animate-pulse">
             <div className="flex items-center gap-2">
-              <span className="text-lg">
-                {activeBooster === 'hammer' ? '🔨' : activeBooster === 'saw' ? '🪚' : '🦫'}
-              </span>
+              <img
+                src={getAssetUrl(
+                  activeBooster === 'hammer'
+                    ? '/assets/booster_hammer.png'
+                    : activeBooster === 'saw'
+                    ? '/assets/booster_saw.png'
+                    : '/assets/booster_tail.png'
+                )}
+                alt="ブースター"
+                className="w-5 h-5 object-contain drop-shadow"
+              />
               <span className="font-black text-amber-200 text-xs">
                 {activeBooster === 'hammer'
                   ? '木づち：壊したいマスをタップ！'

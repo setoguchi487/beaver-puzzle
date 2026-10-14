@@ -7,7 +7,7 @@ import {
 } from '../../utils/dailyPuzzle';
 import { PIECE_CONFIG } from '../../data/masterData';
 import { getAssetUrl } from '../../utils/assetPath';
-import { X, Calendar, Play, CheckCircle2, Gift } from 'lucide-react';
+import { X, Play, CheckCircle2, Gift } from 'lucide-react';
 
 interface DailyPuzzleModalProps {
   onStartDaily: () => void;
@@ -43,9 +43,13 @@ export const DailyPuzzleModal: React.FC<DailyPuzzleModalProps> = ({
       >
         {/* ヘッダー */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-          <div className="flex items-center space-x-2 text-left">
-            <div className="p-2 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-2xl text-slate-950 shadow-md">
-              <Calendar className="w-5 h-5" />
+          <div className="flex items-center space-x-2.5 text-left">
+            <div className="w-10 h-10 rounded-2xl overflow-hidden border border-cyan-400/50 shadow-md shrink-0">
+              <img
+                src={getAssetUrl('/assets/icon_daily_puzzle.jpg')}
+                alt="デイリーパズル"
+                className="w-full h-full object-cover"
+              />
             </div>
             <div>
               <h2 className="text-sm font-black tracking-wide text-white flex items-center space-x-1.5">
@@ -173,7 +177,7 @@ export const DailyPuzzleModal: React.FC<DailyPuzzleModalProps> = ({
             className="w-full py-3.5 bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 font-black text-xs sm:text-sm rounded-2xl shadow-xl shadow-cyan-500/25 flex items-center justify-center space-x-2 active:scale-98 transition-all cursor-pointer"
           >
             <Play className="w-4 h-4 fill-current" />
-            <span>今日のお題に挑戦する！ 🎮</span>
+            <span>今日のお題に挑戦する！</span>
           </button>
         )}
       </div>
