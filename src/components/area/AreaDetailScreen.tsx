@@ -337,7 +337,7 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
       {/* 2. 所持木材 & 復旧プログレスバー */}
       <div className="bg-slate-900/70 border-b border-slate-800/80 px-4 py-2 flex items-center justify-between">
         <div className="flex items-center space-x-1.5 bg-amber-950/50 border border-amber-500/40 px-3 py-1 rounded-xl shadow-xs">
-          <span className="text-base leading-none">🪵</span>
+          <img src={getAssetUrl('/assets/icon_wood_coin.jpg')} alt="木材" className="w-4 h-4 rounded-full object-cover inline-block shadow-sm" />
           <span className="text-amber-300 font-mono text-xs font-black">
             所持: {woodPoints} ウッド
           </span>
@@ -534,7 +534,11 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
                         }`}
                       >
                         <Hammer className="w-3 h-3" />
-                        <span>きれいに (🪵{task.woodCost})</span>
+                        <span className="inline-flex items-center space-x-0.5">
+                          <span>きれいに (</span>
+                          <img src={getAssetUrl('/assets/icon_wood_coin.jpg')} alt="木材" className="w-3 h-3 rounded-full object-cover inline-block" />
+                          <span>{task.woodCost})</span>
+                        </span>
                       </button>
                     ) : (
                       <div className="flex items-center text-slate-500 text-[11px] px-2.5 py-1 bg-slate-800/40 rounded-xl border border-slate-800">
@@ -643,7 +647,10 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
             className="w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-amber-950 font-black text-sm rounded-2xl shadow-lg flex items-center justify-center space-x-2 active:scale-98 transition-all cursor-pointer"
           >
             <Play className="w-4 h-4 fill-current" />
-            <span>パズルで木材を集めてきれいにする！ 🪵</span>
+            <span className="inline-flex items-center space-x-1">
+              <span>パズルで木材を集めてきれいにする！</span>
+              <img src={getAssetUrl('/assets/icon_wood_coin.jpg')} alt="木材" className="w-4 h-4 rounded-full object-cover inline-block shadow-sm" />
+            </span>
           </button>
         )}
       </footer>

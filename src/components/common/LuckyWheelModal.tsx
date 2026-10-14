@@ -27,11 +27,11 @@ export interface WheelReward {
 }
 
 const WHEEL_REWARDS: WheelReward[] = [
-  { id: 'w_100', name: '木材 +100', icon: '🪵', image: '/assets/piece_wood.png', type: 'wood', amount: 100, color: '#0ea5e9' },
+  { id: 'w_100', name: '木材 +100', icon: '🪵', image: '/assets/icon_wood_coin.jpg', type: 'wood', amount: 100, color: '#0ea5e9' },
   { id: 'b_hammer', name: '木槌 x1', icon: '🔨', image: '/assets/booster_hammer.png', type: 'in_game', key: 'hammer', amount: 1, color: '#f59e0b' },
-  { id: 'w_150', name: '木材 +150', icon: '🪵', image: '/assets/piece_wood.png', type: 'wood', amount: 150, color: '#10b981' },
+  { id: 'w_150', name: '木材 +150', icon: '🪵', image: '/assets/icon_wood_coin.jpg', type: 'wood', amount: 150, color: '#10b981' },
   { id: 'b_rocket', name: 'ロケット x1', icon: '🚀', image: '/assets/piece_rocket.png', type: 'pre_game', key: 'startRocket', amount: 1, color: '#ec4899' },
-  { id: 'w_80', name: '木材 +80', icon: '🪵', image: '/assets/piece_wood.png', type: 'wood', amount: 80, color: '#3b82f6' },
+  { id: 'w_80', name: '木材 +80', icon: '🪵', image: '/assets/icon_wood_coin.jpg', type: 'wood', amount: 80, color: '#3b82f6' },
   { id: 'b_clock', name: 'ぜんまい時計 x1', icon: '⏰', image: '/assets/booster_clock.png', type: 'in_game', key: 'clock', amount: 1, color: '#8b5cf6' },
   { id: 'w_250', name: '大当り 木材+250', icon: '🌟', image: '/assets/piece_rainbow.png', type: 'wood', amount: 250, color: '#eab308' },
   { id: 'b_bomb', name: '爆弾 x1', icon: '💣', image: '/assets/piece_bomb.png', type: 'pre_game', key: 'startBomb', amount: 1, color: '#06b6d4' },

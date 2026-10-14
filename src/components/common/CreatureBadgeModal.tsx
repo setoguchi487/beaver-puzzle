@@ -318,7 +318,10 @@ export const CreatureBadgeModal: React.FC<CreatureBadgeModalProps> = ({
               <div className="grid grid-cols-2 gap-2.5">
                 <div className="p-3 bg-slate-800/60 rounded-2xl border border-slate-750 text-center">
                   <span className="text-[10px] font-bold text-slate-400 block">所持木材ポイント</span>
-                  <span className="text-xl font-black text-amber-400 mt-0.5 inline-block">🪵 {woodPoints}</span>
+                  <span className="text-xl font-black text-amber-400 mt-0.5 inline-flex items-center justify-center space-x-1.5">
+                    <img src={getAssetUrl('/assets/icon_wood_coin.jpg')} alt="木材" className="w-5 h-5 rounded-full object-cover inline-block shadow-sm" />
+                    <span>{woodPoints}</span>
+                  </span>
                 </div>
                 <div className="p-3 bg-slate-800/60 rounded-2xl border border-slate-750 text-center">
                   <span className="text-[10px] font-bold text-slate-400 block">パズル最高到達</span>

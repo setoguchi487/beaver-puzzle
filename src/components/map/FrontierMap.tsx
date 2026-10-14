@@ -364,8 +364,8 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
         <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-800/80">
           <div className="flex items-center space-x-1.5 text-xs font-black">
             {/* 木材ポイント */}
-            <div className="flex items-center space-x-1 bg-amber-950/40 border border-amber-500/30 px-2 py-1 rounded-xl shadow-xs">
-              <span className="text-sm leading-none">🪵</span>
+            <div className="flex items-center space-x-1.5 bg-amber-950/40 border border-amber-500/30 px-2 py-1 rounded-xl shadow-xs">
+              <img src={getAssetUrl('/assets/icon_wood_coin.jpg')} alt="木材" className="w-3.5 h-3.5 rounded-full object-cover inline-block shadow-sm" />
               <span className="text-amber-300 font-mono text-xs">{woodPoints}</span>
             </div>
 

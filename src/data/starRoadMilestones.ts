@@ -93,6 +93,6 @@ export const STAR_MILESTONES: StarMilestone[] = [
     rewardWood: 30000,
     boosters: { hammer: 10, saw: 10, tail: 10, clock: 10 },
     badgeIcon: '✨👑✨',
-    image: '/assets/star_trophy_gold.jpg',
+    image: '/assets/star_trophy_platinum.jpg',
   },
 ];

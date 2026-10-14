@@ -178,8 +178,8 @@ export const WorkshopShopModal: React.FC<WorkshopShopModalProps> = ({
         {/* 所持木材表示 */}
         <div className="flex items-center justify-between bg-amber-950/60 border border-amber-500/30 px-3.5 py-2 rounded-2xl">
           <span className="text-xs font-bold text-amber-200">所持木材 (ウッド)</span>
-          <span className="text-sm font-black text-amber-300 flex items-center space-x-1">
-            <span>🪵</span>
+          <span className="text-sm font-black text-amber-300 flex items-center space-x-1.5">
+            <img src={getAssetUrl('/assets/icon_wood_coin.jpg')} alt="木材" className="w-4 h-4 rounded-full object-cover inline-block shadow-sm" />
             <span>{woodPoints.toLocaleString()}</span>
           </span>
         </div>
@@ -253,7 +253,7 @@ export const WorkshopShopModal: React.FC<WorkshopShopModalProps> = ({
                         : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
                     }`}
                   >
-                    <span>🪵</span>
+                    <img src={getAssetUrl('/assets/icon_wood_coin.jpg')} alt="木材" className="w-3.5 h-3.5 rounded-full object-cover inline-block" />
                     <span>{item.cost}</span>
                   </button>
                 </div>
