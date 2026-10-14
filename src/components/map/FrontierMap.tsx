@@ -545,11 +545,19 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                       >
                         <div className="absolute -inset-2 bg-amber-500/30 rounded-full blur-md animate-ping pointer-events-none" />
 
-                        <div className="relative w-12 h-12 bg-gradient-to-tr from-amber-600 via-amber-500 to-yellow-400 border-2 border-white rounded-full flex items-center justify-center shadow-xl group-hover:scale-110 active:scale-95 transition-transform animate-ruined-alert">
-                          <span className="text-xl animate-bounce-subtle">
-                            {completedTasksCount === 0 ? (area.ruinedIcon ? area.ruinedIcon.slice(0, 2) : '🥀') : area.icon}
-                          </span>
-                          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-rose-500 rounded-full border-2 border-white animate-pulse" />
+                        <div className="relative w-12 h-12 bg-gradient-to-tr from-amber-600 via-amber-500 to-yellow-400 border-2 border-white rounded-full flex items-center justify-center shadow-xl group-hover:scale-110 active:scale-95 transition-transform animate-ruined-alert p-0.5 overflow-hidden">
+                          {area.image ? (
+                            <img
+                              src={getAssetUrl(area.image)}
+                              alt={area.name}
+                              className="w-full h-full object-cover rounded-full"
+                            />
+                          ) : (
+                            <span className="text-xl animate-bounce-subtle">
+                              {completedTasksCount === 0 ? (area.ruinedIcon ? area.ruinedIcon.slice(0, 2) : '🥀') : area.icon}
+                            </span>
+                          )}
+                          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-rose-500 rounded-full border-2 border-white animate-pulse z-10" />
                         </div>
 
                         {/* エリア名ラベル */}
@@ -581,8 +589,16 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                         onClick={() => setSelectedArea(area)}
                         className="absolute -translate-x-1/2 -translate-y-1/2 z-20 cursor-pointer flex flex-col items-center group"
                       >
-                        <div className="relative w-11 h-11 bg-gradient-to-tr from-emerald-500 to-teal-400 border-2 border-emerald-200 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 active:scale-95 transition-transform">
-                          <span className="text-lg">{area.creature.icon}</span>
+                        <div className="relative w-11 h-11 bg-gradient-to-tr from-emerald-500 to-teal-400 border-2 border-emerald-200 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 active:scale-95 transition-transform p-1">
+                          {area.creature.image ? (
+                            <img
+                              src={getAssetUrl(area.creature.image)}
+                              alt={area.creature.name}
+                              className="w-full h-full object-contain drop-shadow"
+                            />
+                          ) : (
+                            <span className="text-lg">{area.creature.icon}</span>
+                          )}
                           <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-purple-600 rounded-full flex items-center justify-center text-[8px] text-white border border-white">
                             🏅
                           </div>
@@ -715,9 +731,17 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                     className={`cursor-pointer ${isTapped ? 'animate-creature-jump' : 'animate-creature-hop'}`}
                     title={creature.name}
                   >
-                    <span className="text-2xl filter drop-shadow-md inline-block">
-                      {creature.icon}
-                    </span>
+                    {creature.image ? (
+                      <img
+                        src={getAssetUrl(creature.image)}
+                        alt={creature.name}
+                        className="w-10 h-10 object-contain drop-shadow-lg filter hover:scale-110 transition-transform"
+                      />
+                    ) : (
+                      <span className="text-2xl filter drop-shadow-md inline-block">
+                        {creature.icon}
+                      </span>
+                    )}
                   </div>
                 </div>
               );
@@ -750,9 +774,28 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <span className="text-2xl p-2 bg-slate-900/80 rounded-xl border border-slate-700">
-                      {isLocked ? '🔒' : isCompleted ? area.icon : (area.ruinedIcon ? area.ruinedIcon.slice(0, 2) : '🥀')}
-                    </span>
+                    <div className="w-12 h-12 rounded-xl overflow-hidden border border-slate-700 bg-slate-900 shrink-0 relative flex items-center justify-center shadow-md">
+                      {isLocked ? (
+                        <span className="text-xl">🔒</span>
+                      ) : area.image ? (
+                        <img
+                          src={getAssetUrl(area.image)}
+                          alt={area.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-xl">
+                          {isCompleted ? area.icon : (area.ruinedIcon ? area.ruinedIcon.slice(0, 2) : '🥀')}
+                        </span>
+                      )}
+                      {isCompleted && area.creature.image && (
+                        <img
+                          src={getAssetUrl(area.creature.image)}
+                          alt={area.creature.name}
+                          className="w-5 h-5 object-contain absolute -bottom-1 -right-1 drop-shadow"
+                        />
+                      )}
+                    </div>
                     <div>
                       <div className="flex items-center space-x-1.5">
                         <span className="text-xs font-black text-white">
@@ -825,13 +868,30 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
               {/* ヘッダー */}
               <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                 <div className="flex items-center space-x-3">
-                  <span className="text-3xl p-2.5 bg-slate-800 rounded-2xl border border-slate-700">
-                    {isLocked
-                      ? '🔒'
-                      : isCompleted
-                      ? selectedArea.icon
-                      : (selectedArea.ruinedIcon ? selectedArea.ruinedIcon.slice(0, 2) : '🥀')}
-                  </span>
+                  <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-amber-400/60 bg-slate-800 shadow-md shrink-0 relative flex items-center justify-center">
+                    {isLocked ? (
+                      <span className="text-2xl">🔒</span>
+                    ) : selectedArea.image ? (
+                      <img
+                        src={getAssetUrl(selectedArea.image)}
+                        alt={selectedArea.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-3xl">
+                        {isCompleted
+                          ? selectedArea.icon
+                          : (selectedArea.ruinedIcon ? selectedArea.ruinedIcon.slice(0, 2) : '🥀')}
+                      </span>
+                    )}
+                    {isCompleted && selectedArea.creature.image && (
+                      <img
+                        src={getAssetUrl(selectedArea.creature.image)}
+                        alt={selectedArea.creature.name}
+                        className="w-6 h-6 object-contain absolute -bottom-1 -right-1 drop-shadow"
+                      />
+                    )}
+                  </div>
                   <div>
                     <div className="flex items-center space-x-2">
                       <span className="text-xs font-black text-amber-400">
@@ -940,9 +1000,17 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                     className="p-3 bg-emerald-950/40 border border-emerald-500/30 rounded-2xl flex items-center justify-between cursor-pointer hover:bg-emerald-950/60 transition-colors"
                   >
                     <div className="flex items-center space-x-2.5">
-                      <span className="text-3xl animate-bounce-subtle inline-block">
-                        {selectedArea.creature.icon}
-                      </span>
+                      {selectedArea.creature.image ? (
+                        <img
+                          src={getAssetUrl(selectedArea.creature.image)}
+                          alt={selectedArea.creature.name}
+                          className="w-10 h-10 object-contain drop-shadow-md animate-bounce-subtle shrink-0"
+                        />
+                      ) : (
+                        <span className="text-3xl animate-bounce-subtle inline-block">
+                          {selectedArea.creature.icon}
+                        </span>
+                      )}
                       <div>
                         <div className="text-xs font-black text-emerald-200 flex items-center">
                           <span>{selectedArea.creature.name}</span>
@@ -1021,9 +1089,19 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
       {selectedCreature && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
           <div className="w-full max-w-xs bg-slate-900 border border-emerald-500/50 rounded-3xl p-5 shadow-2xl text-center space-y-3">
-            <span className="text-6xl inline-block drop-shadow-md animate-bounce-subtle">
-              {selectedCreature.icon}
-            </span>
+            {selectedCreature.image ? (
+              <div className="flex justify-center my-1">
+                <img
+                  src={getAssetUrl(selectedCreature.image)}
+                  alt={selectedCreature.name}
+                  className="w-24 h-24 object-contain drop-shadow-2xl animate-bounce-subtle"
+                />
+              </div>
+            ) : (
+              <span className="text-6xl inline-block drop-shadow-md animate-bounce-subtle">
+                {selectedCreature.icon}
+              </span>
+            )}
             <h3 className="text-base font-black text-white">{selectedCreature.name}</h3>
             {creatureReaction && (
               <div className="text-xs font-black text-emerald-300 bg-emerald-500/20 py-1 rounded-xl">

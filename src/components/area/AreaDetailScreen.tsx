@@ -435,9 +435,17 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
               className={`cursor-pointer ${tappedCreatureId === area.creature.id ? 'animate-creature-jump' : 'animate-duck-swim'}`}
               title={area.creature.name}
             >
-              <span className="text-3xl sm:text-4xl filter drop-shadow-lg inline-block">
-                {area.creature.icon}
-              </span>
+              {area.creature.image ? (
+                <img
+                  src={getAssetUrl(area.creature.image)}
+                  alt={area.creature.name}
+                  className="w-12 h-12 sm:w-14 sm:h-14 object-contain filter drop-shadow-xl hover:scale-110 transition-transform"
+                />
+              ) : (
+                <span className="text-3xl sm:text-4xl filter drop-shadow-lg inline-block">
+                  {area.creature.icon}
+                </span>
+              )}
             </div>
           </div>
         )}
@@ -724,9 +732,19 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
       {selectedCreature && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
           <div className="w-full max-w-xs bg-slate-900 border border-emerald-500/50 rounded-3xl p-5 shadow-2xl text-center space-y-3">
-            <span className="text-6xl inline-block drop-shadow-md animate-bounce-subtle">
-              {selectedCreature.icon}
-            </span>
+            {selectedCreature.image ? (
+              <div className="flex justify-center my-1">
+                <img
+                  src={getAssetUrl(selectedCreature.image)}
+                  alt={selectedCreature.name}
+                  className="w-24 h-24 object-contain drop-shadow-2xl animate-bounce-subtle"
+                />
+              </div>
+            ) : (
+              <span className="text-6xl inline-block drop-shadow-md animate-bounce-subtle">
+                {selectedCreature.icon}
+              </span>
+            )}
             <h3 className="text-base font-black text-white">{selectedCreature.name}</h3>
             {creatureReaction && (
               <div className="text-xs font-black text-emerald-300 bg-emerald-500/20 py-1 rounded-xl">
