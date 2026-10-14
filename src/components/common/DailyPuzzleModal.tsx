@@ -98,10 +98,19 @@ export const DailyPuzzleModal: React.FC<DailyPuzzleModalProps> = ({
             <div className="flex items-center space-x-2">
               {stage.targets.map((tgt, i) => {
                 const conf = (PIECE_CONFIG as any)[tgt.type];
+                const gimmickImg =
+                  tgt.type === 'ice' ? getAssetUrl('/assets/gimmick_ice.png') :
+                  tgt.type === 'rock' || tgt.type === 'boulder' ? getAssetUrl('/assets/gimmick_rock.png') :
+                  tgt.type === 'vine' ? getAssetUrl('/assets/gimmick_vine.png') :
+                  tgt.type === 'mud' ? getAssetUrl('/assets/gimmick_mud.png') :
+                  tgt.type === 'chest' ? getAssetUrl('/assets/gimmick_chest.png') :
+                  null;
+                const tgtImg = gimmickImg || conf?.image;
+
                 return (
                   <div key={i} className="flex items-center space-x-1 text-xs font-mono font-bold bg-slate-900/90 px-1.5 py-0.5 rounded-lg border border-slate-700/60">
-                    {conf?.image ? (
-                      <img src={conf.image} alt={conf.label} className="w-4 h-4 object-contain drop-shadow" />
+                    {tgtImg ? (
+                      <img src={tgtImg} alt={conf?.label || ''} className="w-4 h-4 object-contain drop-shadow" />
                     ) : (
                       <span>{conf?.icon || '📦'}</span>
                     )}

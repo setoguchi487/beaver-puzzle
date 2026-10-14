@@ -38,21 +38,29 @@ export const AreaCompleteModal: React.FC<AreaCompleteModalProps> = ({
           </h3>
         </div>
 
-        {/* 水車エリアなら水車画像をリッチに表示 */}
-        {area.id === 'watermill_zone' && (
-          <div className="relative w-full h-32 rounded-2xl overflow-hidden border border-emerald-400/40 shadow-md">
-            <img
-              src={getAssetUrl("/assets/watermill.jpg")}
-              alt="水車小屋完成"
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex items-end p-2 justify-center">
-              <span className="text-xs font-black text-emerald-300">
-                ✨ 伝統の木造水車が蘇った！
-              </span>
+        {/* エリア完全復興アートをリッチに表示 */}
+        {(() => {
+          const completeImg = area.id === 'watermill_zone'
+            ? '/assets/watermill.jpg'
+            : area.detailImages && area.detailImages.length > 0
+            ? area.detailImages[area.detailImages.length - 1]
+            : null;
+
+          return completeImg ? (
+            <div className="relative w-full h-32 rounded-2xl overflow-hidden border border-emerald-400/40 shadow-md">
+              <img
+                src={getAssetUrl(completeImg)}
+                alt={`${area.name}完成`}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex items-end p-2 justify-center">
+                <span className="text-xs font-black text-emerald-300">
+                  ✨ {area.name}が完全に蘇った！
+                </span>
+              </div>
             </div>
-          </div>
-        )}
+          ) : null;
+        })()}
 
         {/* 獲得バッジ */}
         <div className="p-3 bg-gradient-to-r from-amber-950/50 via-purple-950/40 to-amber-950/50 border border-amber-500/50 rounded-2xl flex items-center space-x-3 shadow-lg">

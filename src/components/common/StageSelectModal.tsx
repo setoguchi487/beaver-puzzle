@@ -167,7 +167,7 @@ export const StageSelectModal: React.FC<StageSelectModalProps> = ({
           <div className="relative rounded-2xl overflow-hidden border border-slate-700/80 p-2.5 flex items-center justify-between text-[11px] shadow-sm">
             <div 
               className="absolute inset-0 bg-cover bg-center filter brightness-40"
-              style={{ backgroundImage: `url("${getAssetUrl(currentChapter.bg)}")` }}
+              style={{ backgroundImage: `url("${getAssetUrl(currentChapter.image)}")` }}
             />
             <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px]" />
             <span className="relative z-10 font-black text-amber-200 flex items-center space-x-2 drop-shadow-sm">
@@ -260,10 +260,23 @@ export const StageSelectModal: React.FC<StageSelectModalProps> = ({
                       <div className="flex items-center space-x-1">
                         {st.targets.map((tgt, idx) => {
                           const pConf = (PIECE_CONFIG as any)[tgt.type];
+                          const gimmickImg =
+                            tgt.type === 'ice' ? getAssetUrl('/assets/gimmick_ice.png') :
+                            tgt.type === 'rock' || tgt.type === 'boulder' ? getAssetUrl('/assets/gimmick_rock.png') :
+                            tgt.type === 'vine' ? getAssetUrl('/assets/gimmick_vine.png') :
+                            tgt.type === 'mud' ? getAssetUrl('/assets/gimmick_mud.png') :
+                            tgt.type === 'chest' ? getAssetUrl('/assets/gimmick_chest.png') :
+                            null;
+                          const tgtImg = gimmickImg || pConf?.image;
+
                           return (
                             <span key={idx} className="flex items-center space-x-0.5">
-                              <span>{pConf?.icon || '📦'}</span>
-                              <span className="font-mono">{tgt.required}</span>
+                              {tgtImg ? (
+                                <img src={tgtImg} alt="" className="w-3.5 h-3.5 object-contain inline-block drop-shadow-xs" />
+                              ) : (
+                                <span>{pConf?.icon || '📦'}</span>
+                              )}
+                              <span className="font-mono font-bold text-slate-300">{tgt.required}</span>
                             </span>
                           );
                         })}

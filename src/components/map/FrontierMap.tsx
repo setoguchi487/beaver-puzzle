@@ -546,17 +546,22 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                         <div className="absolute -inset-2 bg-amber-500/30 rounded-full blur-md animate-ping pointer-events-none" />
 
                         <div className="relative w-12 h-12 bg-gradient-to-tr from-amber-600 via-amber-500 to-yellow-400 border-2 border-white rounded-full flex items-center justify-center shadow-xl group-hover:scale-110 active:scale-95 transition-transform animate-ruined-alert p-0.5 overflow-hidden">
-                          {area.image ? (
-                            <img
-                              src={getAssetUrl(area.image)}
-                              alt={area.name}
-                              className="w-full h-full object-cover rounded-full"
-                            />
-                          ) : (
-                            <span className="text-xl animate-bounce-subtle">
-                              {completedTasksCount === 0 ? (area.ruinedIcon ? area.ruinedIcon.slice(0, 2) : '🥀') : area.icon}
-                            </span>
-                          )}
+                          {(() => {
+                            const currentImg = area.detailImages && area.detailImages.length > 0
+                              ? area.detailImages[Math.min(completedTasksCount, area.detailImages.length - 1)]
+                              : (area as any).image;
+                            return currentImg ? (
+                              <img
+                                src={getAssetUrl(currentImg)}
+                                alt={area.name}
+                                className="w-full h-full object-cover rounded-full"
+                              />
+                            ) : (
+                              <span className="text-xl animate-bounce-subtle">
+                                {completedTasksCount === 0 ? (area.ruinedIcon ? area.ruinedIcon.slice(0, 2) : '🥀') : area.icon}
+                              </span>
+                            );
+                          })()}
                           <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-rose-500 rounded-full border-2 border-white animate-pulse z-10" />
                         </div>
 
@@ -760,6 +765,7 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
           {areas.map((area) => {
             const isLocked = area.status === 'locked_fog';
             const isCompleted = area.status === 'completed';
+            const completedCount = area.tasks.filter((t) => t.isCompleted).length;
 
             return (
               <div
@@ -778,17 +784,22 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                     <div className="w-12 h-12 rounded-xl overflow-hidden border border-slate-700 bg-slate-900 shrink-0 relative flex items-center justify-center shadow-md">
                       {isLocked ? (
                         <span className="text-xl">🔒</span>
-                      ) : area.image ? (
-                        <img
-                          src={getAssetUrl(area.image)}
-                          alt={area.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-xl">
-                          {isCompleted ? area.icon : (area.ruinedIcon ? area.ruinedIcon.slice(0, 2) : '🥀')}
-                        </span>
-                      )}
+                      ) : (() => {
+                        const currentImg = area.detailImages && area.detailImages.length > 0
+                          ? area.detailImages[Math.min(completedCount, area.detailImages.length - 1)]
+                          : (area as any).image;
+                        return currentImg ? (
+                          <img
+                            src={getAssetUrl(currentImg)}
+                            alt={area.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-xl">
+                            {isCompleted ? area.icon : (area.ruinedIcon ? area.ruinedIcon.slice(0, 2) : '🥀')}
+                          </span>
+                        );
+                      })()}
                       {isCompleted && area.creature.image && (
                         <img
                           src={getAssetUrl(area.creature.image)}
@@ -872,19 +883,24 @@ export const FrontierMap: React.FC<FrontierMapProps> = ({
                   <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-amber-400/60 bg-slate-800 shadow-md shrink-0 relative flex items-center justify-center">
                     {isLocked ? (
                       <span className="text-2xl">🔒</span>
-                    ) : selectedArea.image ? (
-                      <img
-                        src={getAssetUrl(selectedArea.image)}
-                        alt={selectedArea.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-3xl">
-                        {isCompleted
-                          ? selectedArea.icon
-                          : (selectedArea.ruinedIcon ? selectedArea.ruinedIcon.slice(0, 2) : '🥀')}
-                      </span>
-                    )}
+                    ) : (() => {
+                      const currentImg = selectedArea.detailImages && selectedArea.detailImages.length > 0
+                        ? selectedArea.detailImages[Math.min(completedTasksCount, selectedArea.detailImages.length - 1)]
+                        : (selectedArea as any).image;
+                      return currentImg ? (
+                        <img
+                          src={getAssetUrl(currentImg)}
+                          alt={selectedArea.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-3xl">
+                          {isCompleted
+                            ? selectedArea.icon
+                            : (selectedArea.ruinedIcon ? selectedArea.ruinedIcon.slice(0, 2) : '🥀')}
+                        </span>
+                      );
+                    })()}
                     {isCompleted && selectedArea.creature.image && (
                       <img
                         src={getAssetUrl(selectedArea.creature.image)}

@@ -152,21 +152,21 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
   // 全15エリアの美麗ステージ背景画像 & エリア情報マッピング（全100ステージ対応）
   const getStageBackgroundInfo = (sId: number) => {
-    if (sId <= 7) return { bg: getAssetUrl('/assets/shallows_stage_5.jpg'), areaName: 'はじまりのせせらぎ', icon: '🦆', creatureImg: getAssetUrl('/assets/creature_mallard.png') };
-    if (sId <= 14) return { bg: getAssetUrl('/assets/dam_stage_5.jpg'), areaName: '小枝ダムの浅瀬', icon: '🐟', creatureImg: getAssetUrl('/assets/creature_salmon.png') };
+    if (sId <= 7) return { bg: getAssetUrl('/assets/shallows_stage_5.jpg'), areaName: 'はじまりのせせらぎ', icon: '🦆', creatureImg: getAssetUrl('/assets/creature_mallard_duck.png') };
+    if (sId <= 14) return { bg: getAssetUrl('/assets/dam_stage_5.jpg'), areaName: '小枝ダムの浅瀬', icon: '🐟', creatureImg: getAssetUrl('/assets/creature_sweetfish.png') };
     if (sId <= 21) return { bg: getAssetUrl('/assets/lodge_stage_5.jpg'), areaName: '木漏れ日のロッジ', icon: '🐿️', creatureImg: getAssetUrl('/assets/creature_chipmunk.png') };
     if (sId <= 28) return { bg: getAssetUrl('/assets/pier_stage_5.jpg'), areaName: '釣りテラス＆桟橋', icon: '🐦', creatureImg: getAssetUrl('/assets/creature_kingfisher.png') };
     if (sId <= 35) return { bg: getAssetUrl('/assets/mill_stage_5.jpg'), areaName: '古い水車小屋', icon: '🦉', creatureImg: getAssetUrl('/assets/creature_owl.png') };
     if (sId <= 42) return { bg: getAssetUrl('/assets/garden_stage_5.jpg'), areaName: 'ホタルの花園', icon: '🦌', creatureImg: getAssetUrl('/assets/creature_deer.png') };
     if (sId <= 49) return { bg: getAssetUrl('/assets/camp_stage_5.jpg'), areaName: 'せせらぎキャンプ場', icon: '🦝', creatureImg: getAssetUrl('/assets/creature_raccoon.png') };
     if (sId <= 56) return { bg: getAssetUrl('/assets/workshop_stage_5.jpg'), areaName: '木工ビーバー工房', icon: '🦔', creatureImg: getAssetUrl('/assets/creature_hedgehog.png') };
-    if (sId <= 63) return { bg: getAssetUrl('/assets/bridge_stage_5.jpg'), areaName: '太鼓橋の渓谷', icon: '🐒', creatureImg: getAssetUrl('/assets/creature_monkey.png') };
+    if (sId <= 63) return { bg: getAssetUrl('/assets/bridge_stage_5.jpg'), areaName: '太鼓橋の渓谷', icon: '🐒', creatureImg: getAssetUrl('/assets/creature_snow_monkey.png') };
     if (sId <= 70) return { bg: getAssetUrl('/assets/spring_stage_5.jpg'), areaName: '水晶の湧水池', icon: '🦢', creatureImg: getAssetUrl('/assets/creature_swan.png') };
     if (sId <= 77) return { bg: getAssetUrl('/assets/orchard_stage_5.jpg'), areaName: 'ベリーの果樹園', icon: '🦡', creatureImg: getAssetUrl('/assets/creature_badger.png') };
-    if (sId <= 84) return { bg: getAssetUrl('/assets/waterfall_stage_5.jpg'), areaName: '霧立つ大滝', icon: '🦅', creatureImg: getAssetUrl('/assets/creature_eagle.png') };
+    if (sId <= 84) return { bg: getAssetUrl('/assets/waterfall_stage_5.jpg'), areaName: '霧立つ大滝', icon: '🦅', creatureImg: getAssetUrl('/assets/creature_golden_eagle.png') };
     if (sId <= 91) return { bg: getAssetUrl('/assets/stargaze_stage_5.jpg'), areaName: '森の星見台', icon: '🐿️', creatureImg: getAssetUrl('/assets/creature_flying_squirrel.png') };
-    if (sId <= 97) return { bg: getAssetUrl('/assets/sacred_stage_5.jpg'), areaName: '守り神の神木', icon: '🦊', creatureImg: getAssetUrl('/assets/creature_fox.png') };
-    return { bg: getAssetUrl('/assets/paradise_stage_5.jpg'), areaName: 'ビーバーの桃源郷', icon: '🐻', creatureImg: getAssetUrl('/assets/creature_bear.png') };
+    if (sId <= 97) return { bg: getAssetUrl('/assets/sacred_stage_5.jpg'), areaName: '守り神の神木', icon: '🦊', creatureImg: getAssetUrl('/assets/creature_mystic_fox.png') };
+    return { bg: getAssetUrl('/assets/paradise_stage_5.jpg'), areaName: 'ビーバーの桃源郷', icon: '🐻', creatureImg: getAssetUrl('/assets/creature_bear_family.png') };
   };
 
   // 開始時相棒スキル（フクロウ+2手、クマ+3手など）
@@ -2344,10 +2344,27 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
               <div className="flex items-center justify-center space-x-3">
                 {stage.targets.map((tgt) => {
                   const pieceCfg = (PIECE_CONFIG as any)[tgt.type];
+                  const gimmickImg =
+                    tgt.type === 'ice' ? getAssetUrl('/assets/gimmick_ice.png') :
+                    tgt.type === 'rock' || tgt.type === 'boulder' ? getAssetUrl('/assets/gimmick_rock.png') :
+                    tgt.type === 'vine' ? getAssetUrl('/assets/gimmick_vine.png') :
+                    tgt.type === 'mud' ? getAssetUrl('/assets/gimmick_mud.png') :
+                    tgt.type === 'chest' ? getAssetUrl('/assets/gimmick_chest.png') :
+                    null;
+                  const targetImg = gimmickImg || pieceCfg?.image;
+                  const label =
+                    tgt.type === 'ice' ? '氷' :
+                    tgt.type === 'rock' ? '岩' :
+                    tgt.type === 'boulder' ? '巨石' :
+                    tgt.type === 'vine' ? 'ツタ' :
+                    tgt.type === 'mud' ? '泥んこ' :
+                    tgt.type === 'chest' ? '宝箱' :
+                    pieceCfg?.label || '素材';
+
                   return (
                     <div key={tgt.type} className="flex flex-col items-center bg-slate-900/80 px-3 py-1.5 rounded-xl border border-slate-700/60 shadow-inner">
-                      {pieceCfg?.image ? (
-                        <img src={pieceCfg.image} alt={pieceCfg.label} className="w-7 h-7 object-contain drop-shadow" />
+                      {targetImg ? (
+                        <img src={targetImg} alt={label} className="w-7 h-7 object-contain drop-shadow" />
                       ) : (
                         <span className="text-2xl drop-shadow-sm">{pieceCfg ? pieceCfg.icon : '🎯'}</span>
                       )}
@@ -2550,7 +2567,15 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
         {buddySkill && (
           <div className="flex items-center justify-between px-2.5 py-1 bg-slate-900/90 rounded-xl border border-amber-500/25 text-[10px]">
             <div className="flex items-center space-x-1.5">
-              <span className="text-sm leading-none">{buddySkill.creatureIcon}</span>
+              {buddySkill.creatureImage ? (
+                <img
+                  src={getAssetUrl(buddySkill.creatureImage)}
+                  alt={buddySkill.creatureName}
+                  className="w-4 h-4 object-contain inline-block drop-shadow"
+                />
+              ) : (
+                <span className="text-sm leading-none">{buddySkill.creatureIcon}</span>
+              )}
               <span className="font-black text-amber-200">{buddySkill.creatureName}</span>
               <span className="text-slate-400 font-medium">({buddySkill.name})</span>
             </div>

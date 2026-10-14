@@ -329,7 +329,11 @@ export const AreaDetailScreen: React.FC<AreaDetailScreenProps> = ({
 
         <div className="text-center">
           <h2 className="text-xs font-black text-white flex items-center justify-center space-x-1">
-            <span>{area.icon}</span>
+            {area.badge.image ? (
+              <img src={getAssetUrl(area.badge.image)} alt="" className="w-4 h-4 object-contain inline-block drop-shadow" />
+            ) : (
+              <span>{area.icon}</span>
+            )}
             <span>{isAllCompleted ? area.name : (area.ruinedName || area.name)}</span>
           </h2>
           <span className="text-[10px] text-amber-400 font-bold">
