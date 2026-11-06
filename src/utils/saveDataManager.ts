@@ -154,7 +154,7 @@ export function importSaveDataString(encodedString: string): { success: boolean;
     if (data.daily_date) localStorage.setItem('beaver_daily_cleared_date', data.daily_date);
 
     return { success: true, message: 'セーブデータを正常に復元しました！ゲームを再開します。' };
-  } catch (err: any) {
+  } catch {
     return { success: false, message: 'データの復元に失敗しました。コードをご確認ください。' };
   }
 }

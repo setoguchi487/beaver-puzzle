@@ -385,6 +385,191 @@ class SoundEffectManager {
     osc.stop(this.ctx.currentTime + 0.22);
   }
 
+  // 特殊ピース生成ファンファーレ音（4個消し・5個消し・交差で誕生した瞬間のきらめき音）
+  public playSpecialCreated(special: string) {
+    if (this.isMuted) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    if (special === 'rainbow') {
+      // 虹オーブ誕生：天上のクリスタルアルペジオ（C5-E5-G5-B5-D6-G6）
+      const notes = [523.25, 659.25, 783.99, 987.77, 1174.66, 1567.98];
+      notes.forEach((freq, idx) => {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sine';
+        const start = this.ctx.currentTime + idx * 0.045;
+        osc.frequency.setValueAtTime(freq, start);
+
+        gain.gain.setValueAtTime(0.18, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.22);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(start);
+        osc.stop(start + 0.22);
+      });
+    } else if (special === 'bomb') {
+      // 樽爆弾誕生：パンチの効いた木工インパクト ＋ 導火線の点火シュッ
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(280, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(80, this.ctx.currentTime + 0.14);
+
+      gain.gain.setValueAtTime(0.24, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.16);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.16);
+
+      // 高域のパチパチ火花
+      const hi = this.ctx.createOscillator();
+      const hiGain = this.ctx.createGain();
+      hi.type = 'sawtooth';
+      hi.frequency.setValueAtTime(1400, this.ctx.currentTime + 0.05);
+      hi.frequency.linearRampToValueAtTime(600, this.ctx.currentTime + 0.18);
+      hiGain.gain.setValueAtTime(0.1, this.ctx.currentTime + 0.05);
+      hiGain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.18);
+      hi.connect(hiGain);
+      hiGain.connect(this.ctx.destination);
+      hi.start(this.ctx.currentTime + 0.05);
+      hi.stop(this.ctx.currentTime + 0.18);
+    } else {
+      // ロケット誕生：軽快な上昇キーン音 ＋ 鐘の音
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(440, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1200, this.ctx.currentTime + 0.15);
+
+      gain.gain.setValueAtTime(0.18, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.16);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.16);
+
+      // チャイム高音
+      const bell = this.ctx.createOscillator();
+      const bellGain = this.ctx.createGain();
+      bell.type = 'sine';
+      bell.frequency.setValueAtTime(1760, this.ctx.currentTime + 0.06);
+      bellGain.gain.setValueAtTime(0.14, this.ctx.currentTime + 0.06);
+      bellGain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.22);
+      bell.connect(bellGain);
+      bellGain.connect(this.ctx.destination);
+      bell.start(this.ctx.currentTime + 0.06);
+      bell.stop(this.ctx.currentTime + 0.22);
+    }
+  }
+
+  // コンボ祝福音（連鎖数に応じて高らかに鳴り響く歓喜のコード）
+  public playComboCelebration(combo: number) {
+    if (this.isMuted) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    let chord: number[] = [];
+    if (combo <= 2) {
+      chord = [523.25, 659.25, 783.99]; // C5 メジャー
+    } else if (combo === 3) {
+      chord = [587.33, 739.99, 880.00, 1174.66]; // D5 メジャー
+    } else if (combo === 4) {
+      chord = [659.25, 830.61, 987.77, 1318.51, 1661.22]; // E5 メジャー9th
+    } else {
+      // 5コンボ以上：圧倒的ファンファーレ！
+      chord = [783.99, 987.77, 1174.66, 1567.98, 1975.53, 2349.32]; // G5ハイオーラ
+    }
+
+    chord.forEach((freq, idx) => {
+      if (!this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = combo >= 4 ? 'triangle' : 'sine';
+      const delay = idx * 0.035;
+      const start = this.ctx.currentTime + delay;
+      osc.frequency.setValueAtTime(freq, start);
+
+      const vol = combo >= 5 ? 0.16 : 0.14;
+      const duration = combo >= 5 ? 0.35 : 0.22;
+
+      gain.gain.setValueAtTime(vol, start);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(start);
+      osc.stop(start + duration);
+    });
+  }
+
+  // 特殊ピース合体・超必殺大爆発音
+  public playSpecialComboBlast(_comboType: string) {
+    if (this.isMuted) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    // 重厚なサブベース
+    const bass = this.ctx.createOscillator();
+    const bassGain = this.ctx.createGain();
+    bass.type = 'sawtooth';
+    bass.frequency.setValueAtTime(140, this.ctx.currentTime);
+    bass.frequency.exponentialRampToValueAtTime(25, this.ctx.currentTime + 0.45);
+    bassGain.gain.setValueAtTime(0.28, this.ctx.currentTime);
+    bassGain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.48);
+    bass.connect(bassGain);
+    bassGain.connect(this.ctx.destination);
+    bass.start();
+    bass.stop(this.ctx.currentTime + 0.48);
+
+    // 壮大なエナジースウィープ
+    const sweep = this.ctx.createOscillator();
+    const sweepGain = this.ctx.createGain();
+    sweep.type = 'triangle';
+    sweep.frequency.setValueAtTime(300, this.ctx.currentTime);
+    sweep.frequency.linearRampToValueAtTime(1800, this.ctx.currentTime + 0.3);
+    sweepGain.gain.setValueAtTime(0.18, this.ctx.currentTime);
+    sweepGain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.35);
+    sweep.connect(sweepGain);
+    sweepGain.connect(this.ctx.destination);
+    sweep.start();
+    sweep.stop(this.ctx.currentTime + 0.35);
+
+    // ホワイトノイズ衝撃波
+    try {
+      const bufferSize = Math.floor(this.ctx.sampleRate * 0.4);
+      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = buffer;
+      const noiseFilter = this.ctx.createBiquadFilter();
+      noiseFilter.type = 'lowpass';
+      noiseFilter.frequency.setValueAtTime(1000, this.ctx.currentTime);
+      noiseFilter.frequency.exponentialRampToValueAtTime(200, this.ctx.currentTime + 0.4);
+
+      const noiseGain = this.ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.4);
+
+      noise.connect(noiseFilter);
+      noiseFilter.connect(noiseGain);
+      noiseGain.connect(this.ctx.destination);
+      noise.start();
+    } catch {}
+  }
+
   // レインボー音
   public playRainbow() {
     if (this.isMuted) return;

@@ -434,18 +434,154 @@ body {
    パズル特殊ピース演出 (ロケットレーザー・虹発光・画面シェイク)
    ========================================================================== */
 
-/* 盤面シェイク（ロケットや爆発のインパクト） - ゆっくり重厚に */
-@keyframes boardShake {
+/* 盤面シェイク（3段階のダイナミック振動） */
+
+/* ① 微細シェイク (4消しロケット生成、2コンボ、木槌) */
+@keyframes shakeSubtle {
   0%, 100% { transform: translate(0, 0); }
-  15% { transform: translate(-4px, 3px) rotate(-0.5deg); }
-  30% { transform: translate(4px, -3px) rotate(0.5deg); }
-  45% { transform: translate(-3px, -2px); }
-  60% { transform: translate(3px, 2px); }
-  75% { transform: translate(-1px, 1px); }
+  20% { transform: translate(-2px, 1.5px); }
+  40% { transform: translate(2px, -1.5px); }
+  60% { transform: translate(-1.5px, 1px); }
+  80% { transform: translate(1px, -0.5px); }
+}
+.animate-shake-subtle {
+  animation: shakeSubtle 0.24s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
 
+/* ② 中程度シェイク (爆弾生成・単体起爆、3〜4コンボ、ノコギリ) */
+@keyframes shakeMedium {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  15% { transform: translate(-5px, 3.5px) rotate(-0.5deg); }
+  30% { transform: translate(5px, -3.5px) rotate(0.5deg); }
+  45% { transform: translate(-3.5px, 2px) rotate(-0.25deg); }
+  60% { transform: translate(3px, -2px) rotate(0.25deg); }
+  75% { transform: translate(-1.5px, 1px); }
+  90% { transform: translate(1px, -0.5px); }
+}
+.animate-shake-medium,
 .animate-board-shake {
-  animation: boardShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  animation: shakeMedium 0.38s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* ③ 重量級ヘヴィシェイク (5消し虹生成、合体コンボ、5コンボ以上、しっぽビンタ) */
+@keyframes shakeHeavy {
+  0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+  10% { transform: translate(-9px, 6px) rotate(-1.5deg) scale(1.02); }
+  25% { transform: translate(8px, -7px) rotate(1.5deg) scale(1.01); }
+  40% { transform: translate(-7px, 5px) rotate(-1deg); }
+  55% { transform: translate(6px, -4px) rotate(0.8deg); }
+  70% { transform: translate(-4px, 3px) rotate(-0.4deg); }
+  85% { transform: translate(2.5px, -1.5px) rotate(0.2deg); }
+}
+.animate-shake-heavy {
+  animation: shakeHeavy 0.55s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+}
+
+/* 特殊ピース誕生時のオーラ波紋リング */
+@keyframes specialBirthRing {
+  0% {
+    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 1;
+    border-width: 6px;
+  }
+  50% {
+    opacity: 0.95;
+    border-width: 4px;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.2);
+    opacity: 0;
+    border-width: 1px;
+  }
+}
+.animate-special-birth-ring {
+  animation: specialBirthRing 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  pointer-events: none;
+}
+
+/* 特殊ピース誕生時の浮上バッジ */
+@keyframes birthBadgeFloat {
+  0% {
+    transform: translate(-50%, -20%) scale(0.3);
+    opacity: 0;
+  }
+  30% {
+    transform: translate(-50%, -90%) scale(1.15);
+    opacity: 1;
+  }
+  70% {
+    transform: translate(-50%, -110%) scale(1.0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -150%) scale(0.8);
+    opacity: 0;
+  }
+}
+.animate-birth-badge {
+  animation: birthBadgeFloat 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  pointer-events: none;
+}
+
+/* 画面フラッシュ：爆発オレンジ */
+@keyframes flashOrange {
+  0% { opacity: 0; }
+  15% { opacity: 0.75; }
+  100% { opacity: 0; }
+}
+.animate-flash-orange {
+  animation: flashOrange 0.45s ease-out forwards;
+  pointer-events: none;
+}
+
+/* 画面フラッシュ：虹色プリズム */
+@keyframes flashRainbow {
+  0% { opacity: 0; }
+  20% { opacity: 0.85; }
+  100% { opacity: 0; }
+}
+.animate-flash-rainbow {
+  animation: flashRainbow 0.65s ease-out forwards;
+  pointer-events: none;
+}
+
+/* 画面フラッシュ：電撃ゴールド */
+@keyframes flashGold {
+  0% { opacity: 0; }
+  15% { opacity: 0.7; }
+  100% { opacity: 0; }
+}
+.animate-flash-gold {
+  animation: flashGold 0.4s ease-out forwards;
+  pointer-events: none;
+}
+
+/* 合体技ダイナミックバナー */
+@keyframes specialComboCall {
+  0% {
+    transform: translate(-50%, -50%) scale(0.2) rotate(-8deg);
+    opacity: 0;
+  }
+  30% {
+    transform: translate(-50%, -50%) scale(1.22) rotate(2deg);
+    opacity: 1;
+  }
+  55% {
+    transform: translate(-50%, -50%) scale(1.0) rotate(0deg);
+    opacity: 1;
+  }
+  85% {
+    transform: translate(-50%, -50%) scale(1.04) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.85) translateY(-25px);
+    opacity: 0;
+  }
+}
+.animate-special-combo-call {
+  animation: specialComboCall 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  pointer-events: none;
 }
 
 /* ロケット横レーザー閃光 - ゆったり0.7秒間輝く */

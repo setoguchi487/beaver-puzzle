@@ -284,8 +284,169 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
       setActiveShockwaves((prev) => prev.filter((s) => s.id !== shockwaveId));
     }, 550);
   };
+interface SpecialBirth {
+  id: number;
+  r: number;
+  c: number;
+  special: SpecialType;
+  label: string;
+  themeColor: string;
+  borderColor: string;
+}
+
+interface SpecialComboCall {
+  id: number;
+  title: string;
+  sub: string;
+  gradient: string;
+  border: string;
+  glow: string;
+}
+
   const [rainbowTargets, setRainbowTargets] = useState<{ r: number; c: number }[]>([]);
-  const [isShaking, setIsShaking] = useState(false);
+  const [shakeIntensity, setShakeIntensity] = useState<'none' | 'subtle' | 'medium' | 'heavy'>('none');
+  const triggerShake = (intensity: 'subtle' | 'medium' | 'heavy' = 'medium', duration?: number) => {
+    setShakeIntensity(intensity);
+    const dur = duration ?? (intensity === 'subtle' ? 240 : intensity === 'medium' ? 380 : 550);
+    setTimeout(() => {
+      setShakeIntensity((prev) => (prev === intensity ? 'none' : prev));
+    }, dur);
+  };
+
+  const [specialBirths, setSpecialBirths] = useState<SpecialBirth[]>([]);
+  const [specialComboBanner, setSpecialComboBanner] = useState<SpecialComboCall | null>(null);
+  const [screenFlash, setScreenFlash] = useState<'orange' | 'rainbow' | 'gold' | null>(null);
+
+  const triggerScreenFlash = (type: 'orange' | 'rainbow' | 'gold') => {
+    setScreenFlash(type);
+    const dur = type === 'rainbow' ? 650 : 450;
+    setTimeout(() => {
+      setScreenFlash((prev) => (prev === type ? null : prev));
+    }, dur);
+  };
+
+  const triggerSpecialBirthEffect = (r: number, c: number, special: SpecialType) => {
+    const birthId = Date.now() + Math.random();
+    let label = '';
+    let themeColor = '';
+    let borderColor = '';
+    let intensity: 'subtle' | 'medium' | 'heavy' = 'subtle';
+
+    if (special === 'rainbow') {
+      label = 'RAINBOW! 🌈✨';
+      themeColor = 'from-amber-400 via-rose-500 to-cyan-400 text-white';
+      borderColor = 'border-yellow-200';
+      intensity = 'heavy';
+      triggerScreenFlash('rainbow');
+      try {
+        confetti({
+          particleCount: 35,
+          spread: 80,
+          origin: { x: (c + 0.5) / numCols, y: 0.35 + ((r + 0.5) / numRows) * 0.35 },
+          colors: ['#f43f5e', '#38bdf8', '#fbbf24', '#a855f7', '#34d399', '#ffffff'],
+          shapes: ['star', 'circle'],
+          scalar: 0.9,
+        });
+      } catch {}
+    } else if (special === 'bomb') {
+      label = 'BOMB! 💣';
+      themeColor = 'from-rose-500 via-amber-500 to-yellow-500 text-slate-950 font-black';
+      borderColor = 'border-rose-300';
+      intensity = 'medium';
+      triggerScreenFlash('orange');
+      try {
+        confetti({
+          particleCount: 22,
+          spread: 65,
+          origin: { x: (c + 0.5) / numCols, y: 0.35 + ((r + 0.5) / numRows) * 0.35 },
+          colors: ['#ef4444', '#f97316', '#fbbf24', '#ffffff'],
+          scalar: 0.8,
+        });
+      } catch {}
+    } else {
+      label = special === 'rocket_h' ? 'ROCKET! ↔🚀' : 'ROCKET! ↕🚀';
+      themeColor = 'from-amber-400 to-yellow-300 text-amber-950 font-black';
+      borderColor = 'border-amber-200';
+      intensity = 'subtle';
+      triggerScreenFlash('gold');
+      try {
+        confetti({
+          particleCount: 16,
+          spread: 55,
+          origin: { x: (c + 0.5) / numCols, y: 0.35 + ((r + 0.5) / numRows) * 0.35 },
+          colors: ['#f59e0b', '#fbbf24', '#ffffff'],
+          scalar: 0.75,
+        });
+      } catch {}
+    }
+
+    sounds.playSpecialCreated(special);
+    triggerShake(intensity);
+
+    setSpecialBirths((prev) => [...prev, { id: birthId, r, c, special, label, themeColor, borderColor }]);
+    setTimeout(() => {
+      setSpecialBirths((prev) => prev.filter((b) => b.id !== birthId));
+    }, 750);
+  };
+
+  const triggerSpecialComboBanner = (
+    type: 'crossRocket' | 'megaCross' | 'superNova' | 'rainbowMeteor' | 'rainbowBomb' | 'cosmicCleanse'
+  ) => {
+    const configs: Record<string, Omit<SpecialComboCall, 'id'>> = {
+      crossRocket: {
+        title: 'CROSS ROCKET! 🚀↔↕',
+        sub: '十文字デュアルストライク！',
+        gradient: 'from-amber-400 via-yellow-300 to-orange-500 text-slate-950',
+        border: 'border-yellow-200',
+        glow: 'shadow-[0_0_35px_rgba(251,191,36,0.9)]',
+      },
+      megaCross: {
+        title: 'MEGA CROSS BLAST! 🚀💥',
+        sub: '極太3列メガストライク一掃！',
+        gradient: 'from-amber-400 via-rose-500 to-purple-600 text-white',
+        border: 'border-rose-200',
+        glow: 'shadow-[0_0_40px_rgba(244,63,94,0.95)]',
+      },
+      superNova: {
+        title: 'SUPER NOVA! 💥💥',
+        sub: '盤面全域メガブラスト大爆発！',
+        gradient: 'from-rose-600 via-amber-500 to-yellow-300 text-white',
+        border: 'border-yellow-100',
+        glow: 'shadow-[0_0_45px_rgba(239,68,68,1)]',
+      },
+      rainbowMeteor: {
+        title: 'RAINBOW METEOR SWARM! 🌈🚀',
+        sub: '全素材がロケットへと一斉変身！',
+        gradient: 'from-cyan-400 via-purple-500 to-rose-500 text-white',
+        border: 'border-cyan-200',
+        glow: 'shadow-[0_0_40px_rgba(56,189,248,0.95)]',
+      },
+      rainbowBomb: {
+        title: 'RAINBOW CARPET BOMB! 🌈💣',
+        sub: '全素材が樽爆弾へと一斉起爆！',
+        gradient: 'from-purple-500 via-rose-500 to-amber-400 text-white',
+        border: 'border-purple-200',
+        glow: 'shadow-[0_0_45px_rgba(168,85,247,0.95)]',
+      },
+      cosmicCleanse: {
+        title: 'COSMIC CLEANSE! 🌈🌌💫',
+        sub: '全盤面完全浄化・森の奇跡！',
+        gradient: 'from-amber-300 via-emerald-400 to-cyan-400 text-slate-950 font-black',
+        border: 'border-white',
+        glow: 'shadow-[0_0_50px_rgba(52,211,153,1)]',
+      },
+    };
+
+    const conf = configs[type];
+    if (!conf) return;
+
+    const id = Date.now();
+    setSpecialComboBanner({ id, ...conf });
+    setTimeout(() => {
+      setSpecialComboBanner((prev) => (prev?.id === id ? null : prev));
+    }, 1200);
+  };
+
   const [isMuted, setIsMuted] = useState(sounds.getMuted());
   const [introDismissed, setIntroDismissed] = useState<boolean>(!stage.newGimmickIntro);
   const [clearingTileIds, setClearingTileIds] = useState<Set<string>>(new Set());
@@ -295,7 +456,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
   // ★ヒント案内・コンボコール・ボーナスタイム用ステート
   const [hintTiles, setHintTiles] = useState<{ r: number; c: number }[] | null>(null);
-  const [comboCall, setComboCall] = useState<{ id: number; text: string; color: string; combo: number } | null>(null);
+  const [comboCall, setComboCall] = useState<{ id: number; text: string; subText?: string; color: string; combo: number } | null>(null);
   const [isBonusTime, setIsBonusTime] = useState<boolean>(false);
   const [finalClearedMovesLeft, setFinalClearedMovesLeft] = useState<number>(movesLeft);
   const isBonusTimeRef = useRef<boolean>(false);
@@ -303,27 +464,70 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
   const triggerComboCall = (combo: number) => {
     let text = "";
+    let subText = "";
     let color = "";
+    let intensity: 'subtle' | 'medium' | 'heavy' = 'subtle';
+
     if (combo === 2) {
-      text = "Nice! 🪵";
+      text = "2 COMBO! 🪵";
+      subText = "Nice Match!";
       color = "from-amber-400 to-yellow-500 border-amber-300 text-amber-950";
+      intensity = 'subtle';
     } else if (combo === 3) {
-      text = "Great! ✨";
+      text = "3 COMBO! ✨";
+      subText = "Great Rhythm!";
       color = "from-cyan-400 to-blue-500 border-cyan-300 text-slate-950";
+      intensity = 'medium';
+      try {
+        confetti({
+          particleCount: 20,
+          spread: 60,
+          origin: { x: 0.25, y: 0.6 },
+          colors: ['#38bdf8', '#fbbf24', '#ffffff'],
+        });
+        confetti({
+          particleCount: 20,
+          spread: 60,
+          origin: { x: 0.75, y: 0.6 },
+          colors: ['#38bdf8', '#fbbf24', '#ffffff'],
+        });
+      } catch {}
     } else if (combo === 4) {
-      text = "Amazing! 🚀";
+      text = "4 COMBO! 🚀";
+      subText = "Amazing Cascade!";
       color = "from-purple-400 to-pink-500 border-purple-300 text-white";
+      intensity = 'medium';
+      try {
+        confetti({
+          particleCount: 35,
+          spread: 75,
+          origin: { y: 0.5 },
+          colors: ['#a855f7', '#ec4899', '#fbbf24', '#ffffff'],
+        });
+      } catch {}
     } else if (combo >= 5) {
-      text = `BEAVER BLAST! 🦫💥 x${combo}`;
+      text = `🔥 ${combo} COMBO! BEAVER FRENZY! 🦫💥`;
+      subText = "Unstoppable Dam Builders!";
       color = "from-amber-400 via-rose-500 to-yellow-300 border-yellow-200 text-slate-950 font-black";
+      intensity = 'heavy';
+      try {
+        confetti({
+          particleCount: 60,
+          spread: 90,
+          origin: { y: 0.45 },
+          colors: ['#f59e0b', '#ef4444', '#fbbf24', '#38bdf8', '#10b981', '#ffffff'],
+        });
+      } catch {}
     }
 
     if (text) {
       const id = Date.now();
-      setComboCall({ id, text, color, combo });
+      setComboCall({ id, text, subText, color, combo });
+      triggerShake(intensity);
+      sounds.playComboCelebration(combo);
       setTimeout(() => {
         setComboCall((prev) => (prev?.id === id ? null : prev));
-      }, 950);
+      }, 1000);
     }
   };
 
@@ -974,8 +1178,16 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     if (booster === 'hammer') {
       // 🔨 木づち：狙った1マスを叩き割る！
       sounds.playHammer();
-      setIsShaking(true);
-      setTimeout(() => setIsShaking(false), 250);
+      triggerShake('subtle');
+      try {
+        confetti({
+          particleCount: 20,
+          spread: 60,
+          origin: { x: (targetC + 0.5) / numCols, y: 0.35 + ((targetR + 0.5) / numRows) * 0.35 },
+          colors: ['#854d0e', '#d97706', '#fef3c7', '#ffffff'],
+          scalar: 0.8,
+        });
+      } catch {}
 
       const tile = newBoard[targetR][targetC];
       if (tile.underlay?.type === 'mud') {
@@ -1012,8 +1224,17 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     } else if (booster === 'saw') {
       // 🪚 ノコギリ：選択した横1列を一刀両断！
       sounds.playSaw();
-      setIsShaking(true);
-      setTimeout(() => setIsShaking(false), 350);
+      triggerShake('medium');
+      triggerScreenFlash('gold');
+      try {
+        confetti({
+          particleCount: 28,
+          spread: 80,
+          origin: { x: 0.5, y: 0.35 + ((targetR + 0.5) / numRows) * 0.35 },
+          colors: ['#f59e0b', '#fbbf24', '#ffffff'],
+          scalar: 0.85,
+        });
+      } catch {}
 
       const laserId = Date.now();
       setActiveLasers([{ id: laserId, r: targetR, direction: 'h' }]);
@@ -1057,15 +1278,16 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     } else if (booster === 'tail') {
       // 🦫 しっぽビンタ：周囲3×3マスを一撃粉砕！
       sounds.playTailSlap();
-      setIsShaking(true);
-      setTimeout(() => setIsShaking(false), 450);
+      triggerShake('heavy');
+      triggerScreenFlash('orange');
 
       try {
         confetti({
-          particleCount: 35,
-          spread: 75,
-          origin: { y: 0.6 },
+          particleCount: 50,
+          spread: 85,
+          origin: { x: (targetC + 0.5) / numCols, y: 0.35 + ((targetR + 0.5) / numRows) * 0.35 },
           colors: ['#854d0e', '#ca8a04', '#eab308', '#ffffff'],
+          scalar: 0.95,
         });
       } catch {}
 
@@ -1577,6 +1799,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
       const msg = messages[Math.min(messages.length - 1, currentCombo - 2)];
       setComboToast(`${msg} (${currentCombo} Combo!)`);
       setTimeout(() => setComboToast(null), 1000);
+      triggerComboCall(currentCombo);
     }
 
     const hasWater = matches.some(({ r, c }) => b[r][c].type === 'water');
@@ -1721,13 +1944,7 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
         type: spec.type,
         special: spec.special,
       };
-      if (spec.special === 'rainbow') {
-        sounds.playRainbow();
-      } else if (spec.special === 'bomb') {
-        sounds.playBomb(false);
-      } else {
-        sounds.playRocket();
-      }
+      triggerSpecialBirthEffect(spec.r, spec.c, spec.special);
     });
 
     // 2. 重力落下アニメーション！
@@ -1737,7 +1954,6 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     await new Promise((res) => setTimeout(res, 100));
     const nextResult = findMatchesAndSpecials(settledBoard);
     if (nextResult.matches.length > 0) {
-      triggerComboCall(currentCombo + 1);
       await processMatches(settledBoard, nextResult.matches, currentCombo + 1, nextResult.specialsToCreate);
     }
   };
@@ -1814,32 +2030,32 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
       if (special === "rocket_h") {
         sounds.playRocket();
         triggerLaserEffect(r, undefined, "h");
-        setIsShaking(true);
-        setTimeout(() => setIsShaking(false), 300);
+        triggerShake("medium");
+        triggerScreenFlash("gold");
         for (let col = 0; col < numCols; col++) {
           hitCoords.push({ r, c: col });
         }
       } else if (special === "rocket_v") {
         sounds.playRocket();
         triggerLaserEffect(undefined, c, "v");
-        setIsShaking(true);
-        setTimeout(() => setIsShaking(false), 300);
+        triggerShake("medium");
+        triggerScreenFlash("gold");
         for (let row = 0; row < numRows; row++) {
           hitCoords.push({ r: row, c });
         }
       } else if (special === "bomb") {
         sounds.playBomb(false);
         triggerBombEffect(r, c);
+        triggerShake("heavy");
+        triggerScreenFlash("orange");
         try {
           confetti({
-            particleCount: 25,
+            particleCount: 30,
             spread: 75,
             origin: { x: (c + 0.5) / numCols, y: 0.35 + ((r + 0.5) / numRows) * 0.35 },
             colors: ["#f59e0b", "#fbbf24", "#ef4444", "#ffffff"],
           });
         } catch {}
-        setIsShaking(true);
-        setTimeout(() => setIsShaking(false), 450);
         for (let dr = -2; dr <= 2; dr++) {
           for (let dc = -2; dc <= 2; dc++) {
             const nr = r + dr;
@@ -1885,6 +2101,21 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     hitC: number,
     mode: "h" | "v" | "cross" = "cross"
   ) => {
+    if (mode === "cross") {
+      triggerSpecialComboBanner("crossRocket");
+      triggerShake("medium");
+      triggerScreenFlash("gold");
+      sounds.playSpecialComboBlast("crossRocket");
+      try {
+        confetti({
+          particleCount: 35,
+          spread: 75,
+          origin: { x: (hitC + 0.5) / numCols, y: 0.35 + ((hitR + 0.5) / numRows) * 0.35 },
+          colors: ["#f59e0b", "#fbbf24", "#ffffff"],
+        });
+      } catch {}
+    }
+
     const specialsToTrigger: { r: number; c: number; special: SpecialType }[] = [];
     if (mode === "h" || mode === "cross") {
       specialsToTrigger.push({ r: hitR, c: hitC, special: "rocket_h" });
@@ -1913,11 +2144,19 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     hitR: number,
     hitC: number
   ) => {
-    sounds.playRocket();
-    sounds.playBomb(true);
+    triggerSpecialComboBanner("megaCross");
+    triggerShake("heavy");
+    triggerScreenFlash("orange");
+    sounds.playSpecialComboBlast("megaCross");
 
-    setIsShaking(true);
-    setTimeout(() => setIsShaking(false), 600);
+    try {
+      confetti({
+        particleCount: 55,
+        spread: 85,
+        origin: { x: (hitC + 0.5) / numCols, y: 0.35 + ((hitR + 0.5) / numRows) * 0.35 },
+        colors: ["#ef4444", "#f59e0b", "#fbbf24", "#ffffff"],
+      });
+    } catch {}
 
     // 横3列 ＋ 縦3列のメガ十字レーザーを放射！
     const lasers: ActiveLaser[] = [];
@@ -1991,15 +2230,15 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     hitR: number,
     hitC: number
   ) => {
-    sounds.playBomb(true);
-
-    setIsShaking(true);
-    setTimeout(() => setIsShaking(false), 750);
+    triggerSpecialComboBanner("superNova");
+    triggerShake("heavy");
+    triggerScreenFlash("orange");
+    sounds.playSpecialComboBlast("superNova");
 
     try {
       confetti({
-        particleCount: 65,
-        spread: 95,
+        particleCount: 85,
+        spread: 100,
         origin: { y: 0.55 },
         colors: ['#ef4444', '#f59e0b', '#fbbf24', '#ffffff'],
       });
@@ -2065,18 +2304,17 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     hitR: number,
     hitC: number
   ) => {
-    sounds.playRainbow();
-    sounds.playBomb(true);
-
-    setIsShaking(true);
-    setTimeout(() => setIsShaking(false), 700);
+    triggerSpecialComboBanner("rainbowBomb");
+    triggerShake("heavy");
+    triggerScreenFlash("orange");
+    sounds.playSpecialComboBlast("rainbowBomb");
 
     try {
       confetti({
-        particleCount: 55,
-        spread: 85,
+        particleCount: 70,
+        spread: 90,
         origin: { y: 0.6 },
-        colors: ['#ef4444', '#f59e0b', '#38bdf8', '#a855f7'],
+        colors: ['#ef4444', '#f59e0b', '#38bdf8', '#a855f7', '#ffffff'],
       });
     } catch {}
 
@@ -2151,18 +2389,17 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     hitR: number,
     hitC: number
   ) => {
-    sounds.playRainbow();
-    sounds.playRocket();
-
-    setIsShaking(true);
-    setTimeout(() => setIsShaking(false), 700);
+    triggerSpecialComboBanner("rainbowMeteor");
+    triggerShake("heavy");
+    triggerScreenFlash("rainbow");
+    sounds.playSpecialComboBlast("rainbowMeteor");
 
     try {
       confetti({
-        particleCount: 55,
-        spread: 85,
+        particleCount: 70,
+        spread: 90,
         origin: { y: 0.6 },
-        colors: ['#f59e0b', '#38bdf8', '#10b981', '#f43f5e', '#a855f7'],
+        colors: ['#f59e0b', '#38bdf8', '#10b981', '#f43f5e', '#a855f7', '#ffffff'],
       });
     } catch {}
 
@@ -2240,7 +2477,36 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
 
   // レインボー起爆（同色全消し、または全盤面消去）
   const executeRainbowClear = async (b: Tile[][], targetType: PieceType | 'ALL') => {
-    sounds.playRainbow();
+    if (targetType === 'ALL') {
+      triggerSpecialComboBanner("cosmicCleanse");
+      triggerShake("heavy");
+      triggerScreenFlash("rainbow");
+      sounds.playSpecialComboBlast("cosmicCleanse");
+      try {
+        confetti({
+          particleCount: 110,
+          spread: 120,
+          origin: { y: 0.5 },
+          colors: ['#38bdf8', '#fbbf24', '#f43f5e', '#a855f7', '#34d399', '#ffffff'],
+          shapes: ['circle', 'star'],
+          scalar: 1.15,
+        });
+      } catch {}
+    } else {
+      sounds.playRainbow();
+      triggerScreenFlash("rainbow");
+      triggerShake("medium");
+      try {
+        confetti({
+          particleCount: 45,
+          spread: 75,
+          origin: { y: 0.55 },
+          colors: ['#38bdf8', '#fbbf24', '#f43f5e', '#a855f7', '#34d399', '#ffffff'],
+          shapes: ['circle', 'star'],
+          scalar: 1.0,
+        });
+      } catch {}
+    }
 
     const highlighted: { r: number; c: number }[] = [];
     b.forEach((row, r) => {
@@ -2253,16 +2519,6 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
     setRainbowTargets(highlighted);
     setTimeout(() => setRainbowTargets([]), 850);
 
-    try {
-      confetti({
-        particleCount: 45,
-        spread: 75,
-        origin: { y: 0.55 },
-        colors: ['#38bdf8', '#fbbf24', '#f43f5e', '#a855f7', '#34d399', '#ffffff'],
-        shapes: ['circle', 'star'],
-        scalar: 1.0,
-      });
-    } catch {}
     const collectedCounts: { [key: string]: number } = {};
     const newBoard: Tile[][] = b.map((row) =>
       row.map((tile) => {
@@ -2734,14 +2990,80 @@ export const Match3Board: React.FC<Match3BoardProps> = ({
       <div onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        className={`relative p-2.5 bg-amber-950/85 rounded-3xl border-2 border-amber-600/50 shadow-[0_12px_36px_rgba(0,0,0,0.6)] backdrop-blur-md touch-none z-10 overflow-hidden ${isShaking ? "animate-board-shake" : ""}`}>
+        className={`relative p-2.5 bg-amber-950/85 rounded-3xl border-2 border-amber-600/50 shadow-[0_12px_36px_rgba(0,0,0,0.6)] backdrop-blur-md touch-none z-10 overflow-hidden ${
+          shakeIntensity === 'subtle'
+            ? 'animate-shake-subtle'
+            : shakeIntensity === 'medium'
+            ? 'animate-shake-medium'
+            : shakeIntensity === 'heavy'
+            ? 'animate-shake-heavy'
+            : ''
+        }`}>
+        {/* 全画面フラッシュ演出 */}
+        {screenFlash === 'orange' && (
+          <div className="absolute inset-0 bg-gradient-to-r from-orange-500/50 via-amber-400/60 to-red-500/50 animate-flash-orange z-40 pointer-events-none rounded-3xl" />
+        )}
+        {screenFlash === 'rainbow' && (
+          <div className="absolute inset-0 bg-gradient-to-tr from-rose-500/50 via-amber-400/50 via-emerald-400/50 to-cyan-400/50 animate-flash-rainbow z-40 pointer-events-none rounded-3xl" />
+        )}
+        {screenFlash === 'gold' && (
+          <div className="absolute inset-0 bg-yellow-400/40 animate-flash-gold z-40 pointer-events-none rounded-3xl" />
+        )}
+
+        {/* 超必殺・合体技ダイナミックバナー */}
+        {specialComboBanner && (
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none animate-special-combo-call w-[92%] max-w-sm text-center">
+            <div className={`px-5 py-3.5 rounded-3xl bg-gradient-to-r ${specialComboBanner.gradient} border-2 ${specialComboBanner.border} ${specialComboBanner.glow} shadow-2xl`}>
+              <div className="text-xl sm:text-2xl font-black tracking-wider drop-shadow-lg">
+                {specialComboBanner.title}
+              </div>
+              <div className="text-xs sm:text-sm font-bold opacity-95 tracking-wide mt-0.5">
+                {specialComboBanner.sub}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 特殊ピース誕生演出（オーラリング ＆ 浮上バッジ） */}
+        {specialBirths.map((sb) => {
+          const topPercent = ((sb.r + 0.5) / numRows) * 100;
+          const leftPercent = ((sb.c + 0.5) / numCols) * 100;
+          return (
+            <div
+              key={`birth-${sb.id}`}
+              style={{ top: `${topPercent}%`, left: `${leftPercent}%` }}
+              className="absolute -translate-x-1/2 -translate-y-1/2 z-40 pointer-events-none flex flex-col items-center justify-center"
+            >
+              <div
+                className={`w-20 h-20 rounded-full border-4 ${sb.borderColor} ${
+                  sb.special === 'rainbow'
+                    ? 'bg-gradient-to-r from-pink-500/40 via-yellow-400/40 to-cyan-400/40'
+                    : sb.special === 'bomb'
+                    ? 'bg-rose-500/35'
+                    : 'bg-amber-400/30'
+                } animate-special-birth-ring`}
+              />
+              <div className="absolute animate-birth-badge whitespace-nowrap">
+                <div className={`px-3 py-1 rounded-full bg-gradient-to-r ${sb.themeColor} border ${sb.borderColor} shadow-lg text-xs font-black tracking-wider drop-shadow-md`}>
+                  {sb.label}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+
         {/* コンボ演出コールバナー */}
         {comboCall && (
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 pointer-events-none animate-combo-call">
             <div className={`px-5 py-2.5 rounded-2xl bg-gradient-to-r ${comboCall.color} border-2 shadow-[0_12px_36px_rgba(0,0,0,0.8)] text-center whitespace-nowrap`}>
-              <span className="text-xl sm:text-2xl font-black tracking-wider drop-shadow-md">
+              <span className="text-xl sm:text-2xl font-black tracking-wider drop-shadow-md block">
                 {comboCall.text}
               </span>
+              {comboCall.subText && (
+                <span className="text-[11px] sm:text-xs font-bold tracking-wider opacity-90 block mt-0.5">
+                  {comboCall.subText}
+                </span>
+              )}
             </div>
           </div>
         )}

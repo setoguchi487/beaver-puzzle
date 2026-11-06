@@ -47,7 +47,6 @@ export const FishingMiniGameModal: React.FC<FishingMiniGameModalProps> = ({
   // 釣りミニゲームの状態
   const [gameState, setGameState] = useState<'idle' | 'aiming' | 'hooked' | 'result'>('idle');
   const [gaugePos, setGaugePos] = useState<number>(0);
-  const [gaugeDirection, setGaugeDirection] = useState<'up' | 'down'>('up');
   const [resultFish, setResultFish] = useState<FishCatch | null>(null);
   const [resultType, setResultType] = useState<'great' | 'hit' | 'miss'>('hit');
   const [remainingFreeAttempts, setRemainingFreeAttempts] = useState<number>(3);
@@ -86,26 +85,21 @@ export const FishingMiniGameModal: React.FC<FishingMiniGameModalProps> = ({
       return;
     }
 
-    let current = gaugePos;
-    let dir = gaugeDirection;
+    let dir: 'up' | 'down' = 'up';
 
     const loop = () => {
       const speed = 2.4;
-      if (dir === 'up') {
-        current += speed;
-        if (current >= 100) {
-          current = 100;
+      setGaugePos((prev) => {
+        let next = dir === 'up' ? prev + speed : prev - speed;
+        if (next >= 100) {
+          next = 100;
           dir = 'down';
-        }
-      } else {
-        current -= speed;
-        if (current <= 0) {
-          current = 0;
+        } else if (next <= 0) {
+          next = 0;
           dir = 'up';
         }
-      }
-      setGaugePos(current);
-      setGaugeDirection(dir);
+        return next;
+      });
       animFrameRef.current = requestAnimationFrame(loop);
     };
 
@@ -113,7 +107,7 @@ export const FishingMiniGameModal: React.FC<FishingMiniGameModalProps> = ({
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
-  }, [gameState, gaugeDirection]);
+  }, [gameState]);
 
   if (!isOpen) return null;
 
@@ -123,7 +117,6 @@ export const FishingMiniGameModal: React.FC<FishingMiniGameModalProps> = ({
     sounds.buttonClick();
     setGameState('aiming');
     setGaugePos(10);
-    setGaugeDirection('up');
   };
 
   // 竿を引く（タップ）
